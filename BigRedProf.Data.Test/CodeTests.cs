@@ -13,7 +13,7 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentException>(
 				() =>
 				{
-					new Bit();
+					new Code();
 				}
 			);
 		}
@@ -25,26 +25,29 @@ namespace BigRedProf.Data.Test
 			Assert.Equal(2, new Code(1, 0).Length);
 			Assert.Equal(3, new Code(1, 0, 1).Length);
 			Assert.Equal(4, new Code(1, 0, 1, 1).Length);
-			Assert.Equal(500, new Code(Enumerable.Repeat(0, 500).Cast<Bit>().ToArray()).Length);
-			Assert.Equal(8192, new Code(Enumerable.Repeat(1, 8192).Cast<Bit>().ToArray()).Length);
+			Assert.Equal(500, new Code(Enumerable.Repeat(0, 500).Select(x => (Bit) x).ToArray()).Length);
+			Assert.Equal(8192, new Code(Enumerable.Repeat(1, 8192).Select(x => (Bit)x).ToArray()).Length);
 		}
 
 		[Fact]
 		public void IndexerShouldGetCorrectValues()
 		{
-			Code code = new Code(1, 0, 0, 1, 0, 1);
+			Code code = new Code(1, 0, 0, 1, 0, 1, 0, 0, 1);
 			Assert.Equal<Bit>(1, code[0]);
 			Assert.Equal<Bit>(0, code[1]);
 			Assert.Equal<Bit>(0, code[2]);
 			Assert.Equal<Bit>(1, code[3]);
 			Assert.Equal<Bit>(0, code[4]);
 			Assert.Equal<Bit>(1, code[5]);
+			Assert.Equal<Bit>(0, code[6]);
+			Assert.Equal<Bit>(0, code[7]);
+			Assert.Equal<Bit>(1, code[8]);
 		}
 
 		[Fact]
 		public void IndexerShouldSetCorrectValues()
 		{
-			Code code = new Code(0, 0, 0, 0, 0, 0);
+			Code code = new Code(0, 0, 0, 0, 0, 0, 0, 0, 0);
 
 			code[0] = 0;
 			Assert.Equal<Bit>(0, code[0]);
@@ -63,6 +66,15 @@ namespace BigRedProf.Data.Test
 
 			code[5] = 1;
 			Assert.Equal<Bit>(1, code[5]);
+
+			code[6] = 0;
+			Assert.Equal<Bit>(0, code[6]);
+
+			code[7] = 0;
+			Assert.Equal<Bit>(0, code[7]);
+
+			code[8] = 1;
+			Assert.Equal<Bit>(1, code[8]);
 		}
 
 		[Fact]
