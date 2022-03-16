@@ -31,6 +31,14 @@ namespace BigRedProf.Data
 			for (int i = 0; i < bits.Length; ++i)
 				this[i] = bits[i];
 		}
+
+		public Code(byte[] byteArray)
+		{
+			if (byteArray == null)
+				throw new ArgumentNullException(nameof(byteArray));
+
+			_byteArray = byteArray;
+		}
 		#endregion
 
 		#region properties

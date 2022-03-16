@@ -6,6 +6,34 @@ namespace BigRedProf.Data.Test
 {
 	public class CodeTests
 	{
+		#region constructor tests
+		[Fact]
+		public void ByteArrayConstructorShouldWork()
+		{
+			Code code = new Code(new byte[] { 127, 0b01011011 });
+			
+			Assert.Equal(16, code.Length);
+
+			Assert.Equal<Bit>(1, code[0]);
+			Assert.Equal<Bit>(1, code[1]);
+			Assert.Equal<Bit>(1, code[2]);
+			Assert.Equal<Bit>(1, code[3]);
+			Assert.Equal<Bit>(1, code[4]);
+			Assert.Equal<Bit>(1, code[5]);
+			Assert.Equal<Bit>(1, code[6]);
+			Assert.Equal<Bit>(1, code[7]);
+
+			Assert.Equal<Bit>(1, code[8]);
+			Assert.Equal<Bit>(1, code[9]);
+			Assert.Equal<Bit>(0, code[10]);
+			Assert.Equal<Bit>(1, code[11]);
+			Assert.Equal<Bit>(1, code[12]);
+			Assert.Equal<Bit>(0, code[13]);
+			Assert.Equal<Bit>(1, code[14]);
+			Assert.Equal<Bit>(0, code[15]);
+		}
+		#endregion
+
 		#region main tests
 		[Fact]
 		public void ZeroLengthCodesShouldThrow()
