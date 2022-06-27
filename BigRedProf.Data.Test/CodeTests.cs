@@ -21,7 +21,7 @@ namespace BigRedProf.Data.Test
 			Assert.Equal<Bit>(1, code[4]);
 			Assert.Equal<Bit>(1, code[5]);
 			Assert.Equal<Bit>(1, code[6]);
-			Assert.Equal<Bit>(1, code[7]);
+			Assert.Equal<Bit>(0, code[7]);
 
 			Assert.Equal<Bit>(1, code[8]);
 			Assert.Equal<Bit>(1, code[9]);

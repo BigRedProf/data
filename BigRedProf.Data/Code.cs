@@ -38,6 +38,7 @@ namespace BigRedProf.Data
 				throw new ArgumentNullException(nameof(byteArray));
 
 			_byteArray = byteArray;
+			_length = byteArray.Length * 8;
 		}
 		#endregion
 
