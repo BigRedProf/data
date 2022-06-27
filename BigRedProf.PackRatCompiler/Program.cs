@@ -21,14 +21,18 @@ namespace BigRedProf.PackRatCompiler
 			if (options.InputPath != null)
 			{
 				Console.Write("Input directory is ");
-				Console.Write(options.InputPath, ConsoleColor.DarkGreen);
+				Console.ForegroundColor = ConsoleColor.DarkGreen;
+				Console.WriteLine(options.InputPath);
 				Console.WriteLine();
+				Console.ResetColor();
 			}
 
 			if (options.OutputPath != null)
 			{
 				Console.Write("Output directory is ");
-				Console.WriteLine(options.OutputPath, ConsoleColor.Red);
+				Console.ForegroundColor = ConsoleColor.Red;
+				Console.WriteLine(options.OutputPath);
+				Console.ResetColor();
 			}
 		}
 
@@ -37,7 +41,7 @@ namespace BigRedProf.PackRatCompiler
 			Console.WriteLine("Invalid usage.");
 			foreach(Error error in errors)
 			{
-				Console.WriteLine(error.ToString(), ConsoleColor.Red);
+				Console.Error.WriteLine(error.ToString());
 			}
 		}
 		#endregion
