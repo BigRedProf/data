@@ -49,7 +49,7 @@ namespace BigRedProf.Data.Test
 			codeWriter.Dispose();
 
 			byte[] bytes = stream.GetBuffer();
-			Assert.Equal(1, bytes.Length);
+			Assert.Single(bytes);
 			Assert.Equal(1, bytes[0]);
 		}
 
