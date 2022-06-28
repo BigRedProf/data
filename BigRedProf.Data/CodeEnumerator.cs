@@ -24,7 +24,7 @@ namespace BigRedProf.Data
 				throw new ArgumentNullException(nameof(code));
 
 			_code = code;
-			_offset = 0;
+			_offset = -1;
 		}
 		#endregion
 
@@ -65,7 +65,7 @@ namespace BigRedProf.Data
 		/// <inheritdoc/>
 		public void Reset()
 		{
-			_offset = 0;
+			_offset = -1;
 		}
 		#endregion
 

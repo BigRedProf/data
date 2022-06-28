@@ -63,7 +63,7 @@ namespace BigRedProf.Data.Test
 			codeWriter.Dispose();
 
 			byte[] bytes = stream.ToArray();
-			Assert.Equal(21, bytes.Length);
+			Assert.Equal(3, bytes.Length);
 			Assert.Equal(0b01011101, bytes[0]);
 			Assert.Equal(0b01001110, bytes[1]);
 			Assert.Equal(0b00011110, bytes[2]);
@@ -77,14 +77,14 @@ namespace BigRedProf.Data.Test
 
 			codeWriter.WriteCode(new Code(1, 0, 1));
 			codeWriter.WriteCode(new Code(1, 1, 0, 1, 0, 0, 1, 1, 1));
-			codeWriter.WriteCode(new Code(0));
+			codeWriter.WriteCode("0");
 			codeWriter.WriteCode(new Code(0, 1));
 			codeWriter.WriteCode(new Code(0, 0, 1));
 			codeWriter.WriteCode(new Code(1, 1, 1));
 			codeWriter.Dispose();
 
 			byte[] bytes = stream.ToArray();
-			Assert.Equal(21, bytes.Length);
+			Assert.Equal(3, bytes.Length);
 			Assert.Equal(0b01011101, bytes[0]);
 			Assert.Equal(0b01001110, bytes[1]);
 			Assert.Equal(0b00011110, bytes[2]);

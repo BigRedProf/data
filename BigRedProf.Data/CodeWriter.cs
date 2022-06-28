@@ -107,6 +107,7 @@ namespace BigRedProf.Data
 		private void WriteCurrentByte()
 		{
 			_stream.WriteByte(_currentByte);
+			_currentByte = 0;
 			_offsetIntoCurrentByte = 0;
 		}
 
@@ -130,18 +131,16 @@ namespace BigRedProf.Data
 
 			int fullByteLength = code.Length / 8;
 			int lastByteBitLength = code.Length % 8;
-			IReadOnlyCollection<byte> bytes = code.ByteArray;
 			for (int i = 0; i < fullByteLength; ++i)
 				_stream.WriteByte(code.ByteArray[i]);
 
 			if (lastByteBitLength != 0)
-				WriteCodeSlow(code[fullByteLength, lastByteBitLength]);
+				WriteCodeSlow(code[fullByteLength * 8, lastByteBitLength]);
 		}
 
 		private void WriteCodeSlow(Code code)
 		{
 			Debug.Assert(code != null);
-			Debug.Assert(_offsetIntoCurrentByte != 0);
 
 			foreach (Bit bit in code)
 				WriteBit(bit);

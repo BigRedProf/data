@@ -24,7 +24,7 @@ namespace BigRedProf.Data
 		/// <exception cref="ArgumentOutOfRangeException"></exception>
 		public Code(int length)
 		{
-			if(length < 0)
+			if(length <= 0)
 				throw new ArgumentOutOfRangeException(nameof(length));
 
 			_byteArray = new byte[(length / 8) + ((length % 8) > 0 ? 1 : 0)];
