@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace BigRedProf.Data
@@ -11,6 +12,13 @@ namespace BigRedProf.Data
 	/// </summary>
 	public class Code : IEnumerable<Bit>
 	{
+		#region constants
+		/// <summary>
+		/// The maximum length of a code, 1 gigabit.
+		/// </summary>
+		public const int MaxLength = 1024 * 1024 * 1024;
+		#endregion
+
 		#region fields
 		private byte[] _byteArray;
 		private int _length;
@@ -25,7 +33,10 @@ namespace BigRedProf.Data
 		public Code(int length)
 		{
 			if(length <= 0)
-				throw new ArgumentOutOfRangeException(nameof(length));
+				throw new ArgumentOutOfRangeException(nameof(length), "A code must be at least 1 bit long.");
+
+			if(length > MaxLength)
+				throw new ArgumentOutOfRangeException(nameof(length), "A code cannot exceed 1 gigabit in length.");
 
 			_byteArray = new byte[(length / 8) + ((length % 8) > 0 ? 1 : 0)];
 			_length = length;
@@ -38,15 +49,10 @@ namespace BigRedProf.Data
 		/// <exception cref="ArgumentNullException"></exception>
 		/// <exception cref="ArgumentException"></exception>
 		public Code(params Bit[] bits)
+			: this(bits.Length)
 		{
 			if (bits == null)
 				throw new ArgumentNullException(nameof(bits));
-
-			if (bits.Length == 0)
-				throw new ArgumentException("A code must contain at least one bit.", nameof(bits));
-
-			_byteArray = new byte[((bits.Length - 1) / 8) + 1];
-			_length = bits.Length;
 
 			// TODO: replace this with a bit stream writer when we have one; will be faster
 			for (int i = 0; i < bits.Length; ++i)
@@ -68,12 +74,13 @@ namespace BigRedProf.Data
 		/// <param name="byteArray">The byte array that comprises the code.</param>
 		/// <exception cref="ArgumentNullException"></exception>
 		public Code(byte[] byteArray)
+			: this(byteArray.Length * 8)
 		{
 			if (byteArray == null)
 				throw new ArgumentNullException(nameof(byteArray));
 
-			_byteArray = byteArray;
-			_length = byteArray.Length * 8;
+			Debug.Assert(byteArray.Length == _byteArray.Length);
+			Array.Copy(byteArray, 0, _byteArray, 0, byteArray.Length);
 		}
 		#endregion
 

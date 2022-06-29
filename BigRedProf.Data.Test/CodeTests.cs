@@ -35,7 +35,7 @@ namespace BigRedProf.Data.Test
 		[Fact]
 		public void ZeroLengthCodesShouldThrow()
 		{
-			Assert.Throws<ArgumentException>(
+			Assert.Throws<ArgumentOutOfRangeException>(
 				() =>
 				{
 					new Code();
