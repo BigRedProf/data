@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace BigRedProf.Data
@@ -34,6 +35,11 @@ namespace BigRedProf.Data
 		{
 			get
 			{
+				Debug.Assert(_offset >= -1);
+
+				if (_offset == -1)
+					throw new InvalidOperationException("Attempted to read before calling MoveNext.");
+
 				if (_offset >= _code.Length)
 					throw new InvalidOperationException("Attempted to read past end of code.");
 
