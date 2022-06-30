@@ -131,8 +131,8 @@ namespace BigRedProf.Data
 
 			int fullByteLength = code.Length / 8;
 			int lastByteBitLength = code.Length % 8;
-			for (int i = 0; i < fullByteLength; ++i)
-				_stream.WriteByte(code.ByteArray[i]);
+			if(fullByteLength > 0)
+				_stream.Write(code.ByteArray, 0, fullByteLength);
 
 			if (lastByteBitLength != 0)
 				WriteCodeSlow(code[fullByteLength * 8, lastByteBitLength]);

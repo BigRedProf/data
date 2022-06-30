@@ -28,7 +28,7 @@ namespace BigRedProf.Data
 		/// <summary>
 		/// Creates a new zeroed-out <see cref="Code"/> of the specified length.
 		/// </summary>
-		/// <param name="length">The length of code to create.</param>
+		/// <param name="length">The length of code, in bits.</param>
 		/// <exception cref="ArgumentOutOfRangeException"></exception>
 		public Code(int length)
 		{
@@ -72,15 +72,34 @@ namespace BigRedProf.Data
 		/// Creates a new <see cref="Code"/> from the specified array of bytes.
 		/// </summary>
 		/// <param name="byteArray">The byte array that comprises the code.</param>
+		/// <param name="length">The length of code, in bits.</param>
 		/// <exception cref="ArgumentNullException"></exception>
-		public Code(byte[] byteArray)
-			: this(byteArray.Length * 8)
+		public Code(byte[] byteArray, int length)
+			: this(length)
 		{
 			if (byteArray == null)
 				throw new ArgumentNullException(nameof(byteArray));
 
-			Debug.Assert(byteArray.Length == _byteArray.Length);
+			if (length * 8 < byteArray.Length)
+			{ 
+				throw new ArgumentOutOfRangeException(
+					nameof(length), 
+					"The specified length is too small to accomodate the byte array."
+				);
+			}
+
+			Debug.Assert(byteArray.Length <= _byteArray.Length);
 			Array.Copy(byteArray, 0, _byteArray, 0, byteArray.Length);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="Code"/> from the specified array of bytes.
+		/// </summary>
+		/// <param name="byteArray">The byte array that comprises the code.</param>
+		/// <exception cref="ArgumentNullException"></exception>
+		public Code(byte[] byteArray)
+			: this(byteArray, byteArray.Length * 8)
+		{
 		}
 		#endregion
 

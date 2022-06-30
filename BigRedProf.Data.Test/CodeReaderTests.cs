@@ -108,7 +108,7 @@ namespace BigRedProf.Data.Test
 			Stream stream = new MemoryStream(bytes);
 			CodeReader codeReader = new CodeReader(stream);
 
-			Assert.Throws<ArgumentOutOfRangeException>(
+			Assert.Throws<InvalidOperationException>(
 				() =>
 				{
 					codeReader.Read((bytes.Length * 8) + 1);

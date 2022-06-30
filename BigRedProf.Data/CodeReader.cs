@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -47,7 +48,10 @@ namespace BigRedProf.Data
 			if (_isDisposed)
 				throw new ObjectDisposedException(nameof(CodeWriter));
 
-			throw new NotImplementedException();
+			// This implementation seems counterintuitive, but:
+			// 1. If we're already byte-aligned, this is a no-op.
+			// 2. If not, the next call to ReadByte() will read the next byte.
+			_offsetIntoCurrentByte = 0;
 		}
 
 		public Code Read(int bitCount)
@@ -55,7 +59,16 @@ namespace BigRedProf.Data
 			if (_isDisposed)
 				throw new ObjectDisposedException(nameof(CodeWriter));
 
-			throw new NotImplementedException();
+			if(bitCount < 1)
+				throw new ArgumentOutOfRangeException(nameof(bitCount), "The parameter must be at least 1.");
+
+			Code code;
+			if (_offsetIntoCurrentByte == 0)
+				code = ReadCodeFast(bitCount);
+			else
+				code = ReadCodeSlow(bitCount);
+
+			return code;
 		}
 		#endregion
 
@@ -87,6 +100,74 @@ namespace BigRedProf.Data
 		~CodeReader()
 		{
 			Dispose(false);
+		}
+		#endregion
+
+		#region private methods
+		private void ReadNextByte()
+		{
+			int result = _stream.ReadByte();
+			if (result == -1)
+				throw new InvalidOperationException("Attempted to read past end of stream.");
+
+			_currentByte = (byte)result;
+			_offsetIntoCurrentByte = 0;
+		}
+
+		private Bit ReadBit()
+		{
+			if (_offsetIntoCurrentByte == 0)
+				ReadNextByte();
+
+			byte bitMask = _bitMask[_offsetIntoCurrentByte];
+			Bit result = (_currentByte & bitMask) == bitMask ? 1 : 0;
+
+			++_offsetIntoCurrentByte;
+			if (_offsetIntoCurrentByte == 8)
+				_offsetIntoCurrentByte = 0;
+
+			return result;
+		}
+
+		private Code ReadCodeFast(int bitCount)
+		{
+			Debug.Assert(bitCount >= 1);
+			Debug.Assert(_offsetIntoCurrentByte == 0);
+
+			Code code;
+
+			int fullByteLength = bitCount / 8;
+			int lastByteBitLength = bitCount % 8;
+			int bytesLength = lastByteBitLength == 0 ? fullByteLength : fullByteLength + 1;
+			byte[] bytes = new byte[bytesLength];
+			if (fullByteLength > 0)
+			{
+				_stream.Read(bytes, 0, fullByteLength);
+				code = new Code(bytes, bitCount);
+			}
+			else
+			{
+				code = new Code(bitCount);
+			}
+
+			if (lastByteBitLength != 0)
+			{
+				for (int i = 0; i < lastByteBitLength; ++i)
+					code[(fullByteLength * 8) + i] = ReadBit();
+			}
+
+			return code;
+		}
+
+		private Code ReadCodeSlow(int bitCount)
+		{
+			Debug.Assert(bitCount >= 1);
+
+			Code code = new Code(bitCount);
+			for(int i = 0; i < bitCount; ++i)
+				code[i] = ReadBit();
+
+			return code;
 		}
 		#endregion
 	}
