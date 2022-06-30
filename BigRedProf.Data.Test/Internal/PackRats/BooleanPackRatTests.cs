@@ -1,4 +1,5 @@
 using BigRedProf.Data.Internal.PackRats;
+using BigRedProf.Data.Test._TestHelpers;
 using System;
 using System.IO;
 using Xunit;
@@ -27,36 +28,16 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void PackModel_ShouldWorkForTrue()
 		{
-			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
-			BooleanPackRat packRat = new BooleanPackRat();
-
-			packRat.PackModel(writer, true);
-			
-			writer.Dispose();
-			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
-			Code code = reader.Read(1);
-			Assert.Equal(1, readerStream.Length);
-			Assert.Equal<Code>("1", code);
+			PackRat<bool> packRat = new BooleanPackRat();
+			PackRatTestHelper.TestPackModel<bool>(packRat, true, "1");
 		}
 
 		[Fact]
 		[Trait("Region", "PackRat methods")]
 		public void PackModel_ShouldWorkForFalse()
 		{
-			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
-			BooleanPackRat packRat = new BooleanPackRat();
-
-			packRat.PackModel(writer, false);
-
-			writer.Dispose();
-			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
-			Code code = reader.Read(1);
-			Assert.Equal(1, readerStream.Length);
-			Assert.Equal<Code>("0", code);
+			PackRat<bool> packRat = new BooleanPackRat();
+			PackRatTestHelper.TestPackModel<bool>(packRat, false, "0");
 		}
 
 		[Fact]
@@ -77,34 +58,16 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void UnpackModel_ShouldWorkForTrue()
 		{
-			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
-			writer.WriteCode("1");
-			writer.Dispose();
-			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
-			BooleanPackRat packRat = new BooleanPackRat();
-
-			bool model = packRat.UnpackModel(reader);
-
-			Assert.True(model);
+			PackRat<bool> packRat = new BooleanPackRat();
+			PackRatTestHelper.TestUnpackModel<bool>(packRat, "1", true);
 		}
 
 		[Fact]
 		[Trait("Region", "PackRat methods")]
 		public void UnpackModel_ShouldWorkForFalse()
 		{
-			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
-			writer.WriteCode("0");
-			writer.Dispose();
-			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
-			BooleanPackRat packRat = new BooleanPackRat();
-
-			bool model = packRat.UnpackModel(reader);
-
-			Assert.False(model);
+			PackRat<bool> packRat = new BooleanPackRat();
+			PackRatTestHelper.TestUnpackModel<bool>(packRat, "0", false);
 		}
 		#endregion
 	}
