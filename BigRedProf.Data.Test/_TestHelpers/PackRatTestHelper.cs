@@ -20,7 +20,7 @@ namespace BigRedProf.Data.Test._TestHelpers
 			writer.Dispose();
 			Stream readerStream = new MemoryStream(writerStream.ToArray());
 			CodeReader reader = new CodeReader(readerStream);
-			Assert.Equal(expectedCode.Length % 8, readerStream.Length);
+			Assert.Equal((expectedCode.Length / 8) + (expectedCode.Length % 8), readerStream.Length);
 			Code actualCode = reader.Read(expectedCode.Length);
 			Assert.Equal<Code>(expectedCode, actualCode);
 		}
