@@ -251,7 +251,12 @@ namespace BigRedProf.Data
 		{
 			StringBuilder stringBuilder = new StringBuilder(Length);
 			for (int i = 0; i < Length; ++i)
+			{
+				if ((i % 8 == 0) && i != 0)
+					stringBuilder.Append(" ");
+
 				stringBuilder.Append(this[i].ToString());
+			}
 
 			return stringBuilder.ToString();
 		}

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -20,12 +21,22 @@ namespace BigRedProf.Data.Test._TestHelpers
 			writer.Dispose();
 			Stream readerStream = new MemoryStream(writerStream.ToArray());
 			CodeReader reader = new CodeReader(readerStream);
-			Assert.Equal((expectedCode.Length / 8) + (expectedCode.Length % 8), readerStream.Length);
+			int expectedStreamLength = (expectedCode.Length / 8) + ((expectedCode.Length % 8) > 0 ? 1 : 0);
+			Assert.Equal(expectedStreamLength, readerStream.Length);
 			Code actualCode = reader.Read(expectedCode.Length);
 			Assert.Equal<Code>(expectedCode, actualCode);
 		}
 
 		public static void TestUnpackModel<M>(PackRat<M> packRat, Code code, M expectedModel)
+		{
+			CodeReader reader = CreateCodeReader(code);
+
+			M actualModel = packRat.UnpackModel(reader);
+
+			Assert.Equal<M>(expectedModel, actualModel);
+		}
+
+		public static CodeReader CreateCodeReader(Code code)
 		{
 			MemoryStream writerStream = new MemoryStream();
 			CodeWriter writer = new CodeWriter(writerStream);
@@ -33,10 +44,7 @@ namespace BigRedProf.Data.Test._TestHelpers
 			writer.Dispose();
 			Stream readerStream = new MemoryStream(writerStream.ToArray());
 			CodeReader reader = new CodeReader(readerStream);
-
-			M actualModel = packRat.UnpackModel(reader);
-
-			Assert.Equal<M>(expectedModel, actualModel);
+			return reader;
 		}
 	}
 }
