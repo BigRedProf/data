@@ -6,6 +6,20 @@ namespace BigRedProf.Data.Internal.PackRats
 {
 	internal class StringPackRat : PackRat<string>
 	{
+		#region fields
+		private readonly IPiedPiper _piedPier;
+		#endregion
+
+		#region constructors
+		public StringPackRat(IPiedPiper piedPiper)
+		{
+			if(piedPiper == null)
+				throw new ArgumentNullException(nameof(piedPiper));
+
+			_piedPier = piedPiper;
+		}
+		#endregion
+
 		#region PackRat methods
 		public override void PackModel(CodeWriter writer, string model)
 		{
@@ -13,7 +27,7 @@ namespace BigRedProf.Data.Internal.PackRats
 				throw new ArgumentNullException(nameof(writer));
 
 			byte[] bytes = Encoding.UTF8.GetBytes(model);
-			// TODO: write the length of bytes
+			_piedPier.GetPackRat<int>(SchemaId.EfficientWholeNumber31).PackModel(writer, bytes.Length);
 			if(bytes.LongLength != 0)
 			{
 				Code code = new Code(bytes);
@@ -27,8 +41,8 @@ namespace BigRedProf.Data.Internal.PackRats
 			if(reader == null)
 				throw new ArgumentNullException(nameof(reader));
 
-			// TODO: read the length of bytes
-			Code code = reader.Read(1);
+			int byteCount = _piedPier.GetPackRat<int>(SchemaId.EfficientWholeNumber31).UnpackModel(reader);
+			Code code = reader.Read(byteCount);
 			string model = Encoding.UTF8.GetString(code.ByteArray);
 			return model;
 		}

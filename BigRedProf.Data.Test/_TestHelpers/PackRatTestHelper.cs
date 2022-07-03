@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BigRedProf.Data.Internal.PackRats;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -11,6 +12,16 @@ namespace BigRedProf.Data.Test._TestHelpers
 {
 	internal static class PackRatTestHelper
 	{
+		public static IPiedPiper GetPiedPiper()
+		{
+			PiedPiper piedPiper = new PiedPiper();
+			
+			EfficientWholeNumber31PackRat efficientWholeNumber31PackRat = new EfficientWholeNumber31PackRat();
+			piedPiper.RegisterPackRat(efficientWholeNumber31PackRat, SchemaId.EfficientWholeNumber31);
+
+			return piedPiper;
+		}
+
 		public static void TestPackModel<M>(PackRat<M> packRat, M model, Code expectedCode)
 		{
 			MemoryStream writerStream = new MemoryStream();

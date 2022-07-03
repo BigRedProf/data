@@ -13,7 +13,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void PackModel_ShouldThrowWhenWriterIsNull()
 		{
-			StringPackRat packRat = new StringPackRat();
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
+			StringPackRat packRat = new StringPackRat(piedPiper);
 			string model = string.Empty;
 
 			Assert.Throws<ArgumentNullException>(
@@ -28,15 +29,17 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void PackModel_ShouldWork()
 		{
-			PackRat<string> packRat = new StringPackRat();
-			PackRatTestHelper.TestPackModel<string>(packRat, string.Empty, "1");
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
+			PackRat<string> packRat = new StringPackRat(piedPiper);
+			PackRatTestHelper.TestPackModel<string>(packRat, string.Empty, "1000");
 		}
 
 		[Fact]
 		[Trait("Region", "PackRat methods")]
 		public void UnpackModel_ShouldThrowWhenReaderIsNull()
 		{
-			StringPackRat packRat = new StringPackRat();
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
+			StringPackRat packRat = new StringPackRat(piedPiper);
 
 			Assert.Throws<ArgumentNullException>(
 				() =>
@@ -50,8 +53,9 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void UnpackModel_ShouldWorkForTrue()
 		{
-			PackRat<string> packRat = new StringPackRat();
-			PackRatTestHelper.TestUnpackModel<string>(packRat, "1", string.Empty);
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
+			PackRat<string> packRat = new StringPackRat(piedPiper);
+			PackRatTestHelper.TestUnpackModel<string>(packRat, "1000", string.Empty);
 		}
 		#endregion
 	}
