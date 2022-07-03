@@ -41,9 +41,18 @@ namespace BigRedProf.Data.Internal.PackRats
 			if(reader == null)
 				throw new ArgumentNullException(nameof(reader));
 
+			string model;
 			int byteCount = _piedPier.GetPackRat<int>(SchemaId.EfficientWholeNumber31).UnpackModel(reader);
-			Code code = reader.Read(byteCount);
-			string model = Encoding.UTF8.GetString(code.ByteArray);
+			if (byteCount == 0)
+			{
+				model = string.Empty;
+			}
+			else
+			{
+				Code code = reader.Read(byteCount);
+				model = Encoding.UTF8.GetString(code.ByteArray);
+			}
+
 			return model;
 		}
 		#endregion
