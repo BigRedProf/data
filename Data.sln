@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BigRedProf.Data", "BigRedPr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BigRedProf.Data.Test", "BigRedProf.Data.Test\BigRedProf.Data.Test.csproj", "{E2EEDE9D-D6E8-4EB2-9558-81176087C355}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BigRedProf.Data.PackRatCompiler", "BigRedProf.PackRatCompiler\BigRedProf.Data.PackRatCompiler.csproj", "{2FADFE18-FEB5-4456-B706-EF6E1E9CE600}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BigRedProf.Data.PackRatCompiler", "BigRedProf.Data.PackRatCompiler\BigRedProf.Data.PackRatCompiler.csproj", "{2FADFE18-FEB5-4456-B706-EF6E1E9CE600}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
