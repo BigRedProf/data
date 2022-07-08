@@ -1,7 +1,7 @@
 ﻿using System;
 using CommandLine;
 
-namespace BigRedProf.PackRatCompiler
+namespace BigRedProf.Data.PackRatCompiler
 {
 	public class CommandLineOptions
 	{

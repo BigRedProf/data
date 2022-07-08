@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.32002.261
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BigRedProf.Data", "BigRedProf.Data\BigRedProf.Data.csproj", "{1BD0B7C0-3075-4ACF-8D25-A0D34F52A619}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BigRedProf.Data.Test", "BigRedProf.Data.Test\BigRedProf.Data.Test.csproj", "{E2EEDE9D-D6E8-4EB2-9558-81176087C355}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BigRedProf.Data.Test", "BigRedProf.Data.Test\BigRedProf.Data.Test.csproj", "{E2EEDE9D-D6E8-4EB2-9558-81176087C355}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BigRedProf.PackRatCompiler", "BigRedProf.PackRatCompiler\BigRedProf.PackRatCompiler.csproj", "{2FADFE18-FEB5-4456-B706-EF6E1E9CE600}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BigRedProf.Data.PackRatCompiler", "BigRedProf.PackRatCompiler\BigRedProf.Data.PackRatCompiler.csproj", "{2FADFE18-FEB5-4456-B706-EF6E1E9CE600}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

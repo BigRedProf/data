@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using CommandLine;
 
-namespace BigRedProf.PackRatCompiler
+namespace BigRedProf.Data.PackRatCompiler
 {
 	public class Program
 	{
