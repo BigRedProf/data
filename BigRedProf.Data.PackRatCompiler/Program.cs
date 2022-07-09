@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
+using BigRedProf.Data.PackRatCompiler.Internal;
 using CommandLine;
 
 namespace BigRedProf.Data.PackRatCompiler
 {
 	public class Program
 	{
+		#region static private methods
 		static private void Main(string[] args)
 		{
 			CommandLine.Parser.Default.ParseArguments<CommandLineOptions>(args)
@@ -13,27 +15,10 @@ namespace BigRedProf.Data.PackRatCompiler
 				.WithNotParsed(HandleParseError);
 		}
 
-		#region event handlers
 		static private void RunOptions(CommandLineOptions options)
 		{
-			Console.WriteLine("Hello, World!");
-
-			if (options.InputPath != null)
-			{
-				Console.Write("Input directory is ");
-				Console.ForegroundColor = ConsoleColor.DarkGreen;
-				Console.WriteLine(options.InputPath);
-				Console.WriteLine();
-				Console.ResetColor();
-			}
-
-			if (options.OutputPath != null)
-			{
-				Console.Write("Output directory is ");
-				Console.ForegroundColor = ConsoleColor.Red;
-				Console.WriteLine(options.OutputPath);
-				Console.ResetColor();
-			}
+			Compiler compiler = new Compiler();
+			compiler.Compile(options);
 		}
 
 		static private void HandleParseError(IEnumerable<Error> errors)
