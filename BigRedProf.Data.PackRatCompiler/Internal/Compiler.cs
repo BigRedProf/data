@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace BigRedProf.Data.PackRatCompiler.Internal
 {
+	[RegisterPackRat("123")]
 	internal class Compiler
 	{
 		#region methods
@@ -48,13 +49,16 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 		#region private methods
 		private void ProcessFile(FileInfo inputFile, FileInfo outputFile)
 		{
-			Console.WriteLine($"{inputFile.FullName} -> {outputFile.FullName}");
-			//using (FileStream inputStream = new FileStream(inputFile.FullName, FileMode.Open, FileAccess.Read))
-			//using (FileStream outputStream = new FileStream(outputFile.FullName, FileMode.Create, FileAccess.Write))
-			//using(CSharpWriter writer = new CSharpWriter(outputStream))
-			//{
-				
-			//}
+			SourceFile sourceFile = new SourceFile(inputFile);
+			if (sourceFile.RegistersPackRat())
+			{
+				Console.WriteLine("** has packrat **");
+				Console.WriteLine($"{inputFile.FullName} -> {outputFile.FullName}");
+				//using (FileStream outputStream = new FileStream(outputFile.FullName, FileMode.Create, FileAccess.Write))
+				//using (CSharpWriter writer = new CSharpWriter(outputStream))
+				//{
+				//}
+			}
 		}
 		#endregion
 	}
