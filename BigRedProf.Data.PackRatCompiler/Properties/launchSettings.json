@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "BigRedProf.Data.PackRatCompiler": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\temp\\prt -o C:\\temp\\prt\\prt\\obj\\"
+    }
+  }
+}
