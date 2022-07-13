@@ -8,7 +8,7 @@ namespace BigRedProf.Data
 	/// Instructs the pack rat compiler to pack this field in the specified order using the specified
 	/// schema.
 	/// </summary>
-	[AttributeUsage(AttributeTargets.Class)]
+	[AttributeUsage(AttributeTargets.Field)]
 	public class PackFieldAttribute : Attribute
 	{
 		#region constructors
