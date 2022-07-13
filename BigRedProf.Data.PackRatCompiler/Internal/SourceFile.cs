@@ -15,6 +15,7 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 	{
 		#region fields
 		private SyntaxTree _syntaxTree;
+		private SemanticModel _semanticModel;
 		#endregion
 
 		#region constructors
@@ -28,6 +29,9 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 				string inputFileText = reader.ReadToEnd();
 				_syntaxTree = CSharpSyntaxTree.ParseText(inputFileText);
 			}
+			
+			CSharpCompilation compilation = CSharpCompilation.Create(null, new SyntaxTree[] { _syntaxTree });
+			_semanticModel = compilation.GetSemanticModel(_syntaxTree);
 		}
 		#endregion
 
@@ -35,6 +39,24 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 		public bool RegistersPackRat()
 		{
 			return FoundRegisterPackRatAttribute();
+		}
+
+		public string GetNamespace()
+		{
+			string @namespace = string.Empty;
+
+			CompilationUnitSyntax root = _syntaxTree.GetCompilationUnitRoot();
+			SyntaxNode? namespaceNode = root.DescendantNodes()
+				.OfType<NamespaceDeclarationSyntax>()
+				.FirstOrDefault();
+			if(namespaceNode != null)
+			{
+				ISymbol? namespaceSymbol = _semanticModel.GetDeclaredSymbol(namespaceNode);
+				if(namespaceSymbol != null)
+					@namespace = namespaceSymbol.ToString() ?? string.Empty;
+			}
+
+			return @namespace;
 		}
 		#endregion
 
@@ -55,6 +77,5 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 			return classesWithRegisterPackRatAttribute.Any();
 		}
 		#endregion
-
 	}
 }
