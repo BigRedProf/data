@@ -12,7 +12,7 @@ namespace BigRedProf.Data.Test
 		public void RegisterPackRat_ShouldThrowIfPackRatIsNull()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-			Guid schemaId = Guid.Empty;
+			string schemaId = Guid.Empty.ToString();
 
 			Assert.Throws<ArgumentNullException>(
 				() =>
@@ -24,10 +24,42 @@ namespace BigRedProf.Data.Test
 
 		[Fact]
 		[Trait("Region", "methods")]
+		public void RegisterPackRat_ShouldThrowIfSchemaIdIsNull()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			PackRat<bool> packRat = new BooleanPackRat();
+			string schemaId = null;
+
+			Assert.Throws<ArgumentNullException>(
+				() =>
+				{
+					piedPiper.RegisterPackRat<bool>(packRat, schemaId);
+				}
+			);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void RegisterPackRat_ShouldThrowIfSchemaIdIsNotAGuid()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			PackRat<bool> packRat = new BooleanPackRat();
+			string schemaId = "not-a-GUID";
+
+			Assert.Throws<ArgumentException>(
+				() =>
+				{
+					piedPiper.RegisterPackRat<bool>(packRat, schemaId);
+				}
+			);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
 		public void RegisterPackRat_ShouldThrowIfPackRatIsAlreadyRegisterForSchemaId()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-			Guid schemaId = Guid.Empty;
+			string schemaId = Guid.Empty.ToString();
 			PackRat<bool> packRat1 = new BooleanPackRat();
 			piedPiper.RegisterPackRat(packRat1, schemaId);
 			PackRat<bool> packRat2 = new BooleanPackRat();
@@ -42,11 +74,41 @@ namespace BigRedProf.Data.Test
 
 		[Fact]
 		[Trait("Region", "methods")]
+		public void GetPackRat_ShouldThrowWhenSchemaIdIsNull()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			string schemaId = null;
+
+			Assert.Throws<ArgumentNullException>(
+				() =>
+				{
+					piedPiper.GetPackRat<object>(schemaId);
+				}
+			);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void GetPackRat_ShouldThrowWhenSchemaIdIsNotAGuid()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			string schemaId = "not-a-GUID";
+
+			Assert.Throws<ArgumentException>(
+				() =>
+				{
+					piedPiper.GetPackRat<object>(schemaId);
+				}
+			);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
 		public void GetPackRat_ShouldThrowWhenSchemaIdWasntRegistered()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-			Guid schemaId = Guid.Empty;
-			
+			string schemaId = Guid.Empty.ToString();
+
 			Assert.Throws<ArgumentException>(
 				() =>
 				{
@@ -60,7 +122,7 @@ namespace BigRedProf.Data.Test
 		public void GetPackRat_ShouldThrowWhenSchemaIdWasRegisteredForADifferentType()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-			Guid schemaId = Guid.Empty;
+			string schemaId = Guid.Empty.ToString();
 			PackRat<bool> packRat1 = new BooleanPackRat();
 			piedPiper.RegisterPackRat(packRat1, schemaId);
 
@@ -77,7 +139,7 @@ namespace BigRedProf.Data.Test
 		public void GetPackRat_ShouldWork()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-			Guid schemaId = Guid.Empty;
+			string schemaId = Guid.Empty.ToString();
 			BooleanPackRat packRat1 = new BooleanPackRat();
 			piedPiper.RegisterPackRat(packRat1, schemaId);
 

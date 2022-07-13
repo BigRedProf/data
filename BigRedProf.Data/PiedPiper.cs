@@ -18,10 +18,17 @@ namespace BigRedProf.Data
 		#endregion
 
 		#region IPiedPiper methods
-		public PackRat<T> GetPackRat<T>(Guid schemaId)
+		public PackRat<T> GetPackRat<T>(string schemaId)
 		{
+			if(schemaId == null)
+				throw new ArgumentNullException(nameof(schemaId));
+
+			Guid schemaIdAsGuid;
+			if (!Guid.TryParse(schemaId, out schemaIdAsGuid))
+				throw new ArgumentException("The schema identifier must be a GUID.", nameof(schemaId));
+
 			object packRatAsObject;
-			if (!_dictionary.TryGetValue(schemaId, out packRatAsObject))
+			if (!_dictionary.TryGetValue(schemaIdAsGuid, out packRatAsObject))
 			{
 				throw new ArgumentException(
 					$"No PackRat is registered for schema identifier {schemaId}.",
@@ -40,19 +47,26 @@ namespace BigRedProf.Data
 			return packRat;
 		}
 
-		public void RegisterPackRat<T>(PackRat<T> packRat, Guid schemaId)
+		public void RegisterPackRat<T>(PackRat<T> packRat, string schemaId)
 		{
 			if(packRat == null)
 				throw new ArgumentNullException(nameof(packRat));
 
-			if (_dictionary.ContainsKey(schemaId))
+			if (schemaId == null)
+				throw new ArgumentNullException(nameof(schemaId));
+
+			Guid schemaIdAsGuid;
+			if (!Guid.TryParse(schemaId, out schemaIdAsGuid))
+				throw new ArgumentException("The schema identifier must be a GUID.", nameof(schemaId));
+
+			if (_dictionary.ContainsKey(schemaIdAsGuid))
 			{
 				throw new InvalidOperationException(
 					$"A PackRat has already been registered for schema identifier {schemaId}."
 				);
 			}
 
-			_dictionary.Add(schemaId, packRat);
+			_dictionary.Add(schemaIdAsGuid, packRat);
 		}
 		#endregion
 	}

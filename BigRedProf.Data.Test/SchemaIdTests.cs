@@ -18,7 +18,7 @@ namespace BigRedProf.Data.Test
 			IList<FieldInfo> fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
 			foreach(FieldInfo field in fields)
 			{
-				Guid identifier = (Guid)field.GetValue(null);
+				Guid identifier = Guid.Parse((string)field.GetValue(null));
 
 				bool schemaIdAlreadyExists = schemaIds.Contains(identifier);
 				Assert.False(schemaIdAlreadyExists);

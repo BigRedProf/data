@@ -16,7 +16,7 @@ namespace BigRedProf.Data
 		/// <typeparam name="T">The type of model.</typeparam>
 		/// <param name="packRat">The pack rat.</param>
 		/// <param name="schemaId">The schema identifier.</param>
-		void RegisterPackRat<T>(PackRat<T> packRat, Guid schemaId);
+		void RegisterPackRat<T>(PackRat<T> packRat, string schemaId);
 
 		/// <summary>
 		/// Returns the <see cref="PackRat{T}"/> registered for use with a specific schema identifier.
@@ -24,7 +24,7 @@ namespace BigRedProf.Data
 		/// <typeparam name="T">The type of model.</typeparam>
 		/// <param name="schemaId">The schema identifier.</param>
 		/// <returns></returns>
-		PackRat<T> GetPackRat<T>(Guid schemaId);
+		PackRat<T> GetPackRat<T>(string schemaId);
 	}
 	#endregion
 }
