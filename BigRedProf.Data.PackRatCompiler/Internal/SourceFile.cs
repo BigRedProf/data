@@ -19,11 +19,10 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 		#endregion
 
 		#region constructors
-		public SourceFile(FileInfo fileInfo)
+		public SourceFile(Stream stream)
 		{ 
-			Debug.Assert(fileInfo != null);
+			Debug.Assert(stream != null);
 
-			using (FileStream stream = fileInfo.OpenRead())
 			using(StreamReader reader = new StreamReader(stream))
 			{
 				string inputFileText = reader.ReadToEnd();
@@ -58,13 +57,11 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 
 			return @namespace;
 		}
-		#endregion
 
-		#region private methods
-		private bool FoundRegisterPackRatAttribute()
+		public IEnumerable<ClassDeclarationSyntax> GetModelClasses()
 		{
 			CompilationUnitSyntax root = _syntaxTree.GetCompilationUnitRoot();
-			IEnumerable<SyntaxNode> classesWithRegisterPackRatAttribute = root.DescendantNodes()
+			IEnumerable<ClassDeclarationSyntax> classesWithRegisterPackRatAttribute = root.DescendantNodes()
 				.OfType<ClassDeclarationSyntax>()
 				.Where(
 					n => n.AttributeLists.Any(
@@ -73,7 +70,14 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 						)
 					)
 				);
+			return classesWithRegisterPackRatAttribute;
+		}
+		#endregion
 
+		#region private methods
+		private bool FoundRegisterPackRatAttribute()
+		{
+			IEnumerable<SyntaxNode> classesWithRegisterPackRatAttribute = GetModelClasses();
 			return classesWithRegisterPackRatAttribute.Any();
 		}
 		#endregion
