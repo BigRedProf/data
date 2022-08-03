@@ -50,17 +50,38 @@ namespace BigRedProf.Data.PackRatCompiler
 			IEnumerable<SyntaxNode> modelClasses = sourceFile.GetModelClasses();
 			writer.WriteOpeningCurlyBrace();
 			foreach (ClassDeclarationSyntax modelClass in modelClasses)
-				WritePackRatClass(modelClass, writer);
+				WritePackRatClass(sourceFile, modelClass, writer);
 			writer.WriteClosingCurlyBrace();
 		}
 
-		private void WritePackRatClass(ClassDeclarationSyntax modelClass, CSharpWriter writer)
+		private void WritePackRatClass(SourceFile sourceFile, ClassDeclarationSyntax modelClass, CSharpWriter writer)
 		{
 			string className = modelClass.Identifier.ToString() + "PackRat";
 			writer.WriteLine($"public class {className}");
 			writer.WriteOpeningCurlyBrace();
-			writer.WriteLine("// TODO: implement");
+			IEnumerable<IFieldSymbol> fields = sourceFile.GetFields(modelClass);
+			bool isFirstField = true;
+			foreach (IFieldSymbol field in fields)
+			{
+				WritePackRatField(sourceFile, modelClass, field, writer);
+
+				if (isFirstField)
+				{
+					writer.WriteLine(string.Empty);
+					isFirstField = false;
+				}
+			}
 			writer.WriteClosingCurlyBrace();
+		}
+
+		private void WritePackRatField(
+			SourceFile sourceFile, 
+			ClassDeclarationSyntax modelClass, 
+			IFieldSymbol field,
+			CSharpWriter writer
+		)
+		{
+			writer.WriteLine($"// {field.Name}");
 		}
 		#endregion
 	}

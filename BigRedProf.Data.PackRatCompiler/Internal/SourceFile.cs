@@ -72,6 +72,24 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 				);
 			return classesWithRegisterPackRatAttribute;
 		}
+
+		public IEnumerable<IFieldSymbol> GetFields(ClassDeclarationSyntax @class)
+		{
+			IEnumerable<IFieldSymbol> fields = @class.DescendantNodes()
+				.OfType<FieldDeclarationSyntax>()
+				.Where(
+					f => f.AttributeLists.Any(
+						a => a.Attributes.Any(
+							attr => SyntaxHelper.IsAttribute(attr, typeof(PackFieldAttribute))
+						)
+					)
+				)
+				.Select(
+					s => (IFieldSymbol) _semanticModel.GetDeclaredSymbol(s.Declaration.Variables[0])!
+				);
+			return fields;
+		}
+
 		#endregion
 
 		#region private methods
