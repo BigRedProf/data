@@ -14,6 +14,17 @@ namespace BigRedProf.Data.PackRatCompiler
 	/// </summary>
 	public class PackRatGenerator
 	{
+		#region fields
+		private ICompilationContext _compilationContext;
+		#endregion
+
+		#region constructors
+		public PackRatGenerator(ICompilationContext compilationContext)
+		{
+			_compilationContext = compilationContext;
+		}
+		#endregion
+
 		#region methods
 		/// <summary>
 		/// Generates a <see cref="PackRat"/> from the specified input model and writes it
@@ -21,7 +32,7 @@ namespace BigRedProf.Data.PackRatCompiler
 		/// </summary>
 		/// <param name="inputModelStream">The model.</param>
 		/// <param name="outputPackRatStream">The generated pack rat.</param>
-		public void GeneratePackRat(Stream inputModelStream, Stream outputPackRatStream)
+		public void GeneratePackRat(Stream inputModelStream, Stream outputPackRatStream, string filePath)
 		{
 			if (inputModelStream == null)
 				throw new ArgumentNullException(nameof(inputModelStream));
@@ -29,7 +40,7 @@ namespace BigRedProf.Data.PackRatCompiler
 			if (outputPackRatStream == null)
 				throw new ArgumentNullException(nameof(outputPackRatStream));
 
-			SourceFile sourceFile = new SourceFile(inputModelStream);
+			SourceFile sourceFile = new SourceFile(_compilationContext, inputModelStream, filePath);
 			if (sourceFile.RegistersPackRat())
 			{
 				using (CSharpWriter writer = new CSharpWriter(outputPackRatStream))
@@ -59,16 +70,33 @@ namespace BigRedProf.Data.PackRatCompiler
 			string className = modelClass.Identifier.ToString() + "PackRat";
 			writer.WriteLine($"public class {className}");
 			writer.WriteOpeningCurlyBrace();
-			IEnumerable<IFieldSymbol> fields = sourceFile.GetFields(modelClass);
-			bool isFirstField = true;
-			foreach (IFieldSymbol field in fields)
+			IList<PackFieldInfo> fields = sourceFile.GetFields(modelClass).OrderBy(f => f.Position).ToList();
+			for(int i = 0; i < fields.Count; ++i)
 			{
+				PackFieldInfo field = fields[i];
+
+				if(field.Position != i + 1)
+				{
+					_compilationContext.ReportError(
+						CompilerError.InvalidFieldPosition,
+						String.Format(
+							"Field '{0}' in model '{1}' has invalid field position. Expected: {2}. Actual: {3}",
+							field.Name,
+							modelClass.Identifier.ToString(),
+							i + 1,
+							field.Position
+						),
+						sourceFile.FilePath,
+						field.SourceLineNumber,
+						field.SourceColumn
+					);
+				}
+
 				WritePackRatField(sourceFile, modelClass, field, writer);
 
-				if (isFirstField)
+				if (field.Position == 1)
 				{
 					writer.WriteLine(string.Empty);
-					isFirstField = false;
 				}
 			}
 			writer.WriteClosingCurlyBrace();
@@ -77,7 +105,7 @@ namespace BigRedProf.Data.PackRatCompiler
 		private void WritePackRatField(
 			SourceFile sourceFile, 
 			ClassDeclarationSyntax modelClass, 
-			IFieldSymbol field,
+			PackFieldInfo field,
 			CSharpWriter writer
 		)
 		{

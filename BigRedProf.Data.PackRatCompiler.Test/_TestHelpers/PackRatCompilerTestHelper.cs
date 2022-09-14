@@ -1,5 +1,8 @@
 ﻿using BigRedProf.Data.Internal.PackRats;
 using BigRedProf.Data.PackRatCompiler;
+using Microsoft.Build.Locator;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.MSBuild;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -33,18 +36,32 @@ namespace BigRedProf.Data.Test._TestHelpers
 			Debug.Assert(modelResourcePath != null);
 			Debug.Assert(expectedPackRatResourcePath != null);
 
-			PackRatGenerator packRatGenerator = new PackRatGenerator();
-			Stream model = PackRatCompilerTestHelper.GetResource(modelResourcePath);
-			Stream expectedPackRatStream = PackRatCompilerTestHelper.GetResource(expectedPackRatResourcePath);
-			string expectedPackRat = ReadStream(expectedPackRatStream);
+			MSBuildLocator.RegisterDefaults();
+			using (MSBuildWorkspace workspace = MSBuildWorkspace.Create())
+			{
+				Debug.WriteLine("MSBuild workspace created...");
+				foreach (WorkspaceDiagnostic diagnostic in workspace.Diagnostics)
+					Debug.WriteLine(diagnostic);
+				Debug.WriteLine(new String('-', 79));
 
-			MemoryStream actualPackRatStream = new MemoryStream();
-			packRatGenerator.GeneratePackRat(model, actualPackRatStream);
-			actualPackRatStream.Close();
-			MemoryStream actualPackRatStreamForRead = new MemoryStream(actualPackRatStream.ToArray());
-			string actualPackRat = ReadStream(actualPackRatStreamForRead);
+				string hackHackProjectPath = @"C:\code\BigRedProf\data\BigRedProf.Data.PackRatCompiler\BigRedProf.Data.PackRatCompiler.csproj";
+				Project project = workspace.OpenProjectAsync(hackHackProjectPath).Result;
 
-			Assert.Equal(expectedPackRat, actualPackRat);
+				ICompilationContext compilationContext = new CompilationContext(project);
+
+				PackRatGenerator packRatGenerator = new PackRatGenerator(compilationContext);
+				Stream model = PackRatCompilerTestHelper.GetResource(modelResourcePath);
+				Stream expectedPackRatStream = PackRatCompilerTestHelper.GetResource(expectedPackRatResourcePath);
+				string expectedPackRat = ReadStream(expectedPackRatStream);
+
+				MemoryStream actualPackRatStream = new MemoryStream();
+				packRatGenerator.GeneratePackRat(model, actualPackRatStream, modelResourcePath);
+				actualPackRatStream.Close();
+				MemoryStream actualPackRatStreamForRead = new MemoryStream(actualPackRatStream.ToArray());
+				string actualPackRat = ReadStream(actualPackRatStreamForRead);
+
+				Assert.Equal(expectedPackRat, actualPackRat);
+			}
 		}
 
 		public static string ReadStream(Stream stream)

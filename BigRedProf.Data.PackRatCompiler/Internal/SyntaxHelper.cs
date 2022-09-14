@@ -31,6 +31,23 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 
 			return result;
 		}
+
+		public static PackFieldInfo GetPackFieldInfo(IFieldSymbol symbol)
+		{
+			PackFieldInfo packFieldInfo = new PackFieldInfo();
+
+			AttributeData packFieldAttribute =  symbol.GetAttributes()
+				.Where(a => a.AttributeClass!.Name == "PackFieldAttribute")
+				.First();
+
+			packFieldInfo.Name = symbol.Name;
+			packFieldInfo.Type = symbol.Type.Name;
+			packFieldInfo.Position = (int) packFieldAttribute.ConstructorArguments[0].Value!;
+			packFieldInfo.SchemaId = (string) packFieldAttribute.ConstructorArguments[1].Value!;
+			packFieldInfo.SourceLineNumber = symbol.Locations[0].GetLineSpan().StartLinePosition.Line;
+			packFieldInfo.SourceColumn = symbol.Locations[0].GetLineSpan().StartLinePosition.Character + 1;
+			return packFieldInfo;
+		}
 		#endregion
 	}
 }
