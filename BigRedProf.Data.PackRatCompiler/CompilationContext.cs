@@ -49,7 +49,8 @@ namespace BigRedProf.Data.PackRatCompiler
 		public void ReportError(int code, string message, string? filePath, int? lineNumber, int? column)
 		{
 			string output = FormatOutput("error", code, message, filePath, lineNumber, column);
-			_warningWriter.WriteLine(output);
+			_errorWriter.WriteLine(output);
+			_errorWriter?.Flush();
 
 #if DEBUG
 			Debug.WriteLine(output);
@@ -62,6 +63,7 @@ namespace BigRedProf.Data.PackRatCompiler
 		{
 			string output = FormatOutput("warning", code, message, filePath, lineNumber, column);
 			_warningWriter.WriteLine(output);
+			_warningWriter?.Flush();
 
 #if DEBUG
 			Debug.WriteLine(output);

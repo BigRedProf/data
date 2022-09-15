@@ -13,57 +13,34 @@ using System.Threading.Tasks;
 
 namespace BigRedProf.Data.PackRatCompiler.Internal
 {
-	internal class SourceFile
+	internal class SourceProject
 	{
 		#region fields
 		private ICompilationContext _compilationContext;
 		private string _filePath;
 		private SyntaxTree _syntaxTree;
 		private SemanticModel _semanticModel;
+		private CSharpCompilation _compilation;
 		#endregion
 
 		#region constructors
-		public SourceFile(ICompilationContext compilationContext, Stream stream, string filePath)
+		public SourceProject(ICompilationContext compilationContext, string filePath)
 		{
 			Debug.Assert(compilationContext != null);
-			Debug.Assert(stream != null);
 			Debug.Assert(filePath != null);
 
 			_compilationContext = compilationContext;
 			_filePath = filePath;
 
-			using (StreamReader reader = new StreamReader(stream))
-			{
-				string inputFileText = reader.ReadToEnd();
-				_syntaxTree = CSharpSyntaxTree.ParseText(inputFileText);
-			}
+			// TODO: decide whether to use filePath here and get rid of redundant project in compilation context
+			// (probably best) or vice versa
 
-			//string dotNetCoreDir = Path.GetDirectoryName(typeof(object).Assembly.Location);
-
-			/*CSharpCompilation compilation = CSharpCompilation.Create(
-				null, 
-				new SyntaxTree[] { _syntaxTree, packFieldSyntaxTree }, 
-				new MetadataReference[] { MetadataReference.CreateFromFile(Path.Combine(dotNetCoreDir, "mscorlib.dll"))}
-			);
-			*/
-
-			// TODO: THIS Gets cached, but may still want to move it our of here if we stick with this approach
-			//CSharpCompilation compilation = (CSharpCompilation) _compilationContext.Project.GetCompilationAsync().Result
-			//	.AddSyntaxTrees(_syntaxTree);
-			Debug.WriteLine("** Compilation 1...");
+			Debug.WriteLine("** Compilation 1 (from the project file)...");
 			CSharpCompilation compilation1 = (CSharpCompilation)_compilationContext.Project.GetCompilationAsync().Result;
 			ReportCompilationDiagnostics(compilation1);
-
-			Debug.WriteLine("** Compilation 2...");
-			CSharpCompilation compilation2 = CSharpCompilation.Create(
-				"MyAssembly",
-				compilation1!.SyntaxTrees.Append(_syntaxTree),
-				compilation1.References,
-				null
-			);
-			ReportCompilationDiagnostics(compilation2);
-
-			_semanticModel = compilation2.GetSemanticModel(_syntaxTree);
+			//Debug.Assert(compilation1.SyntaxTrees.Length == 1);
+			//_semanticModel = compilation1.GetSemanticModel(compilation1.SyntaxTrees[0]);
+			_compilation = compilation1;
 		}
 
 		private void ReportCompilationDiagnostics(CSharpCompilation compilation1)
@@ -127,6 +104,11 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 			}
 
 			return @namespace;
+		}
+
+		public IEnumerable<INamedTypeSymbol> GetModelClasses2()
+		{
+			return _compilation.GlobalNamespace.GetTypeMembers();
 		}
 
 		public IEnumerable<ClassDeclarationSyntax> GetModelClasses()

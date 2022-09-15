@@ -1,5 +1,6 @@
 ﻿using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.MSBuild;
 using System;
 using System.Collections.Generic;
@@ -17,8 +18,8 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 		public int Compile(CommandLineOptions options)
 		{
 			Debug.Assert(options != null);
-			Debug.Assert(options.InputPath != null);
-			Debug.Assert(options.OutputPath != null);
+			Debug.Assert(options.ProjectFile != null);
+			Debug.Assert(options.OutputDirectory != null);
 
 			int exitCode = 0;
 			MSBuildLocator.RegisterDefaults();
@@ -29,31 +30,15 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 				ICompilationContext compilationContext = new CompilationContext(project);
 				PackRatGenerator packRatGenerator = new PackRatGenerator(compilationContext);
 
-				DirectoryInfo inputDirectory = new DirectoryInfo(options.InputPath);
-				Debug.Assert(inputDirectory.Exists);
+				FileInfo projectFile = new FileInfo(options.ProjectFile);
+				if (!projectFile.Exists)
+					throw new Exception("project file not found");	// TODO: report as error
 
-				DirectoryInfo outputDirectory = new DirectoryInfo(options.OutputPath);
+				DirectoryInfo outputDirectory = new DirectoryInfo(options.OutputDirectory);
 				if (!outputDirectory.Exists)
 					outputDirectory.Create();
 
-				foreach (FileInfo inputFile in inputDirectory.GetFiles("*.cs", SearchOption.AllDirectories))
-				{
-					// HACKHACK: this isn't a great way to do this
-					if (inputFile.FullName.Contains("\\obj\\"))
-						continue;
-
-					// HACKHACK: this isn't a great way to do this
-					if (inputFile.FullName.Contains("\\bin\\"))
-						continue;
-
-					// HACKHACK: this isn't a great way to do this
-					FileInfo outputFile = new FileInfo(
-							Path.Combine(outputDirectory.FullName, inputFile.Name)
-							.Replace(".cs", ".g.cs")
-						);
-
-					ProcessFile(packRatGenerator, inputFile, outputFile);
-				}
+				ProcessProject(packRatGenerator, compilationContext, projectFile, outputDirectory);
 
 				exitCode = compilationContext.ExitCode;
 			}
@@ -63,13 +48,26 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 		#endregion
 
 		#region private methods
-		private void ProcessFile(PackRatGenerator packRatGenerator, FileInfo inputFile, FileInfo outputFile)
+		private void ProcessProject(PackRatGenerator packRatGenerator, ICompilationContext context, FileInfo projectFile, DirectoryInfo outputDirectory)
 		{
-			using(FileStream inputStream = new FileStream(inputFile.FullName, FileMode.Open, FileAccess.Read))
-			using (FileStream outputStream = new FileStream(outputFile.FullName, FileMode.Create, FileAccess.Write))
+			Console.WriteLine("ProcessProject...");
+
+			SourceProject sourceProject = new SourceProject(context, projectFile.FullName);
+
+			foreach (INamedTypeSymbol modelClass in sourceProject.GetModelClasses2())
 			{
-				packRatGenerator.GeneratePackRat(inputStream, outputStream, inputFile.FullName);
+				FileInfo outputFile = new FileInfo(Path.Combine(outputDirectory.FullName, modelClass.Name + "PackRat.g.cs"));
+				ProcessModelClass(packRatGenerator, modelClass, outputFile);
 			}
+		}
+
+		private void ProcessModelClass(PackRatGenerator packRatGenerator, INamedTypeSymbol modelClass, FileInfo outputFile)
+		{
+			Console.WriteLine($"Process Model Class to {outputFile.FullName}");
+			//using (FileStream outputStream = new FileStream(outputFile.FullName, FileMode.Create, FileAccess.Write))
+			//{
+				//packRatGenerator.GeneratePackRat(inputStream, outputStream, inputFile.FullName);
+			//}
 		}
 		#endregion
 	}
