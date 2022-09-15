@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using BigRedProf.Data.PackRatCompiler.Internal;
 using CommandLine;
+using Microsoft.Build.Locator;
 
 namespace BigRedProf.Data.PackRatCompiler
 {
@@ -21,6 +22,14 @@ namespace BigRedProf.Data.PackRatCompiler
 		static private int RunOptions(CommandLineOptions options)
 		{
 			Compiler compiler = new Compiler();
+
+			// HACKHACK: per https://docs.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2017/msbuild/updating-an-existing-application?view=vs-2017#use-microsoftbuildlocator,
+			// we have to call RegisterDefaults in a method other than the one that use project.
+			// That doesn't seem to fix our 
+			// CS5001: Program does not contain a static 'Main' method suitable for an entry point
+			// bug though. :(
+			MSBuildLocator.RegisterDefaults();
+
 			return compiler.Compile(options);
 		}
 

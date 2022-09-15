@@ -22,7 +22,6 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 			Debug.Assert(options.OutputDirectory != null);
 
 			int exitCode = 0;
-			MSBuildLocator.RegisterDefaults();
 			using (MSBuildWorkspace mSBuildWorkspace = MSBuildWorkspace.Create())
 			{
 				Project project = mSBuildWorkspace.OpenProjectAsync(options.ProjectFile!).Result;
