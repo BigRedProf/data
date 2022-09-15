@@ -1,4 +1,5 @@
 ﻿using BigRedProf.Data;
+using BigRedProf.Data.PackRatCompiler.Internal.Symbols;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -119,9 +120,36 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 			return @namespace;
 		}
 
-		public IEnumerable<INamedTypeSymbol> GetModelClasses2()
+		public IEnumerable<ISymbol> GetModelClasses2()
 		{
-			return _compilation.GlobalNamespace.GetTypeMembers();
+			//return _compilation.GlobalNamespace.GetTypeMembers();
+
+			PrintMembers(_compilation.GlobalNamespace);
+
+			return new SymbolEnumerable(_compilation.GlobalNamespace);
+		}
+
+		public void PrintMembers(ISymbol symbol)
+		{
+			Debug.WriteLine($"{symbol.Name} : {symbol.Kind}");
+
+			INamespaceOrTypeSymbol namespaceOrTypeSymbol = symbol as INamespaceOrTypeSymbol;
+			if (namespaceOrTypeSymbol != null)
+			{
+				foreach(ISymbol childSymbol in namespaceOrTypeSymbol.GetMembers())
+					PrintMembers(childSymbol);
+			}
+
+			//if(symbol.Kind == SymbolKind.Namespace)
+			//{
+
+			//}
+			//if(symbol.Kind == SymbolKind.NamedType)
+			//{
+			//	INamedTypeSymbol typeSymbol = (INamedTypeSymbol) symbol;
+			//	foreach(ISymbol childSymbol in typeSymbol.GetMembers())
+			//		PrintMembers(childSymbol);
+			//}
 		}
 
 		public IEnumerable<ClassDeclarationSyntax> GetModelClasses()
