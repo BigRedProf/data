@@ -35,12 +35,25 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 			// TODO: decide whether to use filePath here and get rid of redundant project in compilation context
 			// (probably best) or vice versa
 
+			// HACKHACK: add these AddReferences and WithOptions calls to avoid 
+			// error CS5001: Program does not contain a static 'Main' method suitable for an entry point
+			// https://stackoverflow.com/a/45823751/5682
+
 			Debug.WriteLine("** Compilation 1 (from the project file)...");
 			CSharpCompilation compilation1 = (CSharpCompilation)_compilationContext.Project.GetCompilationAsync().Result;
 			ReportCompilationDiagnostics(compilation1);
+
+			Debug.WriteLine("** Compilation 2 (Add References)...");
+			CSharpCompilation compilation2 = compilation1.AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
+			ReportCompilationDiagnostics(compilation2);
+
+			Debug.WriteLine("** Compilation 3 (DLL)...");
+			CSharpCompilation compilation3 = compilation2.WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+			ReportCompilationDiagnostics(compilation3);
+
 			//Debug.Assert(compilation1.SyntaxTrees.Length == 1);
 			//_semanticModel = compilation1.GetSemanticModel(compilation1.SyntaxTrees[0]);
-			_compilation = compilation1;
+			_compilation = compilation3;
 		}
 
 		private void ReportCompilationDiagnostics(CSharpCompilation compilation1)
