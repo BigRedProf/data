@@ -131,7 +131,8 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 
 		public void PrintMembers(ISymbol symbol)
 		{
-			Debug.WriteLine($"{symbol.Name} : {symbol.Kind}");
+			if (symbol.Name.Contains("Console") || symbol.Name.Contains("PackRat") || symbol.Name.Contains("BigRedProf"))
+				Debug.WriteLine($"{symbol.Name} : {symbol.Kind}");
 
 			INamespaceOrTypeSymbol namespaceOrTypeSymbol = symbol as INamespaceOrTypeSymbol;
 			if (namespaceOrTypeSymbol != null)
@@ -139,17 +140,6 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 				foreach(ISymbol childSymbol in namespaceOrTypeSymbol.GetMembers())
 					PrintMembers(childSymbol);
 			}
-
-			//if(symbol.Kind == SymbolKind.Namespace)
-			//{
-
-			//}
-			//if(symbol.Kind == SymbolKind.NamedType)
-			//{
-			//	INamedTypeSymbol typeSymbol = (INamedTypeSymbol) symbol;
-			//	foreach(ISymbol childSymbol in typeSymbol.GetMembers())
-			//		PrintMembers(childSymbol);
-			//}
 		}
 
 		public IEnumerable<ClassDeclarationSyntax> GetModelClasses()

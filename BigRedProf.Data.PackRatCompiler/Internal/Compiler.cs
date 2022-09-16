@@ -52,6 +52,8 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 			Console.WriteLine("ProcessProject...");
 
 			SourceProject sourceProject = new SourceProject(context, projectFile.FullName);
+			IList<ISymbol> x = sourceProject.GetModelClasses2().ToList();
+			// check for debug output
 
 			foreach (INamedTypeSymbol modelClass in sourceProject.GetModelClasses2())
 			{
