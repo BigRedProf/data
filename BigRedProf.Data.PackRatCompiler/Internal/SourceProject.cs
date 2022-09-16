@@ -120,6 +120,12 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 			return @namespace;
 		}
 
+		public IEnumerable<INamedTypeSymbol> GetModelClasses3()
+		{
+			return SymbolHelper.GetTypes(_compilation.GlobalNamespace)
+				.Where(t => t.GetAttributes().Where(a => a.AttributeClass!.ToDisplayString().Contains("RegisterPackRat")).Any());
+		}
+
 		public IEnumerable<ISymbol> GetModelClasses2()
 		{
 			//return _compilation.GlobalNamespace.GetTypeMembers();

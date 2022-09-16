@@ -55,7 +55,7 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 			IList<ISymbol> x = sourceProject.GetModelClasses2().ToList();
 			// check for debug output
 
-			foreach (INamedTypeSymbol modelClass in sourceProject.GetModelClasses2())
+			foreach (INamedTypeSymbol modelClass in sourceProject.GetModelClasses3())
 			{
 				FileInfo outputFile = new FileInfo(Path.Combine(outputDirectory.FullName, modelClass.Name + "PackRat.g.cs"));
 				ProcessModelClass(packRatGenerator, modelClass, outputFile);
