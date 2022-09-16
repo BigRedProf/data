@@ -25,6 +25,15 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 
 			return types;
 		}
+
+		public static bool HasAttribute(
+			INamedTypeSymbol symbol, 
+			string fullyQualifiedAttributeName)
+		{
+			return symbol.GetAttributes()
+				.Where(a => a.AttributeClass?.ToDisplayString() == fullyQualifiedAttributeName + "Attribute")
+				.Any();
+		}
 		#endregion
 	}
 }

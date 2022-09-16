@@ -123,7 +123,8 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 		public IEnumerable<INamedTypeSymbol> GetModelClasses3()
 		{
 			return SymbolHelper.GetTypes(_compilation.GlobalNamespace)
-				.Where(t => t.GetAttributes().Where(a => a.AttributeClass!.ToDisplayString().Contains("RegisterPackRat")).Any());
+				//.Where(t => t.GetAttributes().Where(a => a.AttributeClass!.ToDisplayString().Contains("RegisterPackRat")).Any());
+				.Where(t => SymbolHelper.HasAttribute(t, "BigRedProf.Data.RegisterPackRat"));
 		}
 
 		public IEnumerable<ISymbol> GetModelClasses2()
