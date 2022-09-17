@@ -44,17 +44,18 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 			CSharpCompilation compilation1 = (CSharpCompilation)_compilationContext.Project.GetCompilationAsync().Result;
 			ReportCompilationDiagnostics(compilation1);
 
-			Debug.WriteLine("** Compilation 2 (Add References)...");
-			CSharpCompilation compilation2 = compilation1.AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
-			ReportCompilationDiagnostics(compilation2);
+			//Debug.WriteLine("** Compilation 2 (Add References)...");
+			//CSharpCompilation compilation2 = compilation1.AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
+			//ReportCompilationDiagnostics(compilation2);
 
-			Debug.WriteLine("** Compilation 3 (DLL)...");
-			CSharpCompilation compilation3 = compilation2.WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-			ReportCompilationDiagnostics(compilation3);
+			//Debug.WriteLine("** Compilation 3 (DLL)...");
+			//CSharpCompilation compilation3 = compilation2.WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+			//ReportCompilationDiagnostics(compilation3);
 
 			//Debug.Assert(compilation1.SyntaxTrees.Length == 1);
 			//_semanticModel = compilation1.GetSemanticModel(compilation1.SyntaxTrees[0]);
-			_compilation = compilation3;
+			//_compilation = compilation3;
+			_compilation = compilation1;
 		}
 
 		private void ReportCompilationDiagnostics(CSharpCompilation compilation1)
