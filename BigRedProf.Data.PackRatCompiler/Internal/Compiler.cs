@@ -21,17 +21,17 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 			Debug.Assert(options.ProjectFile != null);
 			Debug.Assert(options.OutputDirectory != null);
 
+			FileInfo projectFile = new FileInfo(options.ProjectFile);
+			if (!projectFile.Exists)
+				throw new Exception("project file not found");  // TODO: report as error
+
+			StreamWriter stdoutStreamWriter = new StreamWriter(Console.OpenStandardOutput());
+			stdoutStreamWriter.AutoFlush = true;
+
 			int exitCode = 0;
-			using (MSBuildWorkspace mSBuildWorkspace = MSBuildWorkspace.Create())
+			using (	CompilationContext compilationContext = new CompilationContext(stdoutStreamWriter,	stdoutStreamWriter))
 			{
-				Project project = mSBuildWorkspace.OpenProjectAsync(options.ProjectFile!).Result;
-
-				ICompilationContext compilationContext = new CompilationContext(project);
 				PackRatGenerator packRatGenerator = new PackRatGenerator(compilationContext);
-
-				FileInfo projectFile = new FileInfo(options.ProjectFile);
-				if (!projectFile.Exists)
-					throw new Exception("project file not found");	// TODO: report as error
 
 				DirectoryInfo outputDirectory = new DirectoryInfo(options.OutputDirectory);
 				if (!outputDirectory.Exists)
@@ -51,7 +51,7 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 		{
 			Console.WriteLine("ProcessProject...");
 
-			SourceProject sourceProject = new SourceProject(context, projectFile.FullName);
+			SourceProject sourceProject = new SourceProject(context, projectFile);
 			IList<ISymbol> x = sourceProject.GetModelClasses2().ToList();
 			// check for debug output
 

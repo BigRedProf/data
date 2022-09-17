@@ -18,20 +18,17 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 	{
 		#region fields
 		private ICompilationContext _compilationContext;
-		private string _filePath;
 		private SyntaxTree _syntaxTree;
 		private SemanticModel _semanticModel;
-		private CSharpCompilation _compilation;
 		#endregion
 
 		#region constructors
-		public SourceProject(ICompilationContext compilationContext, string filePath)
+		public SourceProject(ICompilationContext compilationContext, FileInfo projectFile)
 		{
 			Debug.Assert(compilationContext != null);
-			Debug.Assert(filePath != null);
+			Debug.Assert(projectFile != null);
 
 			_compilationContext = compilationContext;
-			_filePath = filePath;
 
 			// TODO: decide whether to use filePath here and get rid of redundant project in compilation context
 			// (probably best) or vice versa
@@ -40,9 +37,10 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 			// error CS5001: Program does not contain a static 'Main' method suitable for an entry point
 			// https://stackoverflow.com/a/45823751/5682
 
-			Debug.WriteLine("** Compilation 1 (from the project file)...");
-			CSharpCompilation compilation1 = (CSharpCompilation)_compilationContext.Project.GetCompilationAsync().Result;
-			ReportCompilationDiagnostics(compilation1);
+			//Debug.WriteLine("** Compilation 1 (from the project file)...");
+			//CSharpCompilation compilation1 = (CSharpCompilation)_compilationContext.Project.GetCompilationAsync().Result;
+			//ReportCompilationDiagnostics(compilation1);
+			_compilationContext.AddProject(projectFile);
 
 			//Debug.WriteLine("** Compilation 2 (Add References)...");
 			//CSharpCompilation compilation2 = compilation1.AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
@@ -55,45 +53,6 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 			//Debug.Assert(compilation1.SyntaxTrees.Length == 1);
 			//_semanticModel = compilation1.GetSemanticModel(compilation1.SyntaxTrees[0]);
 			//_compilation = compilation3;
-			_compilation = compilation1;
-		}
-
-		private void ReportCompilationDiagnostics(CSharpCompilation compilation1)
-		{
-			ImmutableArray<Diagnostic> diagnostics = compilation1!.GetDiagnostics();
-			foreach (Diagnostic diagnostic in diagnostics)
-			{
-				if (diagnostic.Severity == DiagnosticSeverity.Error)
-				{
-					_compilationContext.ReportError(
-						CompilerError.CSharpCompilation,
-						diagnostic.ToString(),
-						_filePath,
-						diagnostic.Location.GetLineSpan().StartLinePosition.Line + 1,
-						diagnostic.Location.GetLineSpan().StartLinePosition.Character + 1
-					);
-				}
-				else if (diagnostic.Severity == DiagnosticSeverity.Warning)
-				{
-					_compilationContext.ReportWarning(
-						CompilerError.CSharpCompilation,
-						diagnostic.GetMessage(),
-						_filePath,
-						diagnostic.Location.GetLineSpan().StartLinePosition.Line,
-						diagnostic.Location.GetLineSpan().StartLinePosition.Character + 1
-					);
-				}
-			}
-		}
-		#endregion
-
-		#region properties
-		public string FilePath
-		{
-			get
-			{
-				return _filePath;
-			}
 		}
 		#endregion
 
@@ -123,7 +82,7 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 
 		public IEnumerable<INamedTypeSymbol> GetModelClasses3()
 		{
-			return SymbolHelper.GetTypes(_compilation.GlobalNamespace)
+			return SymbolHelper.GetTypes(_compilationContext.Compilation.GlobalNamespace)
 				//.Where(t => t.GetAttributes().Where(a => a.AttributeClass!.ToDisplayString().Contains("RegisterPackRat")).Any());
 				.Where(t => SymbolHelper.HasAttribute(t, "BigRedProf.Data.RegisterPackRat"));
 		}
@@ -132,9 +91,9 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 		{
 			//return _compilation.GlobalNamespace.GetTypeMembers();
 
-			PrintMembers(_compilation.GlobalNamespace);
+			PrintMembers(_compilationContext.Compilation.GlobalNamespace);
 
-			return new SymbolEnumerable(_compilation.GlobalNamespace);
+			return new SymbolEnumerable(_compilationContext.Compilation.GlobalNamespace);
 		}
 
 		public void PrintMembers(ISymbol symbol)

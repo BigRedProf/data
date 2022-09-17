@@ -37,17 +37,14 @@ namespace BigRedProf.Data.Test._TestHelpers
 			Debug.Assert(expectedPackRatResourcePath != null);
 
 			MSBuildLocator.RegisterDefaults();
-			using (MSBuildWorkspace workspace = MSBuildWorkspace.Create())
+			StreamWriter stdoutStreamWriter = new StreamWriter(Console.OpenStandardOutput());
+			stdoutStreamWriter.AutoFlush = true;
+			using (CompilationContext compilationContext = new CompilationContext(stdoutStreamWriter, stdoutStreamWriter))
 			{
-				Debug.WriteLine("MSBuild workspace created...");
-				foreach (WorkspaceDiagnostic diagnostic in workspace.Diagnostics)
-					Debug.WriteLine(diagnostic);
-				Debug.WriteLine(new String('-', 79));
+				string hackHackProjectPath = @"C:\code\BigRedProf\data\BigRedProf.Data\BigRedProf.Data.csproj";
+				compilationContext.AddProject(new FileInfo(hackHackProjectPath));
 
-				string hackHackProjectPath = @"C:\code\BigRedProf\data\BigRedProf.Data.PackRatCompiler\BigRedProf.Data.PackRatCompiler.csproj";
-				Project project = workspace.OpenProjectAsync(hackHackProjectPath).Result;
-
-				ICompilationContext compilationContext = new CompilationContext(project);
+				//SyntaxTree syntaxTree = compilationContext.AddCSharp(model);
 
 				PackRatGenerator packRatGenerator = new PackRatGenerator(compilationContext);
 				Stream model = PackRatCompilerTestHelper.GetResource(modelResourcePath);
@@ -55,7 +52,7 @@ namespace BigRedProf.Data.Test._TestHelpers
 				string expectedPackRat = ReadStream(expectedPackRatStream);
 
 				MemoryStream actualPackRatStream = new MemoryStream();
-				//packRatGenerator.GeneratePackRat(model, actualPackRatStream, modelResourcePath);
+				packRatGenerator.GeneratePackRat(model, actualPackRatStream, modelResourcePath);
 				actualPackRatStream.Close();
 				MemoryStream actualPackRatStreamForRead = new MemoryStream(actualPackRatStream.ToArray());
 				string actualPackRat = ReadStream(actualPackRatStreamForRead);

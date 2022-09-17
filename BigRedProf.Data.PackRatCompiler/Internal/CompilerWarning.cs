@@ -6,12 +6,10 @@ using System.Threading.Tasks;
 
 namespace BigRedProf.Data.PackRatCompiler.Internal
 {
-	internal class CompilerError
+	internal class CompilerWarning
 	{
 		#region constants
-		public const int CSharpCompilation = 101;
-		public const int InvalidFieldPosition = 102;
-		public const int MSBuildWorkspaceCreation = 901;
+		public const int MSBuildWorkspaceCreation = 9001;
 		#endregion
 	}
 }
