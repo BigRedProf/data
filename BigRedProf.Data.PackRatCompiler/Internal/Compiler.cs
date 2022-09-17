@@ -65,10 +65,10 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 		private void ProcessModelClass(PackRatGenerator packRatGenerator, INamedTypeSymbol modelClass, FileInfo outputFile)
 		{
 			Console.WriteLine($"Process Model Class to {outputFile.FullName}");
-			//using (FileStream outputStream = new FileStream(outputFile.FullName, FileMode.Create, FileAccess.Write))
-			//{
-				//packRatGenerator.GeneratePackRat(inputStream, outputStream, inputFile.FullName);
-			//}
+			using (FileStream outputStream = new FileStream(outputFile.FullName, FileMode.Create, FileAccess.Write))
+			{
+				packRatGenerator.GeneratePackRat(modelClass, outputStream);
+			}
 		}
 		#endregion
 	}

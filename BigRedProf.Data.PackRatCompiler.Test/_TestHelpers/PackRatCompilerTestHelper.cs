@@ -55,7 +55,7 @@ namespace BigRedProf.Data.Test._TestHelpers
 				string expectedPackRat = ReadStream(expectedPackRatStream);
 
 				MemoryStream actualPackRatStream = new MemoryStream();
-				packRatGenerator.GeneratePackRat(model, actualPackRatStream, modelResourcePath);
+				//packRatGenerator.GeneratePackRat(model, actualPackRatStream, modelResourcePath);
 				actualPackRatStream.Close();
 				MemoryStream actualPackRatStreamForRead = new MemoryStream(actualPackRatStream.ToArray());
 				string actualPackRat = ReadStream(actualPackRatStreamForRead);
