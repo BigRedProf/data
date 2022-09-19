@@ -55,6 +55,11 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 			WriteIndentation();
 			_streamWriter.WriteLine(lineOfCode);
 		}
+
+		public void WriteLine()
+		{
+			_streamWriter.WriteLine();
+		}
 		#endregion
 
 		#region IDisposable methods
