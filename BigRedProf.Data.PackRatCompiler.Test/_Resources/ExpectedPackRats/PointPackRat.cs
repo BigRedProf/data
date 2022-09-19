@@ -3,8 +3,8 @@ namespace prt.A.B.C
 {
 	public class PointPackRat
 	{
-		// Y
-		
 		// X
+		
+		// Y
 	}
 }

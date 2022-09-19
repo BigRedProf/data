@@ -82,7 +82,9 @@ namespace BigRedProf.Data.PackRatCompiler
 			}
 			else
 			{
-				SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(cSharpText);
+				LanguageVersion languageVersion = _compilation.LanguageVersion;
+				CSharpParseOptions parseOptions = CSharpParseOptions.Default.WithLanguageVersion(languageVersion);
+				CSharpSyntaxTree syntaxTree = (CSharpSyntaxTree) CSharpSyntaxTree.ParseText(cSharpText, parseOptions);
 				_compilation = CSharpCompilation.Create(
 					"FooSembly",
 					_compilation.SyntaxTrees.Append(syntaxTree),
