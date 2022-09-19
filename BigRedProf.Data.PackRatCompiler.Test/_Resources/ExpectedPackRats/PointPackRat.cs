@@ -16,15 +16,27 @@ namespace prt.A.B.C
 		public override void PackModel(CodeWriter writer, Point model)
 		{
 			// X
+			_piedPiper.GetPackRat<int>("FFDB57BB-BE6B-4CC3-A0F6-48596C8A8B2B")
+				.PackModel(writer, model.X);
 
 			// Y
+			_piedPiper.GetPackRat<int>("43")
+				.PackModel(writer, model.Y);
 		}
 
 		public override Point UnpackModel(CodeReader reader)
 		{
+			Point model = default;
+
 			// X
+			model.X = _piedPiper.GetPackRat<int>("FFDB57BB-BE6B-4CC3-A0F6-48596C8A8B2B")
+				.UnpackModel(reader);
 
 			// Y
+			model.Y = _piedPiper.GetPackRat<int>("43")
+				.UnpackModel(reader);
+
+			return model;
 		}
 	}
 }

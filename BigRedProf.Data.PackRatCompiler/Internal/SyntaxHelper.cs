@@ -41,7 +41,7 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 				.First();
 
 			packFieldInfo.Name = symbol.Name;
-			packFieldInfo.Type = symbol.Type.Name;
+			packFieldInfo.Type = symbol.Type.ToDisplayString();
 			packFieldInfo.Position = (int) packFieldAttribute.ConstructorArguments[0].Value!;
 			packFieldInfo.SchemaId = (string) packFieldAttribute.ConstructorArguments[1].Value!;
 			packFieldInfo.SourceLineNumber = symbol.Locations[0].GetLineSpan().StartLinePosition.Line;

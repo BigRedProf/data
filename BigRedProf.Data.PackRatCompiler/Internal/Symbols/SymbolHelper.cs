@@ -73,7 +73,7 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 			return new PackFieldInfo()
 			{
 				Name = field.Name,
-				Type = field.Type.Name,
+				Type = field.Type.ToDisplayString(),
 				Position = (int)packFieldAttribute.ConstructorArguments[0].Value!,
 				SchemaId = (string)packFieldAttribute.ConstructorArguments[1].Value!,
 				SourceLineNumber = startLinePosition.Line + 1,

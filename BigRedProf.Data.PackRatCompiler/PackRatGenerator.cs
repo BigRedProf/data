@@ -103,17 +103,16 @@ namespace BigRedProf.Data.PackRatCompiler
 
 			writer.WriteLine($"public override {modelType} UnpackModel(CodeReader reader)");
 			writer.WriteOpeningCurlyBrace();
+			writer.WriteLine("Point model = default;");
+			writer.WriteLine();
 
 			for (int i = 0; i < fields.Count; ++i)
 			{
 				PackFieldInfo field = fields[i];
 				WritePackRatFieldUnpackingCode(modelClass, field, writer);
-
-				if (i != fields.Count - 1)
-				{
-					writer.WriteLine();
-				}
+				writer.WriteLine();
 			}
+			writer.WriteLine("return model;");
 			writer.WriteClosingCurlyBrace(); // UnpackModel method
 
 			writer.WriteClosingCurlyBrace(); // class
@@ -126,6 +125,8 @@ namespace BigRedProf.Data.PackRatCompiler
 		)
 		{
 			writer.WriteLine($"// {field.Name}");
+			writer.WriteLine($"_piedPiper.GetPackRat<{field.Type}>(\"{field.SchemaId}\")");
+			writer.WriteLine($"\t.PackModel(writer, model.{field.Name});");
 		}
 
 		private void WritePackRatFieldUnpackingCode(
@@ -135,6 +136,8 @@ namespace BigRedProf.Data.PackRatCompiler
 		)
 		{
 			writer.WriteLine($"// {field.Name}");
+			writer.WriteLine($"model.{field.Name} = _piedPiper.GetPackRat<{field.Type}>(\"{field.SchemaId}\")");
+			writer.WriteLine($"\t.UnpackModel(reader);");
 		}
 
 		private void ValidatePackRatFields(INamedTypeSymbol modelClass, IList<PackFieldInfo> fields)
