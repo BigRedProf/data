@@ -8,6 +8,13 @@ namespace BigRedProf.Data.Test
 {
 	public class PackRatTests : PackRat<object>
 	{
+		#region constructors
+		public PackRatTests()
+			: base(new PiedPiper())
+		{
+		}
+		#endregion
+
 		#region protected methods
 		[Fact]
 		[Trait("Region", "protected methods")]

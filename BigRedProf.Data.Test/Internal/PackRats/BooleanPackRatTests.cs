@@ -13,7 +13,9 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void PackModel_ShouldThrowWhenWriterIsNull()
 		{
-			BooleanPackRat packRat = new BooleanPackRat();
+			PiedPiper piedPiper = new PiedPiper();
+
+			BooleanPackRat packRat = new BooleanPackRat(piedPiper);
 			bool model = false;
 
 			Assert.Throws<ArgumentNullException>(
@@ -28,7 +30,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void PackModel_ShouldWorkForTrue()
 		{
-			PackRat<bool> packRat = new BooleanPackRat();
+			PiedPiper piedPiper = new PiedPiper();
+			PackRat<bool> packRat = new BooleanPackRat(piedPiper);
 			PackRatTestHelper.TestPackModel<bool>(packRat, true, "1");
 		}
 
@@ -36,7 +39,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void PackModel_ShouldWorkForFalse()
 		{
-			PackRat<bool> packRat = new BooleanPackRat();
+			PiedPiper piedPiper = new PiedPiper();
+			PackRat<bool> packRat = new BooleanPackRat(piedPiper);
 			PackRatTestHelper.TestPackModel<bool>(packRat, false, "0");
 		}
 
@@ -44,7 +48,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void UnpackModel_ShouldThrowWhenReaderIsNull()
 		{
-			BooleanPackRat packRat = new BooleanPackRat();
+			PiedPiper piedPiper = new PiedPiper();
+			BooleanPackRat packRat = new BooleanPackRat(piedPiper);
 
 			Assert.Throws<ArgumentNullException>(
 				() =>
@@ -58,7 +63,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void UnpackModel_ShouldWorkForTrue()
 		{
-			PackRat<bool> packRat = new BooleanPackRat();
+			PiedPiper piedPiper = new PiedPiper();
+			PackRat<bool> packRat = new BooleanPackRat(piedPiper);
 			PackRatTestHelper.TestUnpackModel<bool>(packRat, "1", true);
 		}
 
@@ -66,7 +72,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void UnpackModel_ShouldWorkForFalse()
 		{
-			PackRat<bool> packRat = new BooleanPackRat();
+			PiedPiper piedPiper = new PiedPiper();
+			PackRat<bool> packRat = new BooleanPackRat(piedPiper);
 			PackRatTestHelper.TestUnpackModel<bool>(packRat, "0", false);
 		}
 		#endregion

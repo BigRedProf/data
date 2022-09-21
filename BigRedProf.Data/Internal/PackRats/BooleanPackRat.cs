@@ -6,6 +6,13 @@ namespace BigRedProf.Data.Internal.PackRats
 {
 	internal class BooleanPackRat : PackRat<bool>
 	{
+		#region constructors
+		public BooleanPackRat(IPiedPiper piedPiper)
+			: base(piedPiper)
+		{
+		}
+		#endregion
+
 		#region PackRat methods
 		public override void PackModel(CodeWriter writer, bool model)
 		{

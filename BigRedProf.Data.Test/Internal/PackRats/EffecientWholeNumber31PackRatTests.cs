@@ -13,7 +13,9 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void PackModel_ShouldThrowWhenWriterIsNull()
 		{
-			EfficientWholeNumber31PackRat packRat = new EfficientWholeNumber31PackRat();
+			PiedPiper piedPiper = new PiedPiper();
+
+			EfficientWholeNumber31PackRat packRat = new EfficientWholeNumber31PackRat(piedPiper);
 			int model = 43;
 
 			Assert.Throws<ArgumentNullException>(
@@ -28,7 +30,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void PackModel_ShouldWorkForTinyNumbers()
 		{
-			PackRat<int> packRat = new EfficientWholeNumber31PackRat();
+			PiedPiper piedPiper = new PiedPiper();
+			PackRat<int> packRat = new EfficientWholeNumber31PackRat(piedPiper);
 			PackRatTestHelper.TestPackModel<int>(packRat, 0, "1000");
 			PackRatTestHelper.TestPackModel<int>(packRat, 1, "1010");
 			PackRatTestHelper.TestPackModel<int>(packRat, 2, "1001");
@@ -39,7 +42,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void PackModel_ShouldWorkForSmallNumbers()
 		{
-			PackRat<int> packRat = new EfficientWholeNumber31PackRat();
+			PiedPiper piedPiper = new PiedPiper();
+			PackRat<int> packRat = new EfficientWholeNumber31PackRat(piedPiper);
 			PackRatTestHelper.TestPackModel<int>(packRat, 4, "11000000");
 			PackRatTestHelper.TestPackModel<int>(packRat, 5, "11010000");
 			PackRatTestHelper.TestPackModel<int>(packRat, 7, "11011000");
@@ -54,7 +58,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void PackModel_ShouldWorkForMediumNumbers()
 		{
-			PackRat<int> packRat = new EfficientWholeNumber31PackRat();
+			PiedPiper piedPiper = new PiedPiper();
+			PackRat<int> packRat = new EfficientWholeNumber31PackRat(piedPiper);
 			PackRatTestHelper.TestPackModel<int>(packRat, 36, "11100000 00000000");
 			PackRatTestHelper.TestPackModel<int>(packRat, 37, "11101000 00000000");
 			PackRatTestHelper.TestPackModel<int>(packRat, 1970, "11100111 00011110");
@@ -69,7 +74,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void PackModel_ShouldWorkForLargeNumbers()
 		{
-			PackRat<int> packRat = new EfficientWholeNumber31PackRat();
+			PiedPiper piedPiper = new PiedPiper();
+			PackRat<int> packRat = new EfficientWholeNumber31PackRat(piedPiper);
 			PackRatTestHelper.TestPackModel<int>(packRat, 4132, "11110000 00000000 00000000");
 			PackRatTestHelper.TestPackModel<int>(packRat, 4133, "11111000 00000000 00000000");
 			PackRatTestHelper.TestPackModel<int>(packRat, 5000, "11110010 01101100 00000000");
@@ -84,7 +90,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void PackModel_ShouldWorkForHugeNumbers()
 		{
-			PackRat<int> packRat = new EfficientWholeNumber31PackRat();
+			PiedPiper piedPiper = new PiedPiper();
+			PackRat<int> packRat = new EfficientWholeNumber31PackRat(piedPiper);
 			PackRatTestHelper.TestPackModel<int>(packRat, 1052708, "00010010 00000100 00000100 00000000");
 			PackRatTestHelper.TestPackModel<int>(packRat, 1052709, "01010010 00000100 00000100 00000000");
 			PackRatTestHelper.TestPackModel<int>(packRat, 2000000, "00000000 10010000 10111100 00000000");
@@ -99,7 +106,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void UnpackModel_ShouldThrowWhenReaderIsNull()
 		{
-			EfficientWholeNumber31PackRat packRat = new EfficientWholeNumber31PackRat();
+			PiedPiper piedPiper = new PiedPiper();
+			EfficientWholeNumber31PackRat packRat = new EfficientWholeNumber31PackRat(piedPiper);
 
 			Assert.Throws<ArgumentNullException>(
 				() =>
@@ -113,7 +121,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void UnpackModel_ShouldThrowWhenCodeIsInvalid()
 		{
-			EfficientWholeNumber31PackRat packRat = new EfficientWholeNumber31PackRat();
+			PiedPiper piedPiper = new PiedPiper();
+			EfficientWholeNumber31PackRat packRat = new EfficientWholeNumber31PackRat(piedPiper);
 
 			Assert.Throws<InvalidOperationException>(
 				() =>
@@ -141,7 +150,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void UnpackModel_ShouldWorkForTinyNumbers()
 		{
-			PackRat<int> packRat = new EfficientWholeNumber31PackRat();
+			PiedPiper piedPiper = new PiedPiper();
+			PackRat<int> packRat = new EfficientWholeNumber31PackRat(piedPiper);
 			PackRatTestHelper.TestUnpackModel<int>(packRat, "1000", 0);
 			PackRatTestHelper.TestUnpackModel<int>(packRat, "1010", 1);
 			PackRatTestHelper.TestUnpackModel<int>(packRat, "1001", 2);
@@ -152,7 +162,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void UnpackModel_ShouldWorkForSmallNumbers()
 		{
-			PackRat<int> packRat = new EfficientWholeNumber31PackRat();
+			PiedPiper piedPiper = new PiedPiper();
+			PackRat<int> packRat = new EfficientWholeNumber31PackRat(piedPiper);
 			PackRatTestHelper.TestUnpackModel<int>(packRat, "11000000", 4);
 			PackRatTestHelper.TestUnpackModel<int>(packRat, "11010000", 5);
 			PackRatTestHelper.TestUnpackModel<int>(packRat, "11011000", 7);
@@ -167,7 +178,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void UnpackModel_ShouldWorkForMediumNumbers()
 		{
-			PackRat<int> packRat = new EfficientWholeNumber31PackRat();
+			PiedPiper piedPiper = new PiedPiper();
+			PackRat<int> packRat = new EfficientWholeNumber31PackRat(piedPiper);
 			PackRatTestHelper.TestUnpackModel<int>(packRat, "11100000 00000000", 36);
 			PackRatTestHelper.TestUnpackModel<int>(packRat, "11101000 00000000", 37);
 			PackRatTestHelper.TestUnpackModel<int>(packRat, "11100111 00011110", 1970);
@@ -182,7 +194,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void UnpackModel_ShouldWorkForLargeNumbers()
 		{
-			PackRat<int> packRat = new EfficientWholeNumber31PackRat();
+			PiedPiper piedPiper = new PiedPiper();
+			PackRat<int> packRat = new EfficientWholeNumber31PackRat(piedPiper);
 			PackRatTestHelper.TestUnpackModel<int>(packRat, "11110000 00000000 00000000", 4132);
 			PackRatTestHelper.TestUnpackModel<int>(packRat, "11111000 00000000 00000000", 4133);
 			PackRatTestHelper.TestUnpackModel<int>(packRat, "11110010 01101100 00000000", 5000);
@@ -197,7 +210,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void UnpackModel_ShouldWorkForHugeNumbers()
 		{
-			PackRat<int> packRat = new EfficientWholeNumber31PackRat();
+			PiedPiper piedPiper = new PiedPiper();
+			PackRat<int> packRat = new EfficientWholeNumber31PackRat(piedPiper);
 			PackRatTestHelper.TestUnpackModel<int>(packRat, "00010010 00000100 00000100 00000000", 1052708);
 			PackRatTestHelper.TestUnpackModel<int>(packRat, "01010010 00000100 00000100 00000000", 1052709);
 			PackRatTestHelper.TestUnpackModel<int>(packRat, "00000000 10010000 10111100 00000000", 2000000);

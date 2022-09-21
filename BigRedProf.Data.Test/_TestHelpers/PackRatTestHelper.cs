@@ -16,7 +16,7 @@ namespace BigRedProf.Data.Test._TestHelpers
 		{
 			PiedPiper piedPiper = new PiedPiper();
 			
-			EfficientWholeNumber31PackRat efficientWholeNumber31PackRat = new EfficientWholeNumber31PackRat();
+			EfficientWholeNumber31PackRat efficientWholeNumber31PackRat = new EfficientWholeNumber31PackRat(piedPiper);
 			piedPiper.RegisterPackRat(efficientWholeNumber31PackRat, SchemaId.EfficientWholeNumber31);
 
 			return piedPiper;

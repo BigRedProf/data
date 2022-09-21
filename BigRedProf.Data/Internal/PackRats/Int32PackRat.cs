@@ -6,6 +6,13 @@ namespace BigRedProf.Data.Internal.PackRats
 {
 	internal class Int32PackRat : PackRat<int>
 	{
+		#region constructos
+		public Int32PackRat(IPiedPiper piedPiper)
+			: base(piedPiper)
+		{
+		}
+		#endregion
+
 		#region PackRat methods
 		public override void PackModel(CodeWriter writer, int model)
 		{

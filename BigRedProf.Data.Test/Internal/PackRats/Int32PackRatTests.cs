@@ -13,7 +13,9 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void PackModel_ShouldThrowWhenWriterIsNull()
 		{
-			Int32PackRat packRat = new Int32PackRat();
+			PiedPiper piedPiper = new PiedPiper();
+
+			Int32PackRat packRat = new Int32PackRat(piedPiper);
 			int model = 43;
 
 			Assert.Throws<ArgumentNullException>(
@@ -28,7 +30,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void PackModel_ShouldWork()
 		{
-			PackRat<int> packRat = new Int32PackRat();
+			PiedPiper piedPiper = new PiedPiper();
+			PackRat<int> packRat = new Int32PackRat(piedPiper);
 			PackRatTestHelper.TestPackModel<int>(packRat, 0, "00000000 00000000 00000000 00000000");
 			PackRatTestHelper.TestPackModel<int>(packRat, 1, "10000000 00000000 00000000 00000000");
 			PackRatTestHelper.TestPackModel<int>(packRat, 2, "01000000 00000000 00000000 00000000");
@@ -55,7 +58,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void UnpackModel_ShouldThrowWhenReaderIsNull()
 		{
-			Int32PackRat packRat = new Int32PackRat();
+			PiedPiper piedPiper = new PiedPiper();
+			Int32PackRat packRat = new Int32PackRat(piedPiper);
 
 			Assert.Throws<ArgumentNullException>(
 				() =>
@@ -69,7 +73,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "PackRat methods")]
 		public void UnpackModel_ShouldWork()
 		{
-			PackRat<int> packRat = new Int32PackRat();
+			PiedPiper piedPiper = new PiedPiper();
+			PackRat<int> packRat = new Int32PackRat(piedPiper);
 			PackRatTestHelper.TestUnpackModel<int>(packRat, "00000000 00000000 00000000 00000000", 0);
 			PackRatTestHelper.TestUnpackModel<int>(packRat, "10000000 00000000 00000000 00000000", 1);
 		}

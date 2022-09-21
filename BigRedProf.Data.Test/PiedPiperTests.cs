@@ -27,7 +27,7 @@ namespace BigRedProf.Data.Test
 		public void RegisterPackRat_ShouldThrowIfSchemaIdIsNull()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-			PackRat<bool> packRat = new BooleanPackRat();
+			PackRat<bool> packRat = new BooleanPackRat(piedPiper);
 			string schemaId = null;
 
 			Assert.Throws<ArgumentNullException>(
@@ -43,7 +43,7 @@ namespace BigRedProf.Data.Test
 		public void RegisterPackRat_ShouldThrowIfSchemaIdIsNotAGuid()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-			PackRat<bool> packRat = new BooleanPackRat();
+			PackRat<bool> packRat = new BooleanPackRat(piedPiper);
 			string schemaId = "not-a-GUID";
 
 			Assert.Throws<ArgumentException>(
@@ -60,9 +60,9 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = new PiedPiper();
 			string schemaId = Guid.Empty.ToString();
-			PackRat<bool> packRat1 = new BooleanPackRat();
+			PackRat<bool> packRat1 = new BooleanPackRat(piedPiper);
 			piedPiper.RegisterPackRat(packRat1, schemaId);
-			PackRat<bool> packRat2 = new BooleanPackRat();
+			PackRat<bool> packRat2 = new BooleanPackRat(piedPiper);
 
 			Assert.Throws<InvalidOperationException>(
 				() =>
@@ -123,7 +123,7 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = new PiedPiper();
 			string schemaId = Guid.Empty.ToString();
-			PackRat<bool> packRat1 = new BooleanPackRat();
+			PackRat<bool> packRat1 = new BooleanPackRat(piedPiper);
 			piedPiper.RegisterPackRat(packRat1, schemaId);
 
 			Assert.Throws<InvalidOperationException>(
@@ -140,7 +140,7 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = new PiedPiper();
 			string schemaId = Guid.Empty.ToString();
-			BooleanPackRat packRat1 = new BooleanPackRat();
+			BooleanPackRat packRat1 = new BooleanPackRat(piedPiper);
 			piedPiper.RegisterPackRat(packRat1, schemaId);
 
 			PackRat<bool> packRat2 = piedPiper.GetPackRat<bool>(schemaId);

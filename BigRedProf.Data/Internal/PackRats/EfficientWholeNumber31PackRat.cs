@@ -16,6 +16,13 @@ namespace BigRedProf.Data.Internal.PackRats
 		private const int MinValueFor32BitPacking = MinValueFor24BitPacking + 1048576; // 4132 + 2^20 = 1052708
 		#endregion
 
+		#region constructors
+		public EfficientWholeNumber31PackRat(IPiedPiper piedPiper)
+			: base(piedPiper)
+		{
+		}
+		#endregion
+
 		#region PackRat methods
 		public override void PackModel(CodeWriter writer, int model)
 		{
