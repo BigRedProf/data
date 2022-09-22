@@ -24,7 +24,7 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					packRatTests.PackNullableModel<object>(null, "foo", packRatTests);
+					packRatTests.PackNullableModel<object>(null, "foo", packRatTests, ByteAligned.No);
 				}
 			);
 		}
@@ -38,7 +38,7 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					packRatTests.PackNullableModel<object>(writer, null, null);
+					packRatTests.PackNullableModel<object>(writer, null, null, ByteAligned.No);
 				}
 			);
 		}
@@ -51,7 +51,7 @@ namespace BigRedProf.Data.Test
 			CodeWriter writer = new CodeWriter(writerStream);
 			PackRatTests packRatTests = new PackRatTests();
 
-			packRatTests.PackNullableModel(writer, null, packRatTests);
+			packRatTests.PackNullableModel(writer, null, packRatTests, ByteAligned.No);
 
 			writer.Dispose();
 			Stream readerStream = new MemoryStream(writerStream.ToArray());
@@ -69,7 +69,7 @@ namespace BigRedProf.Data.Test
 			CodeWriter writer = new CodeWriter(writerStream);
 			PackRatTests packRatTests = new PackRatTests();
 
-			packRatTests.PackNullableModel(writer, "foo", packRatTests);
+			packRatTests.PackNullableModel(writer, "foo", packRatTests, ByteAligned.No);
 
 			writer.Dispose();
 			Stream readerStream = new MemoryStream(writerStream.ToArray());
@@ -87,7 +87,7 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					packRatTests.UnpackNullableModel<object>(null, packRatTests);
+					packRatTests.UnpackNullableModel<object>(null, packRatTests, ByteAligned.No);
 				}
 			);
 		}
@@ -101,7 +101,7 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					packRatTests.UnpackNullableModel<object>(reader, null);
+					packRatTests.UnpackNullableModel<object>(reader, null, ByteAligned.No);
 				}
 			);
 		}
@@ -113,7 +113,7 @@ namespace BigRedProf.Data.Test
 			CodeReader reader = PackRatTestHelper.CreateCodeReader("0");
 			PackRatTests packRatTests = new PackRatTests();
 
-			object actualModel = packRatTests.UnpackNullableModel(reader, packRatTests);
+			object actualModel = packRatTests.UnpackNullableModel(reader, packRatTests, ByteAligned.No);
 
 			Assert.Null(actualModel);
 		}
@@ -125,7 +125,7 @@ namespace BigRedProf.Data.Test
 			CodeReader reader = PackRatTestHelper.CreateCodeReader("11");
 			PackRatTests packRatTests = new PackRatTests();
 
-			object actualModel = packRatTests.UnpackNullableModel(reader, packRatTests);
+			object actualModel = packRatTests.UnpackNullableModel(reader, packRatTests, ByteAligned.No);
 
 			Assert.Equal("foo", actualModel);
 		}

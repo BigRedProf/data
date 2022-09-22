@@ -38,7 +38,13 @@ namespace BigRedProf.Data
 		/// <param name="writer">The code writer.</param>
 		/// <param name="model">The model.</param>
 		/// <param name="packRat">The pack rat.</param>
-		protected void PackNullableModel<M>(CodeWriter writer, M model, PackRat<M> packRat)
+		/// <param name="byteAligned">Controls the packing size of the null marker.</param>
+		protected void PackNullableModel<M>(
+			CodeWriter writer, 
+			M model, 
+			PackRat<M> packRat, 
+			ByteAligned byteAligned
+		)
 			where M : new()
 		{
 			if (writer == null)
@@ -47,15 +53,12 @@ namespace BigRedProf.Data
 			if (packRat == null)
 				throw new ArgumentNullException(nameof(packRat));
 
-			if(model == null)
-			{
-				writer.WriteCode("0");
-			}
-			else
-			{
-				writer.WriteCode("1");
+			writer.WriteCode(model == null ? "0" : "1");
+			if (byteAligned == ByteAligned.Yes)
+				writer.AlignToNextByteBoundary();
+
+			if(model != null)
 				packRat.PackModel(writer, model);
-			}
 		}
 
 		/// <summary>
@@ -64,8 +67,9 @@ namespace BigRedProf.Data
 		/// <typeparam name="M"></typeparam>
 		/// <param name="reader">The code reader.</param>
 		/// <param name="packRat">The pack rat.</param>
-		/// <returns></returns>
-		protected M UnpackNullableModel<M>(CodeReader reader, PackRat<M> packRat)
+		/// <param name="byteAligned">Controls the packing size of the null marker.</param>
+		/// <returns>The model.</returns>
+		protected M UnpackNullableModel<M>(CodeReader reader, PackRat<M> packRat, ByteAligned byteAligned)
 			where M : new()
 		{
 			if (reader == null)
@@ -75,7 +79,11 @@ namespace BigRedProf.Data
 				throw new ArgumentNullException(nameof(packRat));
 
 			M model = default;
+
 			bool isNull = reader.Read(1) == "0";
+			if (byteAligned == ByteAligned.Yes)
+				reader.AlignToNextByteBoundary();
+
 			if(!isNull)
 				model = packRat.UnpackModel(reader);
 
@@ -91,12 +99,14 @@ namespace BigRedProf.Data
 		/// <param name="elementSchemaId">The element schema identifier.</param>
 		/// <param name="allowNullLists">Whether or not null lists are allowed.</param>
 		/// <param name="allowNullElements">Whether or not null elements are allowed in the list.</param>
+		/// <param name="byteAligned">Controls the packing size of the null markers.</param>
 		protected void PackList<M>(
 			CodeWriter writer, 
 			IList<M> list, 
 			string elementSchemaId, 
 			bool allowNullLists, 
-			bool allowNullElements
+			bool allowNullElements,
+			ByteAligned byteAligned
 		)
 		{
 			if (writer == null)
@@ -114,12 +124,7 @@ namespace BigRedProf.Data
 				throw new ArgumentNullException(nameof(elementSchemaId));
 
 			if (allowNullLists)
-			{
-				if (list == null)
-					writer.WriteCode("0");
-				else
-					writer.WriteCode("1");
-			}
+				writer.WriteCode(list == null ? "0" : "1");
 
 			if(list != null)
 			{
@@ -127,14 +132,39 @@ namespace BigRedProf.Data
 				efficientWholeNumber31PackRat.PackModel(writer, list.Count);
 
 				PackRat<M> elementPackRat = PiedPiper.GetPackRat<M>(elementSchemaId);
-				writer.AlignToNextByteBoundary();
-				foreach (M element in list)
+				if (allowNullElements)
 				{
-					if (allowNullElements)
-						writer.WriteCode(element == null ? "0" : "1");
+					bool[] elementNullArray = new bool[list.Count];
+					for (int i = 0; i < list.Count; ++i)
+					{
+						elementNullArray[i] = (list[i] != null);
+						writer.WriteCode(list[i] != null ? "1" : "0");
+					}
 
-					if (element != null)
+					if (byteAligned == ByteAligned.Yes)
+						writer.AlignToNextByteBoundary();
+
+					for (int i = 0; i < list.Count; ++i)
+					{
+						if (elementNullArray[i])
+							elementPackRat.PackModel(writer, list[i]);
+
+						if (byteAligned == ByteAligned.Yes)
+							writer.AlignToNextByteBoundary();
+					}
+				}
+				else
+				{
+					if (byteAligned == ByteAligned.Yes)
+						writer.AlignToNextByteBoundary();
+
+					foreach (M element in list)
+					{
 						elementPackRat.PackModel(writer, element);
+
+						if (byteAligned == ByteAligned.Yes)
+							writer.AlignToNextByteBoundary();
+					}
 				}
 			}
 		}
@@ -147,12 +177,14 @@ namespace BigRedProf.Data
 		/// <param name="elementSchemaId">The element schema identifier.</param>
 		/// <param name="allowNullLists">Whether or not null lists are allowed.</param>
 		/// <param name="allowNullElements">Whether or not null elements are allowed in the list.</param>
+		/// <param name="byteAligned">Controls the packing size of the null markers.</param>
 		/// <returns>The list.</returns>
 		protected IList<M> UnpackList<M>(
 			CodeReader reader,
 			string elementSchemaId, 
 			bool allowNullLists,
-			bool allowNullElements
+			bool allowNullElements,
+			ByteAligned byteAligned
 		)
 		{
 			if (reader == null)
@@ -173,18 +205,45 @@ namespace BigRedProf.Data
 
 			PackRat<M> elementPackRat = PiedPiper.GetPackRat<M>(elementSchemaId);
 			IList<M> list = new List<M>(elementCount);
-			reader.AlignToNextByteBoundary();
-			for(int i = 0; i < elementCount; ++i)
+
+			if (allowNullElements)
 			{
-				M element = default;
-				bool isNullElement = false;
-				if (allowNullElements)
-					isNullElement = reader.Read(1) == "0";
+				bool[] nullElementList = new bool[elementCount];
+				for (int i = 0; i < elementCount; ++i)
+					nullElementList[i] = reader.Read(1) == "1";
 
-				if (!isNullElement)
-					element = elementPackRat.UnpackModel(reader);
+				if (byteAligned == ByteAligned.Yes)
+					reader.AlignToNextByteBoundary();
 
-				list.Add(element);
+				for(int i = 0; i < elementCount; ++i)
+				{
+					if(nullElementList[i])
+					{
+						M Element = elementPackRat.UnpackModel(reader);
+						list.Add(Element);
+					}
+					else
+					{
+						list.Add(default);
+					}
+
+					if (byteAligned == ByteAligned.Yes)
+						reader.AlignToNextByteBoundary();
+				}
+			}
+			else
+			{
+				if(byteAligned == ByteAligned.Yes)
+					reader.AlignToNextByteBoundary();
+
+				for (int i = 0; i < elementCount; ++i)
+				{
+					M element = elementPackRat.UnpackModel(reader);
+					list.Add(element);
+
+					if (byteAligned == ByteAligned.Yes)
+						reader.AlignToNextByteBoundary();
+				}
 			}
 
 			return list;
