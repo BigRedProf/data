@@ -52,13 +52,35 @@ namespace BigRedProf.Data.Test
 			PackRatTests packRatTests = new PackRatTests();
 
 			packRatTests.PackNullableModel(writer, null, packRatTests, ByteAligned.No);
+			Code expectedCode = "0";
+			// null bit -> 0
 
 			writer.Dispose();
 			Stream readerStream = new MemoryStream(writerStream.ToArray());
 			CodeReader reader = new CodeReader(readerStream);
 			Assert.Equal(1, readerStream.Length);
 			Code actualCode = reader.Read(1);
-			Assert.Equal("0", actualCode);
+			Assert.Equal(expectedCode, actualCode);
+		}
+
+		[Fact]
+		[Trait("Region", "protected methods")]
+		public void PackNullableModel_ShouldWorkForNullByteAlignedModels()
+		{
+			MemoryStream writerStream = new MemoryStream();
+			CodeWriter writer = new CodeWriter(writerStream);
+			PackRatTests packRatTests = new PackRatTests();
+
+			packRatTests.PackNullableModel(writer, null, packRatTests, ByteAligned.Yes);
+			Code expectedCode = "0";
+			// null bit -> 0
+
+			writer.Dispose();
+			Stream readerStream = new MemoryStream(writerStream.ToArray());
+			CodeReader reader = new CodeReader(readerStream);
+			Assert.Equal(1, readerStream.Length);
+			Code actualCode = reader.Read(1);
+			Assert.Equal(expectedCode, actualCode);
 		}
 
 		[Fact]
@@ -77,6 +99,28 @@ namespace BigRedProf.Data.Test
 			Assert.Equal(1, readerStream.Length);
 			Code actualCode = reader.Read(2);
 			Assert.Equal("11", actualCode);
+		}
+
+		[Fact]
+		[Trait("Region", "protected methods")]
+		public void PackNullableModel_ShouldWorkForNonNullByteAlignedModels()
+		{
+			MemoryStream writerStream = new MemoryStream();
+			CodeWriter writer = new CodeWriter(writerStream);
+			PackRatTests packRatTests = new PackRatTests();
+
+			packRatTests.PackNullableModel(writer, "foo", packRatTests, ByteAligned.Yes);
+			Code expectedCode = "10000000 1";
+			// null bit -> 1
+			// byte alignment
+			// our dummy model -> 1
+
+			writer.Dispose();
+			Stream readerStream = new MemoryStream(writerStream.ToArray());
+			CodeReader reader = new CodeReader(readerStream);
+			Assert.Equal(2, readerStream.Length);
+			Code actualCode = reader.Read(9);
+			Assert.Equal(expectedCode, actualCode);
 		}
 
 		[Fact]
@@ -120,12 +164,36 @@ namespace BigRedProf.Data.Test
 
 		[Fact]
 		[Trait("Region", "protected methods")]
+		public void UnpackNullableModel_ShouldWorkForNullByteAlignedModels()
+		{
+			CodeReader reader = PackRatTestHelper.CreateCodeReader("0");
+			PackRatTests packRatTests = new PackRatTests();
+
+			object actualModel = packRatTests.UnpackNullableModel(reader, packRatTests, ByteAligned.Yes);
+
+			Assert.Null(actualModel);
+		}
+
+		[Fact]
+		[Trait("Region", "protected methods")]
 		public void UnpackNullableModel_ShouldWorkForNonNullModels()
 		{
 			CodeReader reader = PackRatTestHelper.CreateCodeReader("11");
 			PackRatTests packRatTests = new PackRatTests();
 
 			object actualModel = packRatTests.UnpackNullableModel(reader, packRatTests, ByteAligned.No);
+
+			Assert.Equal("foo", actualModel);
+		}
+
+		[Fact]
+		[Trait("Region", "protected methods")]
+		public void UnpackNullableModel_ShouldWorkForNonNullByteAlignedModels()
+		{
+			CodeReader reader = PackRatTestHelper.CreateCodeReader("10000000 1");
+			PackRatTests packRatTests = new PackRatTests();
+
+			object actualModel = packRatTests.UnpackNullableModel(reader, packRatTests, ByteAligned.Yes);
 
 			Assert.Equal("foo", actualModel);
 		}
