@@ -2,6 +2,7 @@ using BigRedProf.Data.Internal.PackRats;
 using BigRedProf.Data.Test._TestHelpers;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using Xunit;
 
@@ -493,6 +494,183 @@ namespace BigRedProf.Data.Test
 					);
 				}
 			);
+		}
+
+		[Fact]
+		[Trait("Region", "protected methods")]
+		public void UnpackList_ShouldWorkForNullLists()
+		{
+			CodeReader reader = PackRatTestHelper.CreateCodeReader("0");
+			PackRatTests packRatTests = new PackRatTests();
+
+			IList<string> actualList = packRatTests.UnpackList<string>(
+				reader,
+				SchemaId.StringUtf8,
+				true,
+				false,
+				ByteAligned.No
+			);
+			IList<string> expectedList = null;
+			// null bit -> 0
+
+			Assert.Equal(expectedList, actualList);
+		}
+
+		[Fact]
+		[Trait("Region", "protected methods")]
+		public void UnpackList_ShouldWorkForNonNullableListsWithoutNullElements()
+		{
+			CodeReader reader = PackRatTestHelper.CreateCodeReader(
+				"1001 1011 01100110 11110110 11110110 1011 0000 01000110 10000110 01001110"
+			);
+			PackRatTests packRatTests = new PackRatTests();
+
+			IList<string> actualList = packRatTests.UnpackList<string>(
+				reader,
+				SchemaId.StringUtf8,
+				false,
+				false,
+				ByteAligned.No
+			);
+			IList<string> expectedList = new string[] { "foo", "bar" };
+			// 2 -> 1001
+			// "foo" -> 1011 .01100110 .01101111 .01101111 
+			// "bar" -> 1011 ba0000 .01100010 .01100001 .01110010
+
+			Assert.Equal(expectedList, actualList);
+		}
+
+		[Fact]
+		[Trait("Region", "protected methods")]
+		public void UnpackList_ShouldWorkForNonNullableListsWithoutNullElementsByteAligned()
+		{
+			CodeReader reader = PackRatTestHelper.CreateCodeReader(
+				"11010000 1 0000000 0 0000000 1 0000000 1 0000000 0"
+			);
+			PackRatTests packRatTests = new PackRatTests();
+
+			IList<bool> actualList = packRatTests.UnpackList<bool>(
+				reader,
+				SchemaId.Boolean,
+				false,
+				false,
+				ByteAligned.Yes
+			);
+			IList<bool> expectedList = new bool[] { true, false, true, true, false };
+			// 5 -> 11010000
+			// true -> 1
+			// byte alignment -> 0000000
+			// false -> 0
+			// byte alignment -> 0000000
+			// true -> 1
+			// byte alignment -> 0000000
+			// true -> 1
+			// byte alignment -> 0000000
+			// false -> 0
+			Assert.Equal(expectedList, actualList);
+		}
+
+		[Fact]
+		[Trait("Region", "protected methods")]
+		public void UnpackList_ShouldWorkForNonNullableListsWithNullElements()
+		{
+			CodeReader reader = PackRatTestHelper.CreateCodeReader(
+				"1011 101 1011 00000 01100110 11110110 11110110 1011 0000 01000110 10000110 01001110"
+			);
+			PackRatTests packRatTests = new PackRatTests();
+
+			IList<string> actualList = packRatTests.UnpackList<string>(
+				reader,
+				SchemaId.StringUtf8,
+				false,
+				true,
+				ByteAligned.No
+			);
+			IList<string> expectedList = new string[] { "foo", null, "bar" };
+			// 3 -> 1011
+			// null element array -> 101
+			// "foo" -> 1011 ba00000 .01100110 .01101111 .01101111 
+			// "bar" -> 1011 ba0000000 .01100010 .01100001 .01110010
+
+			Assert.Equal(expectedList, actualList);
+		}
+
+		[Fact]
+		[Trait("Region", "protected methods")]
+		public void UnpackList_ShouldWorkForNonNullableListsWithNullElementsByteAligned()
+		{
+			CodeReader reader = PackRatTestHelper.CreateCodeReader(
+				"1011 101 0 1011 0000 01100110 11110110 11110110 1011 0000 01000110 10000110 01001110"
+			);
+			PackRatTests packRatTests = new PackRatTests();
+
+			IList<string> actualList = packRatTests.UnpackList<string>(
+				reader,
+				SchemaId.StringUtf8,
+				false,
+				true,
+				ByteAligned.Yes
+			);
+			IList<string> expectedList = new string[] { "foo", null, "bar" };
+			// 3 -> 1011
+			// null element array -> 101
+			// byte alignment -> 0
+			// "foo" -> 1011 ba0000 .01100110 .01101111 .01101111 
+			// "bar" -> 1011 ba0000000 .01100010 .01100001 .01110010
+
+			Assert.Equal(expectedList, actualList);
+		}
+
+		[Fact]
+		[Trait("Region", "protected methods")]
+		public void UnpackList_ShouldWorkForNullableListsWithNullElements()
+		{
+			CodeReader reader = PackRatTestHelper.CreateCodeReader(
+				"1 1011 101 1011 0000 01100110 11110110 11110110 1011 0000 01000110 10000110 01001110"
+			);
+			PackRatTests packRatTests = new PackRatTests();
+
+			IList<string> actualList = packRatTests.UnpackList<string>(
+				reader,
+				SchemaId.StringUtf8,
+				true,
+				true,
+				ByteAligned.No
+			);
+			IList<string> expectedList = new string[] { "foo", null, "bar" };
+			// null bit -> 1
+			// 3 -> 1011
+			// null element array -> 101
+			// "foo" -> 1011 ba0000 .01100110 .01101111 .01101111 
+			// "bar" -> 1011 ba0000000 .01100010 .01100001 .01110010
+
+			Assert.Equal(expectedList, actualList);
+		}
+
+		[Fact]
+		[Trait("Region", "protected methods")]
+		public void UnpackList_ShouldWorkForNullableListsWithNullElementsByteAligned()
+		{
+			CodeReader reader = PackRatTestHelper.CreateCodeReader(
+				"1 1011 101 1011 0000 01100110 11110110 11110110 1011 0000 01000110 10000110 01001110"
+			);
+			PackRatTests packRatTests = new PackRatTests();
+
+			IList<string> actualList = packRatTests.UnpackList<string>(
+				reader,
+				SchemaId.StringUtf8,
+				true,
+				true,
+				ByteAligned.Yes
+			);
+			IList<string> expectedList = new string[] { "foo", null, "bar" };
+			// null bit -> 1
+			// 3 -> 1011
+			// null element array -> 101
+			// "foo" -> 1011 ba0000 .01100110 .01101111 .01101111 
+			// "bar" -> 1011 ba0000000 .01100010 .01100001 .01110010
+
+			Assert.Equal(expectedList, actualList);
 		}
 		#endregion
 

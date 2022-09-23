@@ -50,7 +50,7 @@ namespace BigRedProf.Data
 
 			// This implementation seems counterintuitive, but:
 			// 1. If we're already byte-aligned, this is a no-op.
-			// 2. If not, the next call to ReadByte() will read the next byte.
+			// 2. If not, the next call to ReadBit() will read the next byte.
 			_offsetIntoCurrentByte = 0;
 		}
 

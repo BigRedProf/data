@@ -42,7 +42,8 @@ namespace BigRedProf.Data.Internal.PackRats
 			}
 			else
 			{
-				Code code = reader.Read(byteCount);
+				reader.AlignToNextByteBoundary();
+				Code code = reader.Read(byteCount * 8);
 				model = Encoding.UTF8.GetString(code.ByteArray);
 			}
 

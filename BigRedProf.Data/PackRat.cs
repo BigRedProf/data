@@ -222,8 +222,8 @@ namespace BigRedProf.Data
 				{
 					if(nullElementList[i])
 					{
-						M Element = elementPackRat.UnpackModel(reader);
-						list.Add(Element);
+						M element = elementPackRat.UnpackModel(reader);
+						list.Add(element);
 					}
 					else
 					{
