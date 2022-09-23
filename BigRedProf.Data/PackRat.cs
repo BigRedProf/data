@@ -160,6 +160,9 @@ namespace BigRedProf.Data
 
 					foreach (M element in list)
 					{
+						if (element == null && !allowNullElements)
+							throw new ArgumentException("Null element found in list.", nameof(list));
+
 						elementPackRat.PackModel(writer, element);
 
 						if (byteAligned == ByteAligned.Yes)

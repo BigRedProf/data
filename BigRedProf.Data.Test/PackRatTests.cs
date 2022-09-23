@@ -1,6 +1,7 @@
 using BigRedProf.Data.Internal.PackRats;
 using BigRedProf.Data.Test._TestHelpers;
 using System;
+using System.Collections;
 using System.IO;
 using Xunit;
 
@@ -10,7 +11,7 @@ namespace BigRedProf.Data.Test
 	{
 		#region constructors
 		public PackRatTests()
-			: base(new PiedPiper())
+			: base(PackRatTestHelper.GetPiedPiper())
 		{
 		}
 		#endregion
@@ -196,6 +197,302 @@ namespace BigRedProf.Data.Test
 			object actualModel = packRatTests.UnpackNullableModel(reader, packRatTests, ByteAligned.Yes);
 
 			Assert.Equal("foo", actualModel);
+		}
+
+		[Fact]
+		[Trait("Region", "protected methods")]
+		public void PackList_ShouldThrowWhenWriterIsNull()
+		{
+			PackRatTests packRatTests = new PackRatTests();
+			Assert.Throws<ArgumentNullException>(
+				() =>
+				{
+					packRatTests.PackList<string>(
+						null, 
+						new string[] { "foo" }, 
+						SchemaId.StringUtf8, 
+						false, 
+						false, 
+						ByteAligned.No
+					);
+				}
+			);
+		}
+
+		[Fact]
+		[Trait("Region", "protected methods")]
+		public void PackList_ShouldThrowWhenListIsNullAndNullListsAreNotAllowed()
+		{
+			PackRatTests packRatTests = new PackRatTests();
+			CodeWriter codeWriter = new CodeWriter(new MemoryStream());
+			Assert.Throws<ArgumentNullException>(
+				() =>
+				{
+					packRatTests.PackList<string>(
+						codeWriter,
+						null,
+						SchemaId.StringUtf8,
+						false,
+						true,
+						ByteAligned.No
+					);
+				}
+			);
+		}
+
+		[Fact]
+		[Trait("Region", "protected methods")]
+		public void PackList_ShouldThrowWhenListHasNullElementsAndNullElementsAreNotAllowed()
+		{
+			PackRatTests packRatTests = new PackRatTests();
+			CodeWriter codeWriter = new CodeWriter(new MemoryStream());
+			Assert.Throws<ArgumentException>(
+				() =>
+				{
+					packRatTests.PackList<string>(
+						codeWriter,
+						new string[] { "foo", null, "bar" },
+						SchemaId.StringUtf8,
+						true,
+						false,
+						ByteAligned.No
+					);
+				}
+			);
+		}
+
+		[Fact]
+		[Trait("Region", "protected methods")]
+		public void PackList_ShouldWorkForNullLists()
+		{
+			MemoryStream writerStream = new MemoryStream();
+			CodeWriter writer = new CodeWriter(writerStream);
+			PackRatTests packRatTests = new PackRatTests();
+
+			packRatTests.PackList<string>(
+				writer,
+				null,
+				SchemaId.StringUtf8,
+				true,
+				false,
+				ByteAligned.No
+			);
+			Code expectedCode = "0";
+			// null bit -> 0
+
+			writer.Dispose();
+			Stream readerStream = new MemoryStream(writerStream.ToArray());
+			CodeReader reader = new CodeReader(readerStream);
+			Assert.Equal(1, readerStream.Length);
+			Code actualCode = reader.Read(1);
+			Assert.Equal(expectedCode, actualCode);
+		}
+
+		[Fact]
+		[Trait("Region", "protected methods")]
+		public void PackList_ShouldWorkForNonNullableListsWithoutNullElements()
+		{
+			MemoryStream writerStream = new MemoryStream();
+			CodeWriter writer = new CodeWriter(writerStream);
+			PackRatTests packRatTests = new PackRatTests();
+
+			packRatTests.PackList<string>(
+				writer,
+				new string[] { "foo", "bar" },
+				SchemaId.StringUtf8,
+				false,
+				false,
+				ByteAligned.No
+			);
+			Code expectedCode = "1001 1011 01100110 11110110 11110110 1011 0000 01000110 10000110 01001110";
+			// 2 -> 1001
+			// "foo" -> 1011 .01100110 .01101111 .01101111 
+			// "bar" -> 1011 ba0000 .01100010 .01100001 .01110010
+
+			writer.Dispose();
+			Stream readerStream = new MemoryStream(writerStream.ToArray());
+			CodeReader reader = new CodeReader(readerStream);
+			Assert.Equal(8, readerStream.Length);
+			Code actualCode = reader.Read(64);
+			Assert.Equal(expectedCode, actualCode);
+		}
+
+		[Fact]
+		[Trait("Region", "protected methods")]
+		public void PackList_ShouldWorkForNonNullableListsWithoutNullElementsByteAligned()
+		{
+			MemoryStream writerStream = new MemoryStream();
+			CodeWriter writer = new CodeWriter(writerStream);
+			PackRatTests packRatTests = new PackRatTests();
+
+			packRatTests.PackList<bool>(
+				writer,
+				new bool[] { true, false, true, true, false },
+				SchemaId.Boolean,
+				false,
+				false,
+				ByteAligned.Yes
+			);
+			Code expectedCode = "11010000 1 0000000 0 0000000 1 0000000 1 0000000 0";
+			// 5 -> 11010000
+			// true -> 1
+			// byte alignment -> 0000000
+			// false -> 0
+			// byte alignment -> 0000000
+			// true -> 1
+			// byte alignment -> 0000000
+			// true -> 1
+			// byte alignment -> 0000000
+			// false -> 0
+
+			writer.Dispose();
+			Stream readerStream = new MemoryStream(writerStream.ToArray());
+			CodeReader reader = new CodeReader(readerStream);
+			Assert.Equal(6, readerStream.Length);
+			Code actualCode = reader.Read(41);
+			Assert.Equal(expectedCode, actualCode);
+		}
+
+		[Fact]
+		[Trait("Region", "protected methods")]
+		public void PackList_ShouldWorkForNonNullableListsWithNullElements()
+		{
+			MemoryStream writerStream = new MemoryStream();
+			CodeWriter writer = new CodeWriter(writerStream);
+			PackRatTests packRatTests = new PackRatTests();
+
+			packRatTests.PackList<string>(
+				writer,
+				new string[] { "foo", null, "bar" },
+				SchemaId.StringUtf8,
+				false,
+				true,
+				ByteAligned.No
+			);
+			Code expectedCode = "1011 101 1011 00000 01100110 11110110 11110110 1011 0000 01000110 10000110 01001110";
+			// 3 -> 1011
+			// null element array -> 101
+			// "foo" -> 1011 ba00000 .01100110 .01101111 .01101111 
+			// "bar" -> 1011 ba0000000 .01100010 .01100001 .01110010
+
+			writer.Dispose();
+			Stream readerStream = new MemoryStream(writerStream.ToArray());
+			CodeReader reader = new CodeReader(readerStream);
+			Assert.Equal(9, readerStream.Length);
+			Code actualCode = reader.Read(72);
+			Assert.Equal(expectedCode, actualCode);
+		}
+
+		[Fact]
+		[Trait("Region", "protected methods")]
+		public void PackList_ShouldWorkForNonNullableListsWithNullElementsByteAligned()
+		{
+			MemoryStream writerStream = new MemoryStream();
+			CodeWriter writer = new CodeWriter(writerStream);
+			PackRatTests packRatTests = new PackRatTests();
+
+			packRatTests.PackList<string>(
+				writer,
+				new string[] { "foo", null, "bar" },
+				SchemaId.StringUtf8,
+				false,
+				true,
+				ByteAligned.Yes
+			);
+			Code expectedCode = "1011 101 0 1011 0000 01100110 11110110 11110110 1011 0000 01000110 10000110 01001110";
+			// 3 -> 1011
+			// null element array -> 101
+			// byte alignment -> 0
+			// "foo" -> 1011 ba0000 .01100110 .01101111 .01101111 
+			// "bar" -> 1011 ba0000000 .01100010 .01100001 .01110010
+
+			writer.Dispose();
+			Stream readerStream = new MemoryStream(writerStream.ToArray());
+			CodeReader reader = new CodeReader(readerStream);
+			Assert.Equal(9, readerStream.Length);
+			Code actualCode = reader.Read(72);
+			Assert.Equal(expectedCode, actualCode);
+		}
+
+		[Fact]
+		[Trait("Region", "protected methods")]
+		public void PackList_ShouldWorkForNullableListsWithNullElements()
+		{
+			MemoryStream writerStream = new MemoryStream();
+			CodeWriter writer = new CodeWriter(writerStream);
+			PackRatTests packRatTests = new PackRatTests();
+
+			packRatTests.PackList<string>(
+				writer,
+				new string[] { "foo", null, "bar" },
+				SchemaId.StringUtf8,
+				true,
+				true,
+				ByteAligned.No
+			);
+			Code expectedCode = "1 1011 101 1011 0000 01100110 11110110 11110110 1011 0000 01000110 10000110 01001110";
+			// null bit -> 1
+			// 3 -> 1011
+			// null element array -> 101
+			// "foo" -> 1011 ba0000 .01100110 .01101111 .01101111 
+			// "bar" -> 1011 ba0000000 .01100010 .01100001 .01110010
+
+			writer.Dispose();
+			Stream readerStream = new MemoryStream(writerStream.ToArray());
+			CodeReader reader = new CodeReader(readerStream);
+			Assert.Equal(9, readerStream.Length);
+			Code actualCode = reader.Read(72);
+			Assert.Equal(expectedCode, actualCode);
+		}
+
+		[Fact]
+		[Trait("Region", "protected methods")]
+		public void PackList_ShouldWorkForNullableListsWithNullElementsByteAligned()
+		{
+			MemoryStream writerStream = new MemoryStream();
+			CodeWriter writer = new CodeWriter(writerStream);
+			PackRatTests packRatTests = new PackRatTests();
+
+			packRatTests.PackList<string>(
+				writer,
+				new string[] { "foo", null, "bar" },
+				SchemaId.StringUtf8,
+				true,
+				true,
+				ByteAligned.Yes
+			);
+			Code expectedCode = "1 1011 101 1011 0000 01100110 11110110 11110110 1011 0000 01000110 10000110 01001110";
+			// null bit -> 1
+			// 3 -> 1011
+			// null element array -> 101
+			// "foo" -> 1011 ba0000 .01100110 .01101111 .01101111 
+			// "bar" -> 1011 ba0000000 .01100010 .01100001 .01110010
+
+			writer.Dispose();
+			Stream readerStream = new MemoryStream(writerStream.ToArray());
+			CodeReader reader = new CodeReader(readerStream);
+			Assert.Equal(9, readerStream.Length);
+			Code actualCode = reader.Read(72);
+			Assert.Equal(expectedCode, actualCode);
+		}
+
+		[Fact]
+		[Trait("Region", "protected methods")]
+		public void UnpackList_ShouldThrowWhenReaderIsNull()
+		{
+			PackRatTests packRatTests = new PackRatTests();
+			Assert.Throws<ArgumentNullException>(
+				() =>
+				{
+					packRatTests.UnpackList<string>(
+						null,
+						SchemaId.StringUtf8,
+						false,
+						false,
+						ByteAligned.No
+					);
+				}
+			);
 		}
 		#endregion
 

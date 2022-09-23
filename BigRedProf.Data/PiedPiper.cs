@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BigRedProf.Data.Internal.PackRats;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -14,6 +15,16 @@ namespace BigRedProf.Data
 		public PiedPiper()
 		{
 			_dictionary = new Dictionary<Guid, object>();
+		}
+		#endregion
+
+		#region methods
+		public void RegisterDefaultPackRats()
+		{
+			RegisterPackRat<bool>(new BooleanPackRat(this), SchemaId.Boolean);
+			RegisterPackRat<int>(new EfficientWholeNumber31PackRat(this), SchemaId.EfficientWholeNumber31);
+			RegisterPackRat<int>(new Int32PackRat(this), SchemaId.Int32);
+			RegisterPackRat<string>(new StringPackRat(this), SchemaId.StringUtf8);
 		}
 		#endregion
 
