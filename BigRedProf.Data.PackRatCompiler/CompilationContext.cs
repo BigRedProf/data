@@ -44,10 +44,13 @@ namespace BigRedProf.Data.PackRatCompiler
 			}
 		}
 
-		public CSharpCompilation? Compilation
+		public CSharpCompilation Compilation
 		{
 			get 
 			{
+				if (_compilation == null)
+					throw new InvalidOperationException("There is no compilation.");
+
 				return _compilation;
 			}
 		}

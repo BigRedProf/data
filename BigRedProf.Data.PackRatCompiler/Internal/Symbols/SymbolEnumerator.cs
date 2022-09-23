@@ -133,9 +133,6 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 					return false;
 				}
 			}
-
-			Debug.Assert(false);
-			return false;
 		}
 
 		public void Reset()

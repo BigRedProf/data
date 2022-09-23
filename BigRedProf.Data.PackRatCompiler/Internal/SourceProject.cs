@@ -14,12 +14,10 @@ using System.Threading.Tasks;
 
 namespace BigRedProf.Data.PackRatCompiler.Internal
 {
-	internal class SourceProject
+	internal sealed class SourceProject
 	{
 		#region fields
-		private ICompilationContext _compilationContext;
-		private SyntaxTree _syntaxTree;
-		private SemanticModel _semanticModel;
+		private readonly ICompilationContext _compilationContext;
 		#endregion
 
 		#region constructors
@@ -57,29 +55,6 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 		#endregion
 
 		#region methods
-		public bool RegistersPackRat()
-		{
-			return FoundRegisterPackRatAttribute();
-		}
-
-		public string GetNamespace()
-		{
-			string @namespace = string.Empty;
-
-			CompilationUnitSyntax root = _syntaxTree.GetCompilationUnitRoot();
-			SyntaxNode? namespaceNode = root.DescendantNodes()
-				.OfType<NamespaceDeclarationSyntax>()
-				.FirstOrDefault();
-			if(namespaceNode != null)
-			{
-				ISymbol? namespaceSymbol = _semanticModel.GetDeclaredSymbol(namespaceNode);
-				if(namespaceSymbol != null)
-					@namespace = namespaceSymbol.ToString() ?? string.Empty;
-			}
-
-			return @namespace;
-		}
-
 		public IEnumerable<INamedTypeSymbol> GetModelClasses3()
 		{
 			return SymbolHelper.GetTypes(_compilationContext.Compilation.GlobalNamespace)
@@ -101,53 +76,12 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 			if (symbol.Name.Contains("Console") || symbol.Name.Contains("PackRat") || symbol.Name.Contains("BigRedProf"))
 				Debug.WriteLine($"{symbol.Name} : {symbol.Kind}");
 
-			INamespaceOrTypeSymbol namespaceOrTypeSymbol = symbol as INamespaceOrTypeSymbol;
+			INamespaceOrTypeSymbol? namespaceOrTypeSymbol = symbol as INamespaceOrTypeSymbol;
 			if (namespaceOrTypeSymbol != null)
 			{
 				foreach(ISymbol childSymbol in namespaceOrTypeSymbol.GetMembers())
 					PrintMembers(childSymbol);
 			}
-		}
-
-		public IEnumerable<ClassDeclarationSyntax> GetModelClasses()
-		{
-			CompilationUnitSyntax root = _syntaxTree.GetCompilationUnitRoot();
-			IEnumerable<ClassDeclarationSyntax> classesWithRegisterPackRatAttribute = root.DescendantNodes()
-				.OfType<ClassDeclarationSyntax>()
-				.Where(
-					n => n.AttributeLists.Any(
-						a => a.Attributes.Any(
-							attr => SyntaxHelper.IsAttribute(attr, typeof(RegisterPackRatAttribute))
-						)
-					)
-				);
-			return classesWithRegisterPackRatAttribute;
-		}
-
-		public IEnumerable<PackFieldInfo> GetFields(ClassDeclarationSyntax @class)
-		{
-			IEnumerable<PackFieldInfo> fields = @class.DescendantNodes()
-				.OfType<FieldDeclarationSyntax>()
-				.Where(
-					f => f.AttributeLists.Any(
-						a => a.Attributes.Any(
-							attr => SyntaxHelper.IsAttribute(attr, typeof(PackFieldAttribute))
-						)
-					)
-				)
-				.Select(
-					s => SyntaxHelper.GetPackFieldInfo((IFieldSymbol)_semanticModel.GetDeclaredSymbol(s.Declaration.Variables[0])!)
-				) ;
-			return fields;
-		}
-
-		#endregion
-
-		#region private methods
-		private bool FoundRegisterPackRatAttribute()
-		{
-			IEnumerable<SyntaxNode> classesWithRegisterPackRatAttribute = GetModelClasses();
-			return classesWithRegisterPackRatAttribute.Any();
 		}
 		#endregion
 	}
