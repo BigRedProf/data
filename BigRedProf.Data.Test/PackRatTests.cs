@@ -8,6 +8,10 @@ using Xunit;
 
 namespace BigRedProf.Data.Test
 {
+	// TODO: We probably don't need to subclass PackRat anymore.
+	// That was a hacky way during an early design when the
+	// Pack/UnpackList/Nullable methods were in PackRat instead
+	// of IPiedPiper.
 	public class PackRatTests : PackRat<object>
 	{
 		#region constructors

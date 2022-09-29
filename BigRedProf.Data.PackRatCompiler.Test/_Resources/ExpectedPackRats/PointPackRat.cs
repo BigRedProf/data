@@ -2,7 +2,7 @@
 
 using BigRedProf.Data;
 
-namespace prt.A.B.C
+namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 {
 	public sealed class PointPackRat : PackRat<Point>
 	{

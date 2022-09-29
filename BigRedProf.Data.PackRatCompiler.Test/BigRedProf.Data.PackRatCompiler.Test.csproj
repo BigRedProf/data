@@ -9,13 +9,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="_Resources\ExpectedPackRats\NullableTestModelPackRat.cs" />
     <Compile Remove="_Resources\ExpectedPackRats\PointPackRat.cs" />
+    <Compile Remove="_Resources\Models\NullableTestModel.cs" />
     <Compile Remove="_Resources\Models\Point.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="_Resources\ExpectedPackRats\NullableTestModelPackRat.cs" />
     <EmbeddedResource Include="_Resources\ExpectedPackRats\PointPackRat.cs" />
     <EmbeddedResource Include="_Resources\Models\Point.cs" />
+    <EmbeddedResource Include="_Resources\Models\NullableTestModel.cs" />
   </ItemGroup>
 
   <ItemGroup>

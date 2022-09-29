@@ -1,6 +1,6 @@
 ﻿using BigRedProf.Data;
 
-namespace prt.A.B.C
+namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 {
 	[RegisterPackRat("d3499bac-fb5d-4407-8d28-e32ed37898c6")]
 	public class Point
