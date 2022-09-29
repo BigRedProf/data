@@ -73,7 +73,9 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 			return new PackFieldInfo()
 			{
 				Name = field.Name,
-				Type = field.Type.ToDisplayString(),
+				Type = field.Type.ToDisplayString()
+					.Replace("?", string.Empty),	// use IsNullable field instead
+				IsNullable = SymbolHelper.HasAttribute(field, "System.Runtime.CompilerServices.Nullable"),
 				Position = (int)packFieldAttribute.ConstructorArguments[0].Value!,
 				SchemaId = (string)packFieldAttribute.ConstructorArguments[1].Value!,
 				SourceLineNumber = startLinePosition.Line + 1,

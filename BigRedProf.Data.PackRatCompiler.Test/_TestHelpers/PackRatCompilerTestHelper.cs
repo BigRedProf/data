@@ -19,6 +19,13 @@ namespace BigRedProf.Data.Test._TestHelpers
 {
 	internal static class PackRatCompilerTestHelper
 	{
+		#region class constructors
+		static PackRatCompilerTestHelper()
+		{
+			MSBuildLocator.RegisterDefaults();
+		}
+		#endregion
+
 		#region methods
 		public static Stream GetResource(string path)
 		{
@@ -38,7 +45,6 @@ namespace BigRedProf.Data.Test._TestHelpers
 			Debug.Assert(modelResourcePath != null);
 			Debug.Assert(expectedPackRatResourcePath != null);
 
-			MSBuildLocator.RegisterDefaults();
 			StreamWriter stdoutStreamWriter = new StreamWriter(Console.OpenStandardOutput());
 			stdoutStreamWriter.AutoFlush = true;
 			using (CompilationContext compilationContext = new CompilationContext(stdoutStreamWriter, stdoutStreamWriter))

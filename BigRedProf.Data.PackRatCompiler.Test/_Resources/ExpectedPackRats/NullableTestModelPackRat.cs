@@ -8,7 +8,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 	{
 		private readonly IPiedPiper _piedPiper;
 
-		public PointPackRat(IPiedPiper piedPiper)
+		public NullableTestModelPackRat(IPiedPiper piedPiper)
 		{
 			_piedPiper = piedPiper;
 		}
@@ -24,12 +24,12 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 				.PackModel(writer, model.NonNullableField);
 		}
 
-		public override Point UnpackModel(CodeReader reader)
+		public override NullableTestModel UnpackModel(CodeReader reader)
 		{
 			NullableTestModel model = default;
 
 			// NullableField
-			model.X = _piedPiper.GetPackRat<string>("9CDF52B4-4C47-4B6D-BC17-34F33312B7A7")
+			model.NullableField = _piedPiper.GetPackRat<string>("9CDF52B4-4C47-4B6D-BC17-34F33312B7A7")
 				.UnpackModel(reader);
 
 			// NonNullableField
