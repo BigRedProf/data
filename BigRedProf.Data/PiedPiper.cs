@@ -12,6 +12,9 @@ namespace BigRedProf.Data
 		#endregion
 
 		#region constructors
+		/// <summary>
+		/// Creates a new <see cref="PiedPiper"/> instance.
+		/// </summary>
 		public PiedPiper()
 		{
 			_dictionary = new Dictionary<Guid, object>();
@@ -19,6 +22,10 @@ namespace BigRedProf.Data
 		#endregion
 
 		#region methods
+		/// <summary>
+		/// Registers all the default pack rats such as <see cref="BooleanPackRat"/>, <see cref="StringPackRat"/>,
+		/// and <see cref="Int32PackRat"/>.
+		/// </summary>
 		public void RegisterDefaultPackRats()
 		{
 			RegisterPackRat<bool>(new BooleanPackRat(this), SchemaId.Boolean);
@@ -29,6 +36,7 @@ namespace BigRedProf.Data
 		#endregion
 
 		#region IPiedPiper methods
+		/// <inheritdoc/>
 		public PackRat<T> GetPackRat<T>(string schemaId)
 		{
 			if(schemaId == null)
@@ -58,6 +66,7 @@ namespace BigRedProf.Data
 			return packRat;
 		}
 
+		/// <inheritdoc/>
 		public void RegisterPackRat<T>(PackRat<T> packRat, string schemaId)
 		{
 			if(packRat == null)
@@ -78,6 +87,195 @@ namespace BigRedProf.Data
 			}
 
 			_dictionary.Add(schemaIdAsGuid, packRat);
+		}
+
+		/// <inheritdoc/>
+		public void PackNullableModel<M>(
+			CodeWriter writer,
+			M model,
+			PackRat<M> packRat,
+			ByteAligned byteAligned
+		)
+			where M : new()
+		{
+			if (writer == null)
+				throw new ArgumentNullException(nameof(writer));
+
+			if (packRat == null)
+				throw new ArgumentNullException(nameof(packRat));
+
+			writer.WriteCode(model == null ? "0" : "1");
+			if (byteAligned == ByteAligned.Yes)
+				writer.AlignToNextByteBoundary();
+
+			if (model != null)
+				packRat.PackModel(writer, model);
+		}
+
+		/// <inheritdoc/>
+		public M UnpackNullableModel<M>(CodeReader reader, PackRat<M> packRat, ByteAligned byteAligned)
+			where M : new()
+		{
+			if (reader == null)
+				throw new ArgumentNullException(nameof(reader));
+
+			if (packRat == null)
+				throw new ArgumentNullException(nameof(packRat));
+
+			M model = default;
+
+			bool isNull = reader.Read(1) == "0";
+			if (byteAligned == ByteAligned.Yes)
+				reader.AlignToNextByteBoundary();
+
+			if (!isNull)
+				model = packRat.UnpackModel(reader);
+
+			return model;
+		}
+
+		/// <inheritdoc/>
+		public void PackList<M>(
+			CodeWriter writer,
+			IList<M> list,
+			string elementSchemaId,
+			bool allowNullLists,
+			bool allowNullElements,
+			ByteAligned byteAligned
+		)
+		{
+			if (writer == null)
+				throw new ArgumentNullException(nameof(writer));
+
+			if (!allowNullLists && list == null)
+			{
+				throw new ArgumentNullException(
+					nameof(list),
+					"The list parameter cannot be null when allowNullList is false."
+				);
+			}
+
+			if (elementSchemaId == null)
+				throw new ArgumentNullException(nameof(elementSchemaId));
+
+			if (allowNullLists)
+				writer.WriteCode(list == null ? "0" : "1");
+
+			if (list != null)
+			{
+				PackRat<int> efficientWholeNumber31PackRat = GetPackRat<int>(SchemaId.EfficientWholeNumber31);
+				efficientWholeNumber31PackRat.PackModel(writer, list.Count);
+
+				PackRat<M> elementPackRat = GetPackRat<M>(elementSchemaId);
+				if (allowNullElements)
+				{
+					bool[] elementNullArray = new bool[list.Count];
+					for (int i = 0; i < list.Count; ++i)
+					{
+						elementNullArray[i] = (list[i] != null);
+						writer.WriteCode(list[i] != null ? "1" : "0");
+					}
+
+					if (byteAligned == ByteAligned.Yes)
+						writer.AlignToNextByteBoundary();
+
+					for (int i = 0; i < list.Count; ++i)
+					{
+						if (elementNullArray[i])
+							elementPackRat.PackModel(writer, list[i]);
+
+						if (byteAligned == ByteAligned.Yes)
+							writer.AlignToNextByteBoundary();
+					}
+				}
+				else
+				{
+					if (byteAligned == ByteAligned.Yes)
+						writer.AlignToNextByteBoundary();
+
+					foreach (M element in list)
+					{
+						if (element == null && !allowNullElements)
+							throw new ArgumentException("Null element found in list.", nameof(list));
+
+						elementPackRat.PackModel(writer, element);
+
+						if (byteAligned == ByteAligned.Yes)
+							writer.AlignToNextByteBoundary();
+					}
+				}
+			}
+		}
+
+		/// <inheritdoc/>
+		public IList<M> UnpackList<M>(
+			CodeReader reader,
+			string elementSchemaId,
+			bool allowNullLists,
+			bool allowNullElements,
+			ByteAligned byteAligned
+		)
+		{
+			if (reader == null)
+				throw new ArgumentNullException(nameof(reader));
+
+			if (elementSchemaId == null)
+				throw new ArgumentNullException(nameof(elementSchemaId));
+
+			if (allowNullLists)
+			{
+				bool isNull = reader.Read(1) == "0";
+				if (isNull)
+					return null;
+			}
+
+			PackRat<int> efficientWholeNumber31PackRat = GetPackRat<int>(SchemaId.EfficientWholeNumber31);
+			int elementCount = efficientWholeNumber31PackRat.UnpackModel(reader);
+
+			PackRat<M> elementPackRat = GetPackRat<M>(elementSchemaId);
+			IList<M> list = new List<M>(elementCount);
+
+			if (allowNullElements)
+			{
+				bool[] nullElementList = new bool[elementCount];
+				for (int i = 0; i < elementCount; ++i)
+					nullElementList[i] = reader.Read(1) == "1";
+
+				if (byteAligned == ByteAligned.Yes)
+					reader.AlignToNextByteBoundary();
+
+				for (int i = 0; i < elementCount; ++i)
+				{
+					if (nullElementList[i])
+					{
+						M element = elementPackRat.UnpackModel(reader);
+						list.Add(element);
+					}
+					else
+					{
+						list.Add(default);
+					}
+
+					if (byteAligned == ByteAligned.Yes)
+						reader.AlignToNextByteBoundary();
+				}
+			}
+			else
+			{
+				if (byteAligned == ByteAligned.Yes)
+					reader.AlignToNextByteBoundary();
+
+				for (int i = 0; i < elementCount; ++i)
+				{
+					M element = elementPackRat.UnpackModel(reader);
+					list.Add(element);
+
+					if (byteAligned == ByteAligned.Yes)
+						reader.AlignToNextByteBoundary();
+				}
+			}
+
+			return list;
 		}
 		#endregion
 	}

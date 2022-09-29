@@ -26,7 +26,7 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					packRatTests.PackNullableModel<object>(null, "foo", packRatTests, ByteAligned.No);
+					PiedPiper.PackNullableModel<object>(null, "foo", packRatTests, ByteAligned.No);
 				}
 			);
 		}
@@ -40,7 +40,7 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					packRatTests.PackNullableModel<object>(writer, null, null, ByteAligned.No);
+					PiedPiper.PackNullableModel<object>(writer, null, null, ByteAligned.No);
 				}
 			);
 		}
@@ -53,7 +53,7 @@ namespace BigRedProf.Data.Test
 			CodeWriter writer = new CodeWriter(writerStream);
 			PackRatTests packRatTests = new PackRatTests();
 
-			packRatTests.PackNullableModel(writer, null, packRatTests, ByteAligned.No);
+			PiedPiper.PackNullableModel(writer, null, packRatTests, ByteAligned.No);
 			Code expectedCode = "0";
 			// null bit -> 0
 
@@ -73,7 +73,7 @@ namespace BigRedProf.Data.Test
 			CodeWriter writer = new CodeWriter(writerStream);
 			PackRatTests packRatTests = new PackRatTests();
 
-			packRatTests.PackNullableModel(writer, null, packRatTests, ByteAligned.Yes);
+			PiedPiper.PackNullableModel(writer, null, packRatTests, ByteAligned.Yes);
 			Code expectedCode = "0";
 			// null bit -> 0
 
@@ -93,7 +93,7 @@ namespace BigRedProf.Data.Test
 			CodeWriter writer = new CodeWriter(writerStream);
 			PackRatTests packRatTests = new PackRatTests();
 
-			packRatTests.PackNullableModel(writer, "foo", packRatTests, ByteAligned.No);
+			PiedPiper.PackNullableModel(writer, "foo", packRatTests, ByteAligned.No);
 
 			writer.Dispose();
 			Stream readerStream = new MemoryStream(writerStream.ToArray());
@@ -111,7 +111,7 @@ namespace BigRedProf.Data.Test
 			CodeWriter writer = new CodeWriter(writerStream);
 			PackRatTests packRatTests = new PackRatTests();
 
-			packRatTests.PackNullableModel(writer, "foo", packRatTests, ByteAligned.Yes);
+			PiedPiper.PackNullableModel(writer, "foo", packRatTests, ByteAligned.Yes);
 			Code expectedCode = "10000000 1";
 			// null bit -> 1
 			// byte alignment
@@ -133,7 +133,7 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					packRatTests.UnpackNullableModel<object>(null, packRatTests, ByteAligned.No);
+					PiedPiper.UnpackNullableModel<object>(null, packRatTests, ByteAligned.No);
 				}
 			);
 		}
@@ -147,7 +147,7 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					packRatTests.UnpackNullableModel<object>(reader, null, ByteAligned.No);
+					PiedPiper.UnpackNullableModel<object>(reader, null, ByteAligned.No);
 				}
 			);
 		}
@@ -159,7 +159,7 @@ namespace BigRedProf.Data.Test
 			CodeReader reader = PackRatTestHelper.CreateCodeReader("0");
 			PackRatTests packRatTests = new PackRatTests();
 
-			object actualModel = packRatTests.UnpackNullableModel(reader, packRatTests, ByteAligned.No);
+			object actualModel = PiedPiper.UnpackNullableModel(reader, packRatTests, ByteAligned.No);
 
 			Assert.Null(actualModel);
 		}
@@ -171,7 +171,7 @@ namespace BigRedProf.Data.Test
 			CodeReader reader = PackRatTestHelper.CreateCodeReader("0");
 			PackRatTests packRatTests = new PackRatTests();
 
-			object actualModel = packRatTests.UnpackNullableModel(reader, packRatTests, ByteAligned.Yes);
+			object actualModel = PiedPiper.UnpackNullableModel(reader, packRatTests, ByteAligned.Yes);
 
 			Assert.Null(actualModel);
 		}
@@ -183,7 +183,7 @@ namespace BigRedProf.Data.Test
 			CodeReader reader = PackRatTestHelper.CreateCodeReader("11");
 			PackRatTests packRatTests = new PackRatTests();
 
-			object actualModel = packRatTests.UnpackNullableModel(reader, packRatTests, ByteAligned.No);
+			object actualModel = PiedPiper.UnpackNullableModel(reader, packRatTests, ByteAligned.No);
 
 			Assert.Equal("foo", actualModel);
 		}
@@ -195,7 +195,7 @@ namespace BigRedProf.Data.Test
 			CodeReader reader = PackRatTestHelper.CreateCodeReader("10000000 1");
 			PackRatTests packRatTests = new PackRatTests();
 
-			object actualModel = packRatTests.UnpackNullableModel(reader, packRatTests, ByteAligned.Yes);
+			object actualModel = PiedPiper.UnpackNullableModel(reader, packRatTests, ByteAligned.Yes);
 
 			Assert.Equal("foo", actualModel);
 		}
@@ -208,7 +208,7 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					packRatTests.PackList<string>(
+					PiedPiper.PackList<string>(
 						null, 
 						new string[] { "foo" }, 
 						SchemaId.StringUtf8, 
@@ -229,7 +229,7 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					packRatTests.PackList<string>(
+					PiedPiper.PackList<string>(
 						codeWriter,
 						null,
 						SchemaId.StringUtf8,
@@ -250,7 +250,7 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentException>(
 				() =>
 				{
-					packRatTests.PackList<string>(
+					PiedPiper.PackList<string>(
 						codeWriter,
 						new string[] { "foo", null, "bar" },
 						SchemaId.StringUtf8,
@@ -270,7 +270,7 @@ namespace BigRedProf.Data.Test
 			CodeWriter writer = new CodeWriter(writerStream);
 			PackRatTests packRatTests = new PackRatTests();
 
-			packRatTests.PackList<string>(
+			PiedPiper.PackList<string>(
 				writer,
 				null,
 				SchemaId.StringUtf8,
@@ -297,7 +297,7 @@ namespace BigRedProf.Data.Test
 			CodeWriter writer = new CodeWriter(writerStream);
 			PackRatTests packRatTests = new PackRatTests();
 
-			packRatTests.PackList<string>(
+			PiedPiper.PackList<string>(
 				writer,
 				new string[] { "foo", "bar" },
 				SchemaId.StringUtf8,
@@ -326,7 +326,7 @@ namespace BigRedProf.Data.Test
 			CodeWriter writer = new CodeWriter(writerStream);
 			PackRatTests packRatTests = new PackRatTests();
 
-			packRatTests.PackList<bool>(
+			PiedPiper.PackList<bool>(
 				writer,
 				new bool[] { true, false, true, true, false },
 				SchemaId.Boolean,
@@ -362,7 +362,7 @@ namespace BigRedProf.Data.Test
 			CodeWriter writer = new CodeWriter(writerStream);
 			PackRatTests packRatTests = new PackRatTests();
 
-			packRatTests.PackList<string>(
+			PiedPiper.PackList<string>(
 				writer,
 				new string[] { "foo", null, "bar" },
 				SchemaId.StringUtf8,
@@ -392,7 +392,7 @@ namespace BigRedProf.Data.Test
 			CodeWriter writer = new CodeWriter(writerStream);
 			PackRatTests packRatTests = new PackRatTests();
 
-			packRatTests.PackList<string>(
+			PiedPiper.PackList<string>(
 				writer,
 				new string[] { "foo", null, "bar" },
 				SchemaId.StringUtf8,
@@ -423,7 +423,7 @@ namespace BigRedProf.Data.Test
 			CodeWriter writer = new CodeWriter(writerStream);
 			PackRatTests packRatTests = new PackRatTests();
 
-			packRatTests.PackList<string>(
+			PiedPiper.PackList<string>(
 				writer,
 				new string[] { "foo", null, "bar" },
 				SchemaId.StringUtf8,
@@ -454,7 +454,7 @@ namespace BigRedProf.Data.Test
 			CodeWriter writer = new CodeWriter(writerStream);
 			PackRatTests packRatTests = new PackRatTests();
 
-			packRatTests.PackList<string>(
+			PiedPiper.PackList<string>(
 				writer,
 				new string[] { "foo", null, "bar" },
 				SchemaId.StringUtf8,
@@ -485,7 +485,7 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					packRatTests.UnpackList<string>(
+					PiedPiper.UnpackList<string>(
 						null,
 						SchemaId.StringUtf8,
 						false,
@@ -503,7 +503,7 @@ namespace BigRedProf.Data.Test
 			CodeReader reader = PackRatTestHelper.CreateCodeReader("0");
 			PackRatTests packRatTests = new PackRatTests();
 
-			IList<string> actualList = packRatTests.UnpackList<string>(
+			IList<string> actualList = PiedPiper.UnpackList<string>(
 				reader,
 				SchemaId.StringUtf8,
 				true,
@@ -525,7 +525,7 @@ namespace BigRedProf.Data.Test
 			);
 			PackRatTests packRatTests = new PackRatTests();
 
-			IList<string> actualList = packRatTests.UnpackList<string>(
+			IList<string> actualList = PiedPiper.UnpackList<string>(
 				reader,
 				SchemaId.StringUtf8,
 				false,
@@ -549,7 +549,7 @@ namespace BigRedProf.Data.Test
 			);
 			PackRatTests packRatTests = new PackRatTests();
 
-			IList<bool> actualList = packRatTests.UnpackList<bool>(
+			IList<bool> actualList = PiedPiper.UnpackList<bool>(
 				reader,
 				SchemaId.Boolean,
 				false,
@@ -579,7 +579,7 @@ namespace BigRedProf.Data.Test
 			);
 			PackRatTests packRatTests = new PackRatTests();
 
-			IList<string> actualList = packRatTests.UnpackList<string>(
+			IList<string> actualList = PiedPiper.UnpackList<string>(
 				reader,
 				SchemaId.StringUtf8,
 				false,
@@ -604,7 +604,7 @@ namespace BigRedProf.Data.Test
 			);
 			PackRatTests packRatTests = new PackRatTests();
 
-			IList<string> actualList = packRatTests.UnpackList<string>(
+			IList<string> actualList = PiedPiper.UnpackList<string>(
 				reader,
 				SchemaId.StringUtf8,
 				false,
@@ -630,7 +630,7 @@ namespace BigRedProf.Data.Test
 			);
 			PackRatTests packRatTests = new PackRatTests();
 
-			IList<string> actualList = packRatTests.UnpackList<string>(
+			IList<string> actualList = PiedPiper.UnpackList<string>(
 				reader,
 				SchemaId.StringUtf8,
 				true,
@@ -656,7 +656,7 @@ namespace BigRedProf.Data.Test
 			);
 			PackRatTests packRatTests = new PackRatTests();
 
-			IList<string> actualList = packRatTests.UnpackList<string>(
+			IList<string> actualList = PiedPiper.UnpackList<string>(
 				reader,
 				SchemaId.StringUtf8,
 				true,
