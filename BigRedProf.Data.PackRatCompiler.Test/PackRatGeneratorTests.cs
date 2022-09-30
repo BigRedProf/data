@@ -24,6 +24,16 @@ namespace BigRedProf.Data.PackRatCompiler.Test
 				"_Resources/ExpectedPackRats/NullableTestModelPackRat.cs"
 			);
 		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void GeneratePackRat_ShouldWorkForListTestModel()
+		{
+			PackRatCompilerTestHelper.TestGeneratePackRat(
+				"_Resources/Models/ListTestModel.cs",
+				"_Resources/ExpectedPackRats/ListTestModelPackRat.cs"
+			);
+		}
 		#endregion
 	}
 }
