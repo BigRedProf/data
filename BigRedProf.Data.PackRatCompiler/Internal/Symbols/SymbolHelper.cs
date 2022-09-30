@@ -69,13 +69,39 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 		public static PackFieldInfo CreatePackFieldInfo(IFieldSymbol field)
 		{
 			AttributeData packFieldAttribute = GetAttributes(field, "BigRedProf.Data.PackField").First();
+			string type = field.Type.ToDisplayString();
+			bool isNullable = SymbolHelper.HasAttribute(field, "System.Runtime.CompilerServices.Nullable");
 			LinePosition startLinePosition = field.Locations[0].GetLineSpan().StartLinePosition;
+
+			// TODO: account for arrays, List<T>, non-generic lists, etc.
+
+			// HACKHACK: Surely there's a more elegant way to do this.
+			bool isList = false;
+			bool isListElementNullable = false;
+			if(type.StartsWith("System.Collections.IList<"))
+			{
+				isList = true;
+				if (type.EndsWith("?"))
+				{
+					type = type.Substring(25, type.Length - 27);
+					isNullable = true;
+				}
+				else
+				{
+					type = type.Substring(25, type.Length - 26);
+					isNullable = false;
+				}
+				isListElementNullable = type.EndsWith("?");
+			}
+
 			return new PackFieldInfo()
 			{
 				Name = field.Name,
-				Type = field.Type.ToDisplayString()
-					.Replace("?", string.Empty),	// use IsNullable field instead
-				IsNullable = SymbolHelper.HasAttribute(field, "System.Runtime.CompilerServices.Nullable"),
+				Type = type
+					.Replace("?", string.Empty),    // use IsNullable field instead
+				IsNullable = isNullable,
+				IsList = isList,
+				IsListElementNullable = isListElementNullable,
 				Position = (int)packFieldAttribute.ConstructorArguments[0].Value!,
 				SchemaId = (string)packFieldAttribute.ConstructorArguments[1].Value!,
 				SourceLineNumber = startLinePosition.Line + 1,

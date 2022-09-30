@@ -60,6 +60,16 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 		{
 			_streamWriter.WriteLine();
 		}
+
+		public void IncreaseIndentation()
+		{
+			++_indentation;
+		}
+
+		public void DecreaseIndentation()
+		{
+			--_indentation;
+		}
 		#endregion
 
 		#region IDisposable methods

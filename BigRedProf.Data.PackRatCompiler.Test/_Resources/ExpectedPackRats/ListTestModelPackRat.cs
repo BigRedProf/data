@@ -22,34 +22,38 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
 				false,
 				false,
-				ByteAligned.Yes);
+				ByteAligned.Yes
+			);
 
 			// NullableList
 			_piedPiper.PackList<string>(
 				writer,
-				model.List,
+				model.NullableList,
 				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
 				true,
 				false,
-				ByteAligned.Yes);
+				ByteAligned.Yes
+			);
 
-			// ListWithNullableElements
+			// ListOfNullableElements
 			_piedPiper.PackList<string>(
 				writer,
-				model.List,
+				model.ListOfNullableElements,
 				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
 				false,
 				true,
-				ByteAligned.Yes);
+				ByteAligned.Yes
+			);
 
-			// NonNullableListWithNullableElements
+			// NullableListOfNullableElements
 			_piedPiper.PackList<string>(
 				writer,
-				model.List,
+				model.NullableListOfNullableElements,
 				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
 				true,
 				true,
-				ByteAligned.Yes);
+				ByteAligned.Yes
+			);
 		}
 
 		public override ListTestModel UnpackModel(CodeReader reader)
@@ -66,7 +70,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			);
 
 			// NullableList
-			model.List = _piedPiper.UnpackList<string>(
+			model.NullableList = _piedPiper.UnpackList<string>(
 				reader,
 				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
 				true,
@@ -74,8 +78,8 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 				ByteAligned.Yes
 			);
 
-			// ListWithNullableElements
-			model.List = _piedPiper.UnpackList<string>(
+			// ListOfNullableElements
+			model.ListOfNullableElements = _piedPiper.UnpackList<string>(
 				reader,
 				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
 				false,
@@ -83,8 +87,8 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 				ByteAligned.Yes
 			);
 
-			// NullableListWithNullableElements
-			model.List = _piedPiper.UnpackList<string>(
+			// NullableListOfNullableElements
+			model.NullableListOfNullableElements = _piedPiper.UnpackList<string>(
 				reader,
 				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
 				true,

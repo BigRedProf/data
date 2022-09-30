@@ -11,11 +11,13 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 		#region fields
 		public string? Name { get; set; }
 		public string? Type { get; set; }
-		public bool? IsNullable { get; set; }
-		public int? Position { get; set; }
+		public bool IsNullable { get; set; }
+		public bool IsList { get; set; }
+		public bool IsListElementNullable { get; set; }
+		public int Position { get; set; }
 		public string? SchemaId { get; set; }
-		public int? SourceLineNumber { get; set; }
-		public int? SourceColumn { get; set; }
+		public int SourceLineNumber { get; set; }
+		public int SourceColumn { get; set; }
 		#endregion
 	}
 }

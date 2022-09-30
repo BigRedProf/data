@@ -125,9 +125,22 @@ namespace BigRedProf.Data.PackRatCompiler
 		)
 		{
 			writer.WriteLine($"// {field.Name}");
-			if (field.IsNullable == true)
+			if(field.IsList)
 			{
-				writer.WriteLine($"_piedPier.PackNullableModel<{field.Type}>(\"{field.SchemaId}\")");
+				writer.WriteLine($"_piedPiper.PackList<{field.Type}>(");
+				writer.IncreaseIndentation();
+				writer.WriteLine("writer,");
+				writer.WriteLine($"model.{field.Name},");
+				writer.WriteLine($"\"{field.SchemaId}\",");
+				writer.WriteLine($"{field.IsNullable.ToString().ToLower()},");
+				writer.WriteLine($"{field.IsListElementNullable.ToString().ToLower()},");
+				writer.WriteLine("ByteAligned.Yes");
+				writer.DecreaseIndentation();
+				writer.WriteLine(");");
+			}
+			else if (field.IsNullable)
+			{
+				writer.WriteLine($"_piedPier.PackNullableModel<{field.Type}>(writer, \"{field.SchemaId}\")");
 			}
 			else
 			{
@@ -143,9 +156,22 @@ namespace BigRedProf.Data.PackRatCompiler
 		)
 		{
 			writer.WriteLine($"// {field.Name}");
-			if (field.IsNullable == true)
+			if(field.IsList)
 			{
-				writer.WriteLine($"model.{field.Name} = _piedPiper.UnpackNullableModel<{field.Type}>(\"{field.SchemaId}\")");
+				writer.WriteLine($"model.{field.Name} = _piedPiper.UnpackList<{field.Type}>(");
+				writer.IncreaseIndentation();
+				writer.WriteLine($"reader,");
+				writer.WriteLine($"\"{field.SchemaId}\",");
+				writer.WriteLine($"{field.IsNullable.ToString().ToLower()},");
+				writer.WriteLine($"{field.IsListElementNullable.ToString().ToLower()},");
+				writer.WriteLine("ByteAligned.Yes");
+				writer.DecreaseIndentation();
+				writer.WriteLine(");");
+			}
+			else if (field.IsNullable)
+			{
+				writer.WriteLine($"model.{field.Name} = _piedPiper.UnpackNullableModel<{field.Type}>("
+					+ "reader, \"{field.SchemaId}\");");
 			}
 			else
 			{
