@@ -63,7 +63,7 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 
 		public static PackFieldInfo CreatePackFieldInfo(IFieldSymbol field)
 		{
-			AttributeData packListFieldAttribute = GetAttributes(field, "BigRedProf.Data.PackListField").FirstOrDefault();
+			AttributeData? packListFieldAttribute = GetAttributes(field, "BigRedProf.Data.PackListField").FirstOrDefault();
 			if (packListFieldAttribute != null)
 				return CreatePackListFieldInfo(field);
 
