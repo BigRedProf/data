@@ -32,7 +32,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
 				true,
 				false,
-				ByteAligned.Yes
+				ByteAligned.No
 			);
 
 			// ListOfNullableElements
@@ -42,7 +42,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
 				false,
 				true,
-				ByteAligned.Yes
+				ByteAligned.No
 			);
 
 			// NullableListOfNullableElements
@@ -75,7 +75,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
 				true,
 				false,
-				ByteAligned.Yes
+				ByteAligned.No
 			);
 
 			// ListOfNullableElements
@@ -84,7 +84,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
 				false,
 				true,
-				ByteAligned.Yes
+				ByteAligned.No
 			);
 
 			// NullableListOfNullableElements

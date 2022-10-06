@@ -13,9 +13,15 @@ namespace BigRedProf.Data
 	{
 		#region constructors
 		public PackFieldAttribute(int position, string schemaId)
+			: this(position, schemaId, ByteAligned.No)
+		{
+		}
+
+		public PackFieldAttribute(int position, string schemaId, ByteAligned byteAligned)
 		{
 			Position = position;
 			SchemaId = schemaId;
+			ByteAligned = byteAligned;
 		}
 		#endregion
 
@@ -34,6 +40,15 @@ namespace BigRedProf.Data
 		public string SchemaId
 		{
 			get; 
+		}
+
+		/// <summary>
+		/// Whether or not to align the code writer to a byte boundary
+		/// before packing this field.
+		/// </summary>
+		public ByteAligned ByteAligned
+		{
+			get;
 		}
 		#endregion
 	}

@@ -50,17 +50,12 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 
 		public static IList<PackFieldInfo> GetPackRatFields(INamedTypeSymbol modelClass)
 		{
-			Console.WriteLine($"** Dumping debug attribute data for {modelClass.Name}...");
-			foreach (AttributeData attribute in modelClass.GetAttributes())
-			{
-				Console.WriteLine($"@{attribute.AttributeClass}");
-				Console.WriteLine($"There are {attribute.ConstructorArguments.Length} constructor arguments.");
-				foreach (TypedConstant typedConstant in attribute.ConstructorArguments)
-					Console.WriteLine(typedConstant.Value);
-			}
-
 			return GetFields(modelClass).
-				Where(f => HasAttribute(f, "BigRedProf.Data.PackField"))
+				Where(
+					f => 
+						HasAttribute(f, "BigRedProf.Data.PackField")
+						|| HasAttribute(f, "BigRedProf.Data.PackListField")
+					)
 				.Select(f => CreatePackFieldInfo(f))
 				.OrderBy(f => f.Position)
 				.ToList();
@@ -68,7 +63,42 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 
 		public static PackFieldInfo CreatePackFieldInfo(IFieldSymbol field)
 		{
+			AttributeData packListFieldAttribute = GetAttributes(field, "BigRedProf.Data.PackListField").FirstOrDefault();
+			if (packListFieldAttribute != null)
+				return CreatePackListFieldInfo(field);
+
 			AttributeData packFieldAttribute = GetAttributes(field, "BigRedProf.Data.PackField").First();
+
+			string type = field.Type.ToDisplayString();
+			bool isNullable = SymbolHelper.HasAttribute(field, "System.Runtime.CompilerServices.Nullable");
+			LinePosition startLinePosition = field.Locations[0].GetLineSpan().StartLinePosition;
+
+			// HACKHACK: Not sure if there a way to "instantiate" the attribute and read the actual
+			// ByteAligned property. So in the mean-time we'll just have to know that the default
+			// value when not specified is ByteAligned.No. Guess that same knowledge is required
+			// below for knowing constructor order too.
+			ByteAligned byteAligned = ByteAligned.No;
+			if (packFieldAttribute.ConstructorArguments.Length >= 3)
+				byteAligned = (ByteAligned)packFieldAttribute.ConstructorArguments[2].Value!;
+
+			return new PackFieldInfo()
+			{
+				Name = field.Name,
+				Type = type
+					.Replace("?", string.Empty),
+				IsNullable = isNullable,
+				ByteAligned = byteAligned,
+				Position = (int)packFieldAttribute.ConstructorArguments[0].Value!,
+				SchemaId = (string)packFieldAttribute.ConstructorArguments[1].Value!,
+				SourceLineNumber = startLinePosition.Line + 1,
+				SourceColumn = startLinePosition.Character
+			};
+		}
+
+		public static PackListFieldInfo CreatePackListFieldInfo(IFieldSymbol field)
+		{
+			AttributeData packListFieldAttribute = GetAttributes(field, "BigRedProf.Data.PackListField").First();
+
 			string type = field.Type.ToDisplayString();
 			bool isNullable = SymbolHelper.HasAttribute(field, "System.Runtime.CompilerServices.Nullable");
 			LinePosition startLinePosition = field.Locations[0].GetLineSpan().StartLinePosition;
@@ -76,11 +106,9 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 			// TODO: account for arrays, List<T>, non-generic lists, etc.
 
 			// HACKHACK: Surely there's a more elegant way to do this.
-			bool isList = false;
-			bool isListElementNullable = false;
-			if(type.StartsWith("System.Collections.IList<"))
+			bool isElementNullable = false;
+			if (type.StartsWith("System.Collections.IList<"))
 			{
-				isList = true;
 				if (type.EndsWith("?"))
 				{
 					type = type.Substring(25, type.Length - 27);
@@ -91,19 +119,23 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 					type = type.Substring(25, type.Length - 26);
 					isNullable = false;
 				}
-				isListElementNullable = type.EndsWith("?");
+				isElementNullable = type.EndsWith("?");
+			}
+			else
+			{
+				throw new NotImplementedException("List types other than IList<T> not yet implemented.");
 			}
 
-			return new PackFieldInfo()
+			return new PackListFieldInfo()
 			{
 				Name = field.Name,
 				Type = type
-					.Replace("?", string.Empty),    // use IsNullable field instead
+					.Replace("?", string.Empty),
 				IsNullable = isNullable,
-				IsList = isList,
-				IsListElementNullable = isListElementNullable,
-				Position = (int)packFieldAttribute.ConstructorArguments[0].Value!,
-				SchemaId = (string)packFieldAttribute.ConstructorArguments[1].Value!,
+				ByteAligned = (ByteAligned)packListFieldAttribute.ConstructorArguments[2].Value!,
+				IsElementNullable = isElementNullable,
+				Position = (int)packListFieldAttribute.ConstructorArguments[0].Value!,
+				ElementSchemaId = (string)packListFieldAttribute.ConstructorArguments[1].Value!,
 				SourceLineNumber = startLinePosition.Line + 1,
 				SourceColumn = startLinePosition.Character
 			};

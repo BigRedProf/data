@@ -125,28 +125,46 @@ namespace BigRedProf.Data.PackRatCompiler
 		)
 		{
 			writer.WriteLine($"// {field.Name}");
-			if(field.IsList)
+
+			PackListFieldInfo? packListFieldInfo = field as PackListFieldInfo;
+			if(packListFieldInfo != null)
 			{
-				writer.WriteLine($"_piedPiper.PackList<{field.Type}>(");
-				writer.IncreaseIndentation();
-				writer.WriteLine("writer,");
-				writer.WriteLine($"model.{field.Name},");
-				writer.WriteLine($"\"{field.SchemaId}\",");
-				writer.WriteLine($"{field.IsNullable.ToString().ToLower()},");
-				writer.WriteLine($"{field.IsListElementNullable.ToString().ToLower()},");
-				writer.WriteLine("ByteAligned.Yes");
-				writer.DecreaseIndentation();
-				writer.WriteLine(");");
+				WritePackRatListFieldPackingCode(modelClass, packListFieldInfo, writer);
+				return;
 			}
-			else if (field.IsNullable)
+
+			if (field.IsNullable)
 			{
 				writer.WriteLine($"_piedPier.PackNullableModel<{field.Type}>(writer, \"{field.SchemaId}\")");
 			}
 			else
 			{
+				if (field.ByteAligned == ByteAligned.Yes)
+					writer.WriteLine("writer.AlignToByteBoundary();");
 				writer.WriteLine($"_piedPiper.GetPackRat<{field.Type}>(\"{field.SchemaId}\")");
 				writer.WriteLine($"\t.PackModel(writer, model.{field.Name});");
 			}
+		}
+
+		private void WritePackRatListFieldPackingCode(
+			ITypeSymbol modelClass,
+			PackListFieldInfo field,
+			CSharpWriter writer
+		)
+		{
+			writer.WriteLine($"_piedPiper.PackList<{field.Type}>(");
+			writer.IncreaseIndentation();
+			writer.WriteLine("writer,");
+			writer.WriteLine($"model.{field.Name},");
+			writer.WriteLine($"\"{field.ElementSchemaId}\",");
+			writer.WriteLine($"{field.IsNullable.ToString().ToLower()},");
+			writer.WriteLine($"{field.IsElementNullable.ToString().ToLower()},");
+			if (field.ByteAligned == ByteAligned.Yes)
+				writer.WriteLine("ByteAligned.Yes");
+			else
+				writer.WriteLine("ByteAligned.No");
+			writer.DecreaseIndentation();
+			writer.WriteLine(");");
 		}
 
 		private void WritePackRatFieldUnpackingCode(
@@ -156,19 +174,18 @@ namespace BigRedProf.Data.PackRatCompiler
 		)
 		{
 			writer.WriteLine($"// {field.Name}");
-			if(field.IsList)
+
+			PackListFieldInfo? packListFieldInfo = field as PackListFieldInfo;
+			if (packListFieldInfo != null)
 			{
-				writer.WriteLine($"model.{field.Name} = _piedPiper.UnpackList<{field.Type}>(");
-				writer.IncreaseIndentation();
-				writer.WriteLine($"reader,");
-				writer.WriteLine($"\"{field.SchemaId}\",");
-				writer.WriteLine($"{field.IsNullable.ToString().ToLower()},");
-				writer.WriteLine($"{field.IsListElementNullable.ToString().ToLower()},");
-				writer.WriteLine("ByteAligned.Yes");
-				writer.DecreaseIndentation();
-				writer.WriteLine(");");
+				WritePackRatListFieldUnpackingCode(modelClass, packListFieldInfo, writer);
+				return;
 			}
-			else if (field.IsNullable)
+
+			if (field.ByteAligned == ByteAligned.Yes)
+				writer.WriteLine("reader.AlignToByteBoundary();");
+
+			if (field.IsNullable)
 			{
 				writer.WriteLine($"model.{field.Name} = _piedPiper.UnpackNullableModel<{field.Type}>("
 					+ "reader, \"{field.SchemaId}\");");
@@ -178,6 +195,26 @@ namespace BigRedProf.Data.PackRatCompiler
 				writer.WriteLine($"model.{field.Name} = _piedPiper.GetPackRat<{field.Type}>(\"{field.SchemaId}\")");
 				writer.WriteLine($"\t.UnpackModel(reader);");
 			}
+		}
+
+		private void WritePackRatListFieldUnpackingCode(
+			ITypeSymbol modelClass,
+			PackListFieldInfo field,
+			CSharpWriter writer
+		)
+		{
+			writer.WriteLine($"model.{field.Name} = _piedPiper.UnpackList<{field.Type}>(");
+			writer.IncreaseIndentation();
+			writer.WriteLine($"reader,");
+			writer.WriteLine($"\"{field.ElementSchemaId}\",");
+			writer.WriteLine($"{field.IsNullable.ToString().ToLower()},");
+			writer.WriteLine($"{field.IsElementNullable.ToString().ToLower()},");
+			if (field.ByteAligned == ByteAligned.Yes)
+				writer.WriteLine("ByteAligned.Yes");
+			else
+				writer.WriteLine("ByteAligned.No");
+			writer.DecreaseIndentation();
+			writer.WriteLine(");");
 		}
 
 		private void ValidatePackRatFields(INamedTypeSymbol modelClass, IList<PackFieldInfo> fields)
