@@ -45,7 +45,7 @@ namespace BigRedProf.Data
 				if(attribute != null)
 				{
 					object packRat = Activator.CreateInstance(type);
-					RegisterPackRat(packRat, attribute.SchemaId);
+					AddPackRatToDictionary(packRat, attribute.SchemaId);
 				}
 			}
 		}
@@ -89,7 +89,7 @@ namespace BigRedProf.Data
 			if (schemaId == null)
 				throw new ArgumentNullException(nameof(schemaId));
 
-			RegisterPackRat(packRat, schemaId);
+			AddPackRatToDictionary(packRat, schemaId);
 		}
 
 		/// <inheritdoc/>
@@ -283,7 +283,7 @@ namespace BigRedProf.Data
 		#endregion
 
 		#region private methods
-		private void RegisterPackRat(object packRat, string schemaId)
+		private void AddPackRatToDictionary(object packRat, string schemaId)
 		{
 			Guid schemaIdAsGuid;
 			if (!Guid.TryParse(schemaId, out schemaIdAsGuid))
