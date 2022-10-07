@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 
 namespace BigRedProf.Data
@@ -26,6 +27,26 @@ namespace BigRedProf.Data
 		/// <returns></returns>
 
 		PackRat<T> GetPackRat<T>(string schemaId);
+
+		/// <summary>
+		/// Registers all the default pack rats such as <see cref="BooleanPackRat"/>, <see cref="StringPackRat"/>,
+		/// and <see cref="Int32PackRat"/>.
+		/// </summary>
+		void RegisterDefaultPackRats();
+
+		/// <summary>
+		/// Registers pack rats for all the models in a given assembly decorated with
+		/// <see cref="RegisterPackRatAttribute"/>.
+		/// </summary>
+		/// <param name="assembly">The assembly to reflect.</param>
+		/// <remarks>
+		/// This method is used in conjection with the pack rat compiler.
+		/// 1. Decorate the models in a given assembly with pack rat attributes.
+		/// 2. Run the pack rat compiler as part of the regular build.
+		/// 3. In apps consuming the assembly, call this method at start-up
+		/// to register the pack rats.
+		/// </remarks>
+		void RegisterPackRats(Assembly assembly);
 
 		/// <summary>
 		/// Packs a nullable model using the specified pack rat.

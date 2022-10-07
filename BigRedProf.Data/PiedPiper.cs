@@ -1,6 +1,8 @@
 ﻿using BigRedProf.Data.Internal.PackRats;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace BigRedProf.Data
@@ -21,11 +23,8 @@ namespace BigRedProf.Data
 		}
 		#endregion
 
-		#region methods
-		/// <summary>
-		/// Registers all the default pack rats such as <see cref="BooleanPackRat"/>, <see cref="StringPackRat"/>,
-		/// and <see cref="Int32PackRat"/>.
-		/// </summary>
+		#region IPiedPiper methods
+		/// <inheritdoc/>
 		public void RegisterDefaultPackRats()
 		{
 			RegisterPackRat<bool>(new BooleanPackRat(this), SchemaId.Boolean);
@@ -33,9 +32,24 @@ namespace BigRedProf.Data
 			RegisterPackRat<int>(new Int32PackRat(this), SchemaId.Int32);
 			RegisterPackRat<string>(new StringPackRat(this), SchemaId.StringUtf8);
 		}
-		#endregion
 
-		#region IPiedPiper methods
+		/// <inheritdoc/>
+		public void RegisterPackRats(Assembly assembly)
+		{
+			if (assembly == null)
+				throw new ArgumentNullException(nameof(assembly));
+
+			foreach(Type type in assembly.GetTypes())
+			{
+				RegisterPackRatAttribute attribute = type.GetCustomAttributes<RegisterPackRatAttribute>().FirstOrDefault();
+				if(attribute != null)
+				{
+					object packRat = Activator.CreateInstance(type);
+					RegisterPackRat(packRat, attribute.SchemaId);
+				}
+			}
+		}
+
 		/// <inheritdoc/>
 		public PackRat<T> GetPackRat<T>(string schemaId)
 		{
@@ -69,24 +83,13 @@ namespace BigRedProf.Data
 		/// <inheritdoc/>
 		public void RegisterPackRat<T>(PackRat<T> packRat, string schemaId)
 		{
-			if(packRat == null)
+			if (packRat == null)
 				throw new ArgumentNullException(nameof(packRat));
 
 			if (schemaId == null)
 				throw new ArgumentNullException(nameof(schemaId));
 
-			Guid schemaIdAsGuid;
-			if (!Guid.TryParse(schemaId, out schemaIdAsGuid))
-				throw new ArgumentException("The schema identifier must be a GUID.", nameof(schemaId));
-
-			if (_dictionary.ContainsKey(schemaIdAsGuid))
-			{
-				throw new InvalidOperationException(
-					$"A PackRat has already been registered for schema identifier {schemaId}."
-				);
-			}
-
-			_dictionary.Add(schemaIdAsGuid, packRat);
+			RegisterPackRat(packRat, schemaId);
 		}
 
 		/// <inheritdoc/>
@@ -276,6 +279,24 @@ namespace BigRedProf.Data
 			}
 
 			return list;
+		}
+		#endregion
+
+		#region private methods
+		private void RegisterPackRat(object packRat, string schemaId)
+		{
+			Guid schemaIdAsGuid;
+			if (!Guid.TryParse(schemaId, out schemaIdAsGuid))
+				throw new ArgumentException("The schema identifier must be a GUID.", nameof(schemaId));
+
+			if (_dictionary.ContainsKey(schemaIdAsGuid))
+			{
+				throw new InvalidOperationException(
+					$"A PackRat has already been registered for schema identifier {schemaId}."
+				);
+			}
+
+			_dictionary.Add(schemaIdAsGuid, packRat);
 		}
 		#endregion
 	}
