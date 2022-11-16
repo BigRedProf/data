@@ -2,10 +2,14 @@
 
   <PropertyGroup>
 	<TargetFramework>netstandard2.0</TargetFramework>
-	<Version>0.5.7</Version>
+	<Version>0.5.8</Version>
 	<RepositoryUrl>https://github.com/BigRedProf/data</RepositoryUrl>
 	<IncludeSymbols>True</IncludeSymbols>
 	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+	  <!-- Include symbol files (*.pdb) in the built .nupkg -->
+	  <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+  
   </PropertyGroup>
 
 </Project>
