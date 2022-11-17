@@ -35,5 +35,7 @@ jobs:
       run: dotnet nuget push ./BigRedProf.Data/bin/Release/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }}  --source "github" --skip-duplicate
     - name: Push BigRedProf.Data symbols package
       run: dotnet nuget push ./BigRedProf.Data/bin/Release/*.snupkg --api-key ${{ secrets.GITHUB_TOKEN }}  --source "github" --skip-duplicate
+    - name: Push BigRedProf.Data symbols package II
+      run: dotnet nuget push ./BigRedProf.Data/bin/Release/*.snupkg --symbol-api-key ${{ secrets.GITHUB_TOKEN }}  --symbol-source "github" --skip-duplicate
     - name: Push BigRedProf.Data.PackRatCompiler package
       run: dotnet nuget push ./BigRedProf.Data.PackRatCompiler/bin/Release/*.*nupkg --api-key ${{ secrets.GITHUB_TOKEN }}  --source "github" --skip-duplicate
