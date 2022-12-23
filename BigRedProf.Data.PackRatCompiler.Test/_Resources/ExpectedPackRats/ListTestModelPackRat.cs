@@ -4,6 +4,7 @@ using BigRedProf.Data;
 
 namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 {
+	[AssemblyPackRat("c3b5a06c-da78-4f48-863f-455dfbd339f6")]
 	public sealed class ListTestModelPackRat : PackRat<ListTestModel>
 	{
 		private readonly IPiedPiper _piedPiper;

@@ -42,10 +42,19 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 
 		public static bool HasAttribute(
 			ISymbol symbol, 
-			string fullyQualifiedAttributeName)
+			string fullyQualifiedAttributeName
+		)
 		{
 			return GetAttributes(symbol, fullyQualifiedAttributeName)
 				.Any();
+		}
+
+		public static AttributeData GetAttribute(
+			ISymbol symbol,
+			string fullyQualifiedAttributeName
+		)
+		{
+			return GetAttributes(symbol, fullyQualifiedAttributeName).First();
 		}
 
 		public static IList<PackFieldInfo> GetPackRatFields(INamedTypeSymbol modelClass)

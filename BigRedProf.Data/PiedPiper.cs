@@ -41,7 +41,7 @@ namespace BigRedProf.Data
 
 			foreach(Type type in assembly.GetTypes())
 			{
-				RegisterPackRatAttribute attribute = type.GetCustomAttributes<RegisterPackRatAttribute>().FirstOrDefault();
+				AssemblyPackRatAttribute attribute = type.GetCustomAttributes<AssemblyPackRatAttribute>().FirstOrDefault();
 				if(attribute != null)
 				{
 					object packRat = Activator.CreateInstance(type);
@@ -73,7 +73,7 @@ namespace BigRedProf.Data
 			if (packRat == null)
 			{
 				throw new InvalidOperationException(
-					$"The registered PackRat is of type {packRatAsObject.GetType().FullName} instead of type {typeof(T)}."
+					$"The registered PackRat is of type {packRatAsObject.GetType().FullName} instead of type {typeof(PackRat<T>).FullName}."
 				);
 			}
 
