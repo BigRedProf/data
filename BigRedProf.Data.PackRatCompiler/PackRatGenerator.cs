@@ -80,9 +80,6 @@ namespace BigRedProf.Data.PackRatCompiler
 			writer.WriteLine($"public sealed class {className} : PackRat<{modelType}>");
 			writer.WriteOpeningCurlyBrace();
 
-			writer.WriteLine("private readonly IPiedPiper _piedPiper;");
-			writer.WriteLine();
-
 			writer.WriteLine($"public {className}(IPiedPiper piedPiper)");
 			writer.WriteLine("\t: base(piedPiper)");
 			writer.WriteOpeningCurlyBrace();
@@ -139,13 +136,13 @@ namespace BigRedProf.Data.PackRatCompiler
 
 			if (field.IsNullable)
 			{
-				writer.WriteLine($"_piedPier.PackNullableModel<{field.Type}>(writer, \"{field.SchemaId}\")");
+				writer.WriteLine($"PiedPier.PackNullableModel<{field.Type}>(writer, \"{field.SchemaId}\")");
 			}
 			else
 			{
 				if (field.ByteAligned == ByteAligned.Yes)
 					writer.WriteLine("writer.AlignToByteBoundary();");
-				writer.WriteLine($"_piedPiper.GetPackRat<{field.Type}>(\"{field.SchemaId}\")");
+				writer.WriteLine($"PiedPiper.GetPackRat<{field.Type}>(\"{field.SchemaId}\")");
 				writer.WriteLine($"\t.PackModel(writer, model.{field.Name});");
 			}
 		}
@@ -156,7 +153,7 @@ namespace BigRedProf.Data.PackRatCompiler
 			CSharpWriter writer
 		)
 		{
-			writer.WriteLine($"_piedPiper.PackList<{field.Type}>(");
+			writer.WriteLine($"PiedPiper.PackList<{field.Type}>(");
 			writer.IncreaseIndentation();
 			writer.WriteLine("writer,");
 			writer.WriteLine($"model.{field.Name},");
@@ -191,12 +188,12 @@ namespace BigRedProf.Data.PackRatCompiler
 
 			if (field.IsNullable)
 			{
-				writer.WriteLine($"model.{field.Name} = _piedPiper.UnpackNullableModel<{field.Type}>("
+				writer.WriteLine($"model.{field.Name} = PiedPiper.UnpackNullableModel<{field.Type}>("
 					+ "reader, \"{field.SchemaId}\");");
 			}
 			else
 			{
-				writer.WriteLine($"model.{field.Name} = _piedPiper.GetPackRat<{field.Type}>(\"{field.SchemaId}\")");
+				writer.WriteLine($"model.{field.Name} = PiedPiper.GetPackRat<{field.Type}>(\"{field.SchemaId}\")");
 				writer.WriteLine($"\t.UnpackModel(reader);");
 			}
 		}
@@ -207,7 +204,7 @@ namespace BigRedProf.Data.PackRatCompiler
 			CSharpWriter writer
 		)
 		{
-			writer.WriteLine($"model.{field.Name} = _piedPiper.UnpackList<{field.Type}>(");
+			writer.WriteLine($"model.{field.Name} = PiedPiper.UnpackList<{field.Type}>(");
 			writer.IncreaseIndentation();
 			writer.WriteLine($"reader,");
 			writer.WriteLine($"\"{field.ElementSchemaId}\",");

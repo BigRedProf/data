@@ -7,8 +7,6 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 	[AssemblyPackRat("d3499bac-fb5d-4407-8d28-e32ed37898c6")]
 	public sealed class PointPackRat : PackRat<Point>
 	{
-		private readonly IPiedPiper _piedPiper;
-
 		public PointPackRat(IPiedPiper piedPiper)
 			: base(piedPiper)
 		{
@@ -17,11 +15,11 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 		public override void PackModel(CodeWriter writer, Point model)
 		{
 			// X
-			_piedPiper.GetPackRat<int>("FFDB57BB-BE6B-4CC3-A0F6-48596C8A8B2B")
+			PiedPiper.GetPackRat<int>("FFDB57BB-BE6B-4CC3-A0F6-48596C8A8B2B")
 				.PackModel(writer, model.X);
 
 			// Y
-			_piedPiper.GetPackRat<int>("43")
+			PiedPiper.GetPackRat<int>("43")
 				.PackModel(writer, model.Y);
 		}
 
@@ -30,11 +28,11 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			Point model = default;
 
 			// X
-			model.X = _piedPiper.GetPackRat<int>("FFDB57BB-BE6B-4CC3-A0F6-48596C8A8B2B")
+			model.X = PiedPiper.GetPackRat<int>("FFDB57BB-BE6B-4CC3-A0F6-48596C8A8B2B")
 				.UnpackModel(reader);
 
 			// Y
-			model.Y = _piedPiper.GetPackRat<int>("43")
+			model.Y = PiedPiper.GetPackRat<int>("43")
 				.UnpackModel(reader);
 
 			return model;

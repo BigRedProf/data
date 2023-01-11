@@ -7,8 +7,6 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 	[AssemblyPackRat("c3b5a06c-da78-4f48-863f-455dfbd339f6")]
 	public sealed class ListTestModelPackRat : PackRat<ListTestModel>
 	{
-		private readonly IPiedPiper _piedPiper;
-
 		public ListTestModelPackRat(IPiedPiper piedPiper)
 			: base(piedPiper)
 		{
@@ -17,7 +15,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 		public override void PackModel(CodeWriter writer, ListTestModel model)
 		{
 			// List
-			_piedPiper.PackList<string>(
+			PiedPiper.PackList<string>(
 				writer,
 				model.List,
 				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
@@ -27,7 +25,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			);
 
 			// NullableList
-			_piedPiper.PackList<string>(
+			PiedPiper.PackList<string>(
 				writer,
 				model.NullableList,
 				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
@@ -37,7 +35,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			);
 
 			// ListOfNullableElements
-			_piedPiper.PackList<string>(
+			PiedPiper.PackList<string>(
 				writer,
 				model.ListOfNullableElements,
 				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
@@ -47,7 +45,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			);
 
 			// NullableListOfNullableElements
-			_piedPiper.PackList<string>(
+			PiedPiper.PackList<string>(
 				writer,
 				model.NullableListOfNullableElements,
 				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
@@ -62,7 +60,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			ListTestModel model = default;
 
 			// List
-			model.List = _piedPiper.UnpackList<string>(
+			model.List = PiedPiper.UnpackList<string>(
 				reader,
 				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
 				false,
@@ -71,7 +69,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			);
 
 			// NullableList
-			model.NullableList = _piedPiper.UnpackList<string>(
+			model.NullableList = PiedPiper.UnpackList<string>(
 				reader,
 				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
 				true,
@@ -80,7 +78,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			);
 
 			// ListOfNullableElements
-			model.ListOfNullableElements = _piedPiper.UnpackList<string>(
+			model.ListOfNullableElements = PiedPiper.UnpackList<string>(
 				reader,
 				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
 				false,
@@ -89,7 +87,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			);
 
 			// NullableListOfNullableElements
-			model.NullableListOfNullableElements = _piedPiper.UnpackList<string>(
+			model.NullableListOfNullableElements = PiedPiper.UnpackList<string>(
 				reader,
 				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
 				true,
