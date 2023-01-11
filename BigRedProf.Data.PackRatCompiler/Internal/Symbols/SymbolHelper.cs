@@ -134,12 +134,12 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 			{
 				if (type.EndsWith("?"))
 				{
-					type = type.Substring(32, type.Length - 34);
+					type = type.Substring(33, type.Length - 35);
 					isNullable = true;
 				}
 				else
 				{
-					type = type.Substring(32, type.Length - 33);
+					type = type.Substring(33, type.Length - 34);
 					isNullable = false;
 				}
 				isElementNullable = type.EndsWith("?");
