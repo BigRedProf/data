@@ -132,7 +132,10 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 			}
 			else
 			{
-				throw new NotImplementedException("List types other than IList<T> not yet implemented.");
+				throw new NotImplementedException(
+					$"Can't process field '{field.Name}' of type '{type}'. " +
+					"List types other than IList<T> not yet implemented."
+				);
 			}
 
 			return new PackListFieldInfo()
