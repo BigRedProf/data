@@ -84,8 +84,8 @@ namespace BigRedProf.Data.PackRatCompiler
 			writer.WriteLine();
 
 			writer.WriteLine($"public {className}(IPiedPiper piedPiper)");
+			writer.WriteLine("\t: base(piedPiper)");
 			writer.WriteOpeningCurlyBrace();
-			writer.WriteLine("_piedPiper = piedPiper;");
 			writer.WriteClosingCurlyBrace();
 			writer.WriteLine();
 

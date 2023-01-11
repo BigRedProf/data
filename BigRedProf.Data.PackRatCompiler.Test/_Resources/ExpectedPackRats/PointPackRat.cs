@@ -10,8 +10,8 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 		private readonly IPiedPiper _piedPiper;
 
 		public PointPackRat(IPiedPiper piedPiper)
+			: base(piedPiper)
 		{
-			_piedPiper = piedPiper;
 		}
 
 		public override void PackModel(CodeWriter writer, Point model)
