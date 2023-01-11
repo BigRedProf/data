@@ -130,6 +130,20 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 				}
 				isElementNullable = type.EndsWith("?");
 			}
+			else if (type.StartsWith("System.Collections.Generic.IList<"))
+			{
+				if (type.EndsWith("?"))
+				{
+					type = type.Substring(32, type.Length - 34);
+					isNullable = true;
+				}
+				else
+				{
+					type = type.Substring(32, type.Length - 33);
+					isNullable = false;
+				}
+				isElementNullable = type.EndsWith("?");
+			}
 			else
 			{
 				throw new NotImplementedException(
