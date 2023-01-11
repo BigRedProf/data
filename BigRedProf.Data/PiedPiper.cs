@@ -44,7 +44,7 @@ namespace BigRedProf.Data
 				AssemblyPackRatAttribute attribute = type.GetCustomAttributes<AssemblyPackRatAttribute>().FirstOrDefault();
 				if(attribute != null)
 				{
-					object packRat = Activator.CreateInstance(type);
+					object packRat = Activator.CreateInstance(type, this);
 					AddPackRatToDictionary(packRat, attribute.SchemaId);
 				}
 			}
