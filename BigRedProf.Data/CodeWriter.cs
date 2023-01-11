@@ -67,6 +67,46 @@ namespace BigRedProf.Data
 			else
 				WriteCodeSlow(code);
 		}
+
+		/// <summary>
+		/// Useful in debugging, this method attempts to return data that's been written to the stream's
+		/// buffer.
+		/// </summary>
+		/// <param name="startOffset">The bit offset into the stream. Defaults to 0.</param>
+		/// <param name="length">The number of bits to read. Defaults to everything that's been written.</param>
+		/// <returns>The requested data as a <see cref="Code"/>.</returns>
+		/// <remarks>
+		/// This method can be very useful for debugging. Beware though that it will only work for seekable
+		/// streams.
+		/// </remarks>
+		public Code ToDebugCode(int startOffset = 0, int length = 0)
+		{
+			if (!_stream.CanSeek)
+			{
+				throw new InvalidOperationException(
+					"This method can only be called if the underlying stream is seekable."
+				);
+			}
+
+			if (startOffset < 0)
+				throw new ArgumentOutOfRangeException(nameof(startOffset), "Start offset cannot be negative.");
+
+			if (length < 0)
+				throw new ArgumentOutOfRangeException(nameof(length), "Length cannot be negative.");
+
+			long streamLength = _stream.Length + _offsetIntoCurrentByte;
+			if (startOffset + length > streamLength)
+			{
+				throw new ArgumentOutOfRangeException(
+					nameof(length),
+					"Start offset plus length exceeds stream length."
+				);
+			}
+
+			throw new NotImplementedException();
+
+
+		}
 		#endregion
 
 		#region IDisposable methods

@@ -113,6 +113,100 @@ namespace BigRedProf.Data.Test
 			Assert.Equal(0b11110001, bytes[8192]);
 			Assert.Equal(0b00000111, bytes[8193]);
 		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void ToDebugCode_ShouldWorkThrowWhenStartIsNegative()
+		{
+			CodeWriter codeWriter = new CodeWriter(new MemoryStream());
+			Assert.Throws<ArgumentOutOfRangeException>(
+				() =>
+				{
+					codeWriter.ToDebugCode(-1);
+				}
+			);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void ToDebugCode_ShouldWorkThrowWhenLengthIsNegative()
+		{
+			CodeWriter codeWriter = new CodeWriter(new MemoryStream());
+			Assert.Throws<ArgumentOutOfRangeException>(
+				() =>
+				{
+					codeWriter.ToDebugCode(0, -1);
+				}
+			);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void ToDebugCode_ShouldWorkThrowWhenLengthIsTooLong()
+		{
+			CodeWriter codeWriter = new CodeWriter(new MemoryStream());
+			codeWriter.WriteCode("1111 0000 1111 000");
+			Assert.Throws<ArgumentOutOfRangeException>(
+				() =>
+				{
+					codeWriter.ToDebugCode(0, 16);
+				}
+			);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void ToDebugCode_ShouldWorkForOneByteWrites()
+		{
+			CodeWriter codeWriter;
+
+			codeWriter	= new CodeWriter(new MemoryStream());
+			codeWriter.WriteCode("0");
+			Assert.Equal("0", codeWriter.ToDebugCode());
+
+			codeWriter = new CodeWriter(new MemoryStream());
+			codeWriter.WriteCode("1");
+			Assert.Equal("1", codeWriter.ToDebugCode());
+
+			codeWriter = new CodeWriter(new MemoryStream());
+			codeWriter.WriteCode("10110");
+			Assert.Equal("10110", codeWriter.ToDebugCode());
+
+			codeWriter = new CodeWriter(new MemoryStream());
+			codeWriter.WriteCode("1011 1101");
+			Assert.Equal("11 1101", codeWriter.ToDebugCode(2));
+
+			codeWriter = new CodeWriter(new MemoryStream());
+			codeWriter.WriteCode("0110 0010");
+			Assert.Equal("0001", codeWriter.ToDebugCode(3, 4));
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void ToDebugCode_ShouldWorkForMultiByteWrites()
+		{
+			CodeWriter codeWriter;
+
+			codeWriter = new CodeWriter(new MemoryStream());
+			codeWriter.WriteCode("00000000 00000000");
+			Assert.Equal("00000000 00000000", codeWriter.ToDebugCode());
+
+			codeWriter = new CodeWriter(new MemoryStream());
+			codeWriter.WriteCode("11111111 11111111");
+			Assert.Equal("11111111 11111111", codeWriter.ToDebugCode());
+
+			codeWriter = new CodeWriter(new MemoryStream());
+			codeWriter.WriteCode("10110001 00110110 10111101 0");
+			Assert.Equal("10110001 00110110 10111101 0", codeWriter.ToDebugCode());
+
+			codeWriter = new CodeWriter(new MemoryStream());
+			codeWriter.WriteCode("10110001 00110110 10111101 0");
+			Assert.Equal("110001 00110110 10111101 0", codeWriter.ToDebugCode(2));
+
+			codeWriter = new CodeWriter(new MemoryStream());
+			codeWriter.WriteCode("10110001 00110110 10111101 0");
+			Assert.Equal("10001 00110110 1", codeWriter.ToDebugCode(3, 14));
+		}
 		#endregion
 	}
 }
