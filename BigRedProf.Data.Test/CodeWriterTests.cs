@@ -162,23 +162,23 @@ namespace BigRedProf.Data.Test
 
 			codeWriter	= new CodeWriter(new MemoryStream());
 			codeWriter.WriteCode("0");
-			Assert.Equal("0", codeWriter.ToDebugCode());
+			Assert.Equal<Code>("0", codeWriter.ToDebugCode());
 
 			codeWriter = new CodeWriter(new MemoryStream());
 			codeWriter.WriteCode("1");
-			Assert.Equal("1", codeWriter.ToDebugCode());
+			Assert.Equal<Code>("1", codeWriter.ToDebugCode());
 
 			codeWriter = new CodeWriter(new MemoryStream());
-			codeWriter.WriteCode("10110");
-			Assert.Equal("10110", codeWriter.ToDebugCode());
+			codeWriter.WriteCode("1011 001");
+			Assert.Equal<Code>("1011 001", codeWriter.ToDebugCode());
 
 			codeWriter = new CodeWriter(new MemoryStream());
 			codeWriter.WriteCode("1011 1101");
-			Assert.Equal("11 1101", codeWriter.ToDebugCode(2));
+			Assert.Equal<Code>("11 1101", codeWriter.ToDebugCode(2));
 
 			codeWriter = new CodeWriter(new MemoryStream());
 			codeWriter.WriteCode("0110 0010");
-			Assert.Equal("0001", codeWriter.ToDebugCode(3, 4));
+			Assert.Equal<Code>("0001", codeWriter.ToDebugCode(3, 4));
 		}
 
 		[Fact]
@@ -189,23 +189,31 @@ namespace BigRedProf.Data.Test
 
 			codeWriter = new CodeWriter(new MemoryStream());
 			codeWriter.WriteCode("00000000 00000000");
-			Assert.Equal("00000000 00000000", codeWriter.ToDebugCode());
+			Assert.Equal<Code>("00000000 00000000", codeWriter.ToDebugCode());
 
 			codeWriter = new CodeWriter(new MemoryStream());
 			codeWriter.WriteCode("11111111 11111111");
-			Assert.Equal("11111111 11111111", codeWriter.ToDebugCode());
+			Assert.Equal<Code>("11111111 11111111", codeWriter.ToDebugCode());
+
+			codeWriter = new CodeWriter(new MemoryStream());
+			codeWriter.WriteCode("11111111 11111111 0101010");
+			Assert.Equal<Code>("11111111 11111111 0101010", codeWriter.ToDebugCode());
+
+			codeWriter = new CodeWriter(new MemoryStream());
+			codeWriter.WriteCode("11111111 11111111 0000111");
+			Assert.Equal<Code>("11111111 11111111 0000111", codeWriter.ToDebugCode());
 
 			codeWriter = new CodeWriter(new MemoryStream());
 			codeWriter.WriteCode("10110001 00110110 10111101 0");
-			Assert.Equal("10110001 00110110 10111101 0", codeWriter.ToDebugCode());
+			Assert.Equal<Code>("10110001 00110110 10111101 0", codeWriter.ToDebugCode());
 
 			codeWriter = new CodeWriter(new MemoryStream());
 			codeWriter.WriteCode("10110001 00110110 10111101 0");
-			Assert.Equal("110001 00110110 10111101 0", codeWriter.ToDebugCode(2));
+			Assert.Equal<Code>("110001 00110110 10111101 0", codeWriter.ToDebugCode(2));
 
 			codeWriter = new CodeWriter(new MemoryStream());
 			codeWriter.WriteCode("10110001 00110110 10111101 0");
-			Assert.Equal("10001 00110110 1", codeWriter.ToDebugCode(3, 14));
+			Assert.Equal<Code>("10001 00110110 1", codeWriter.ToDebugCode(3, 14));
 		}
 		#endregion
 	}

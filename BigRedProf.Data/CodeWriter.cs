@@ -88,13 +88,18 @@ namespace BigRedProf.Data
 				);
 			}
 
+			long streamLength = (_stream.Length * 8) + _offsetIntoCurrentByte;
+			if (streamLength > int.MaxValue)
+				throw new InvalidOperationException("Length of stream cannot exceed Int32.MaxValue.");
+
 			if (startOffset < 0)
 				throw new ArgumentOutOfRangeException(nameof(startOffset), "Start offset cannot be negative.");
 
 			if (length < 0)
 				throw new ArgumentOutOfRangeException(nameof(length), "Length cannot be negative.");
+			if (length == 0)
+				length = (int)streamLength - startOffset;
 
-			long streamLength = _stream.Length + _offsetIntoCurrentByte;
 			if (startOffset + length > streamLength)
 			{
 				throw new ArgumentOutOfRangeException(
@@ -103,9 +108,26 @@ namespace BigRedProf.Data
 				);
 			}
 
-			throw new NotImplementedException();
+			byte[] newBuffer = new byte[streamLength / 8 + 1];
+			long currentStreamPosition = _stream.Position;
+			_stream.Seek(0, SeekOrigin.Begin);
+			_stream.Read(newBuffer, 0, newBuffer.Length - 1);
+			_stream.Seek(currentStreamPosition, SeekOrigin.Begin);
+			newBuffer[newBuffer.Length - 1] = _currentByte;
 
+			CodeReader codeReader = new CodeReader(new MemoryStream(newBuffer));
+			Code code = codeReader.Read((int) streamLength);
 
+			// HACKHACK: Not the most elegant way to do this, but probably fine for a debug method.
+			if(startOffset != 0 || length != streamLength)
+			{
+				string codeAsString = code;
+				codeAsString = codeAsString.Replace(" ", string.Empty);
+				codeAsString = codeAsString.Substring(startOffset, length);
+				code = codeAsString;
+			}
+
+			return code;
 		}
 		#endregion
 
