@@ -104,7 +104,7 @@ namespace BigRedProf.Data.PackRatCompiler
 
 			writer.WriteLine($"public override {modelType} UnpackModel(CodeReader reader)");
 			writer.WriteOpeningCurlyBrace();
-			writer.WriteLine($"{modelType} model = default;");
+			writer.WriteLine($"{modelType} model = new {modelType}();");
 			writer.WriteLine();
 
 			for (int i = 0; i < fields.Count; ++i)

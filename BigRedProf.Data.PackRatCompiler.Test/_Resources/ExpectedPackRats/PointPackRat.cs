@@ -25,7 +25,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 
 		public override Point UnpackModel(CodeReader reader)
 		{
-			Point model = default;
+			Point model = new Point();
 
 			// X
 			model.X = PiedPiper.GetPackRat<int>("FFDB57BB-BE6B-4CC3-A0F6-48596C8A8B2B")

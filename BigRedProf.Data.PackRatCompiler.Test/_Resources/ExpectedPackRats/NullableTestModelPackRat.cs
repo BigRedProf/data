@@ -25,7 +25,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 
 		public override NullableTestModel UnpackModel(CodeReader reader)
 		{
-			NullableTestModel model = default;
+			NullableTestModel model = new NullableTestModel();
 
 			// NullableField
 			model.NullableField = PiedPiper.GetPackRat<string>("9CDF52B4-4C47-4B6D-BC17-34F33312B7A7")

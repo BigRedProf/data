@@ -57,7 +57,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 
 		public override ListTestModel UnpackModel(CodeReader reader)
 		{
-			ListTestModel model = default;
+			ListTestModel model = new ListTestModel();
 
 			// List
 			model.List = PiedPiper.UnpackList<string>(
