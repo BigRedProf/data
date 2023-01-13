@@ -28,6 +28,7 @@ namespace BigRedProf.Data
 		public void RegisterDefaultPackRats()
 		{
 			RegisterPackRat<bool>(new BooleanPackRat(this), SchemaId.Boolean);
+			RegisterPackRat<Code>(new CodePackRat(this), SchemaId.Code);
 			RegisterPackRat<int>(new EfficientWholeNumber31PackRat(this), SchemaId.EfficientWholeNumber31);
 			RegisterPackRat<int>(new Int32PackRat(this), SchemaId.Int32);
 			RegisterPackRat<string>(new StringPackRat(this), SchemaId.StringUtf8);

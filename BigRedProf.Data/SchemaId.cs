@@ -32,6 +32,11 @@ namespace BigRedProf.Data
 		public const string Char = "0958DB49-3BED-41ED-9AE0-BEC19F281400";
 
 		/// <summary>
+		/// The schema identifier for the <see cref="Code"/> type.
+		/// </summary>
+		public const string Code = "124C3883-2B87-4DF2-B28D-70FD5C96D178";
+
+		/// <summary>
 		/// The schema identifier for the <see cref="DateTime"/> type.
 		/// </summary>
 		public const string DateTime = "E231824C-AFFE-4369-8DB8-D46242AF5E97";
