@@ -6,9 +6,9 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 	public class Point
 	{
 		[PackField(2, "43")]
-		public int Y;
+		public int Y{ get; set; }
 
 		[PackField(1, SchemaId.Int32)]
-		public int X;
+		public int X { get; set; }
 	}
 }

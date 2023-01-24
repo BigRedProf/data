@@ -6,9 +6,9 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 	public class NullableTestModel
 	{
 		[PackField(1, SchemaId.StringUtf8)]
-		public string? NullableField;
+		public string? NullableField { get; set; }
 
 		[PackField(2, SchemaId.StringUtf8)]
-		public string NonNullableField;
+		public string NonNullableField { get; set; }
 	}
 }

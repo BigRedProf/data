@@ -7,15 +7,15 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 	public class ListTestModel
 	{
 		[PackListField(1, SchemaId.StringUtf8, ByteAligned.Yes)]
-		public IList<string> List;
+		public IList<string> List { get; set; }
 
 		[PackListField(2, SchemaId.StringUtf8, ByteAligned.No)]
-		public IList<string>? NullableList;
+		public IList<string>? NullableList { get; set; }
 
 		[PackListField(3, SchemaId.StringUtf8, ByteAligned.No)]
-		public IList<string?> ListOfNullableElements;
+		public IList<string?> ListOfNullableElements { get; set; }
 
 		[PackListField(4, SchemaId.StringUtf8, ByteAligned.Yes)]
-		public IList<string?>? NullableListOfNullableElements;
+		public IList<string?>? NullableListOfNullableElements { get; set; }
 	}
 }

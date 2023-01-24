@@ -32,6 +32,16 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 			return typeSymbol.GetMembers().OfType<IFieldSymbol>();
 		}
 
+		public static IEnumerable<IPropertySymbol> GetProperties(INamedTypeSymbol typeSymbol)
+		{
+			return typeSymbol.GetMembers().OfType<IPropertySymbol>();
+		}
+
+		public static IEnumerable<ISymbol> GetFieldsAndProperties(INamedTypeSymbol typeSymbol)
+		{
+			return typeSymbol.GetMembers().Where(m => m is IFieldSymbol || m is IPropertySymbol);
+		}
+
 		public static IEnumerable<AttributeData> GetAttributes(
 			ISymbol symbol,
 			string fullyQualifiedAttributeName)
@@ -59,13 +69,23 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 
 		public static IList<PackFieldInfo> GetPackRatFields(INamedTypeSymbol modelClass)
 		{
-			return GetFields(modelClass).
+			return GetFieldsAndProperties(modelClass).
 				Where(
 					f => 
 						HasAttribute(f, "BigRedProf.Data.PackField")
 						|| HasAttribute(f, "BigRedProf.Data.PackListField")
 					)
-				.Select(f => CreatePackFieldInfo(f))
+				.Select(m =>
+					{
+						IFieldSymbol? f = m as IFieldSymbol;
+						if(f != null )
+							return CreatePackFieldInfo(f);
+						IPropertySymbol? p = m as IPropertySymbol;
+						if(p != null)
+							return CreatePackFieldInfo(p);
+						throw new InvalidOperationException("Not field or property.");
+					}
+				)
 				.OrderBy(f => f.Position)
 				.ToList();
 		}
@@ -93,6 +113,40 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 			return new PackFieldInfo()
 			{
 				Name = field.Name,
+				Type = type
+					.Replace("?", string.Empty),
+				IsNullable = isNullable,
+				ByteAligned = byteAligned,
+				Position = (int)packFieldAttribute.ConstructorArguments[0].Value!,
+				SchemaId = (string)packFieldAttribute.ConstructorArguments[1].Value!,
+				SourceLineNumber = startLinePosition.Line + 1,
+				SourceColumn = startLinePosition.Character
+			};
+		}
+
+		public static PackFieldInfo CreatePackFieldInfo(IPropertySymbol property)
+		{
+			AttributeData? packListFieldAttribute = GetAttributes(property, "BigRedProf.Data.PackListField").FirstOrDefault();
+			if (packListFieldAttribute != null)
+				return CreatePackListFieldInfo(property);
+
+			AttributeData packFieldAttribute = GetAttributes(property, "BigRedProf.Data.PackField").First();
+
+			string type = property.Type.ToDisplayString();
+			bool isNullable = SymbolHelper.HasAttribute(property, "System.Runtime.CompilerServices.Nullable");
+			LinePosition startLinePosition = property.Locations[0].GetLineSpan().StartLinePosition;
+
+			// HACKHACK: Not sure if there a way to "instantiate" the attribute and read the actual
+			// ByteAligned property. So in the mean-time we'll just have to know that the default
+			// value when not specified is ByteAligned.No. Guess that same knowledge is required
+			// below for knowing constructor order too.
+			ByteAligned byteAligned = ByteAligned.No;
+			if (packFieldAttribute.ConstructorArguments.Length >= 3)
+				byteAligned = (ByteAligned)packFieldAttribute.ConstructorArguments[2].Value!;
+
+			return new PackFieldInfo()
+			{
+				Name = property.Name,
 				Type = type
 					.Replace("?", string.Empty),
 				IsNullable = isNullable,
@@ -155,6 +209,69 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 			return new PackListFieldInfo()
 			{
 				Name = field.Name,
+				Type = type
+					.Replace("?", string.Empty),
+				IsNullable = isNullable,
+				ByteAligned = (ByteAligned)packListFieldAttribute.ConstructorArguments[2].Value!,
+				IsElementNullable = isElementNullable,
+				Position = (int)packListFieldAttribute.ConstructorArguments[0].Value!,
+				ElementSchemaId = (string)packListFieldAttribute.ConstructorArguments[1].Value!,
+				SourceLineNumber = startLinePosition.Line + 1,
+				SourceColumn = startLinePosition.Character
+			};
+		}
+
+		public static PackListFieldInfo CreatePackListFieldInfo(IPropertySymbol property)
+		{
+			AttributeData packListFieldAttribute = GetAttributes(property, "BigRedProf.Data.PackListField").First();
+
+			string type = property.Type.ToDisplayString();
+			bool isNullable = SymbolHelper.HasAttribute(property, "System.Runtime.CompilerServices.Nullable");
+			LinePosition startLinePosition = property.Locations[0].GetLineSpan().StartLinePosition;
+
+			// TODO: account for arrays, List<T>, non-generic lists, etc.
+
+			// HACKHACK: Surely there's a more elegant way to do this.
+			bool isElementNullable = false;
+			if (type.StartsWith("System.Collections.IList<"))
+			{
+				if (type.EndsWith("?"))
+				{
+					type = type.Substring(25, type.Length - 27);
+					isNullable = true;
+				}
+				else
+				{
+					type = type.Substring(25, type.Length - 26);
+					isNullable = false;
+				}
+				isElementNullable = type.EndsWith("?");
+			}
+			else if (type.StartsWith("System.Collections.Generic.IList<"))
+			{
+				if (type.EndsWith("?"))
+				{
+					type = type.Substring(33, type.Length - 35);
+					isNullable = true;
+				}
+				else
+				{
+					type = type.Substring(33, type.Length - 34);
+					isNullable = false;
+				}
+				isElementNullable = type.EndsWith("?");
+			}
+			else
+			{
+				throw new NotImplementedException(
+					$"Can't process field '{property.Name}' of type '{type}'. " +
+					"List types other than IList<T> not yet implemented."
+				);
+			}
+
+			return new PackListFieldInfo()
+			{
+				Name = property.Name,
 				Type = type
 					.Replace("?", string.Empty),
 				IsNullable = isNullable,
