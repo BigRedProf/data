@@ -2,8 +2,8 @@
   "profiles": {
     "BigRedProf.Data.PackRatCompiler": {
       "commandName": "Project",
-      "commandLineArgs": "C:\\temp\\prt\\prt\\prt.csproj -o c:\\temp\\prt\\out",
-      "workingDirectory": "C:\\code\\BigRedProf\\data\\BigRedProf.Data.PackRatCompiler\\bin\\Debug\\net6.0"
+      "commandLineArgs": ".\\BigRedProf.Digihouse.BlazorWasm.csproj -o c:\\temp\\prc",
+      "workingDirectory": "C:\\code\\BigRedProf\\digihouse\\BlazorWasm"
     }
   }
 }
