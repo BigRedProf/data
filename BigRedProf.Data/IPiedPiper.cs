@@ -122,13 +122,14 @@ namespace BigRedProf.Data
 		/// <returns></returns>
 		Code EncodeModel<M>(M model, string schemaId);
 
-		/// <summary>
-		/// Decodes a model using the <see cref="PackRat{M}"/> registered for the provided schema.
-		/// </summary>
-		/// <typeparam name="M"></typeparam>
-		/// <param name="code">The encoded model.</param>
-		/// <returns>The model.</returns>
-		M DecodeModel<M>(Code code);
+        /// <summary>
+        /// Decodes a model using the <see cref="PackRat{M}"/> registered for the provided schema.
+        /// </summary>
+        /// <typeparam name="M"></typeparam>
+        /// <param name="code">The encoded model.</param>
+        /// <param name="schemaId">The schema identifier.</param>
+        /// <returns>The model.</returns>
+        M DecodeModel<M>(Code code, string schemaId);
 	}
 	#endregion
 }

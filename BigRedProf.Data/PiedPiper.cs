@@ -289,7 +289,7 @@ namespace BigRedProf.Data
         }
 
         /// <inheritdoc/>
-        public M DecodeModel<M>(Code code)
+        public M DecodeModel<M>(Code code, string schemaId)
         {
             throw new NotImplementedException();
         }
