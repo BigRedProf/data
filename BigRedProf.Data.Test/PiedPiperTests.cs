@@ -146,6 +146,34 @@ namespace BigRedProf.Data.Test
 			PackRat<bool> packRat2 = piedPiper.GetPackRat<bool>(schemaId);
 			Assert.Equal(packRat1, packRat2);
 		}
-		#endregion
-	}
+        
+		[Fact]
+        [Trait("Region", "methods")]
+        public void EncodeModel_ShouldThrowWhenModelIsNull()
+        {
+			Assert.False(true);
+        }
+
+        [Fact]
+        [Trait("Region", "methods")]
+        public void EncodeModel_ShouldWork()
+        {
+            Assert.False(true);
+        }
+
+        [Fact]
+        [Trait("Region", "methods")]
+        public void DecodeModel_ShouldThrowWhenCodeIsNull()
+        {
+            Assert.False(true);
+        }
+
+        [Fact]
+        [Trait("Region", "methods")]
+        public void DecodeModel_ShouldWork()
+        {
+            Assert.False(true);
+        }
+        #endregion
+    }
 }

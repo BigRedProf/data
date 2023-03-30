@@ -281,10 +281,23 @@ namespace BigRedProf.Data
 
 			return list;
 		}
-		#endregion
 
-		#region private methods
-		private void AddPackRatToDictionary(object packRat, string schemaId)
+		/// <inheritdoc/>
+        public Code EncodeModel<M>(M model, string schemaId)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc/>
+        public M DecodeModel<M>(Code code)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region private methods
+        private void AddPackRatToDictionary(object packRat, string schemaId)
 		{
 			Guid schemaIdAsGuid;
 			if (!Guid.TryParse(schemaId, out schemaIdAsGuid))
@@ -299,6 +312,6 @@ namespace BigRedProf.Data
 
 			_dictionary.Add(schemaIdAsGuid, packRat);
 		}
-		#endregion
-	}
+        #endregion
+    }
 }
