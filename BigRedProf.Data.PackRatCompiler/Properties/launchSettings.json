@@ -1,9 +1,29 @@
 {
-  "profiles": {
-    "BigRedProf.Data.PackRatCompiler": {
-      "commandName": "Project",
-      "commandLineArgs": ".\\BigRedProf.Digihouse.BlazorWasm.csproj -o c:\\temp\\prc",
-      "workingDirectory": "C:\\code\\BigRedProf\\digihouse\\BlazorWasm"
-    }
-  }
+	"profiles":
+	{
+		"temp-prt":
+		{
+			"commandName": "Project",
+			"commandLineArgs": ".\\prt.csproj -o c:\\temp\\prt\\out",
+			"workingDirectory": "C:\\temp\\prt\\prt"
+		},
+		"temp-prt0":
+		{
+			"commandName": "Project",
+			"commandLineArgs": ".\\prt.csproj -o c:\\temp\\prt0\\out",
+			"workingDirectory": "C:\\temp\\prt0\\prt"
+		},
+		"temp-prt2":
+		{
+			"commandName": "Project",
+			"commandLineArgs": ".\\BigRedProf.Digihouse.BlazorWasm.csproj -o c:\\temp\\prt2\\out",
+			"workingDirectory": "C:\\temp\\prt2\\BlazorWasm"
+		},
+		"digihouse-blazorwasm":
+		{
+			"commandName": "Project",
+			"commandLineArgs": ".\\BigRedProf.Digihouse.BlazorWasm.csproj -o c:\\temp\\prc",
+			"workingDirectory": "C:\\code\\BigRedProf\\digihouse\\BlazorWasm"
+		}
+	}
 }
