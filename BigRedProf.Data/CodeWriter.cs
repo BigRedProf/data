@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BigRedProf.Data.Internal;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -171,6 +172,8 @@ namespace BigRedProf.Data
 			_stream.WriteByte(_currentByte);
 			_currentByte = 0;
 			_offsetIntoCurrentByte = 0;
+
+			UpdateBitAwareStream();
 		}
 
 		private void WriteBit(Bit bit)
@@ -184,6 +187,8 @@ namespace BigRedProf.Data
 
 			if (_offsetIntoCurrentByte == 8)
 				WriteCurrentByte();
+
+			UpdateBitAwareStream();
 		}
 
 		private void WriteCodeFast(Code code)
@@ -198,6 +203,8 @@ namespace BigRedProf.Data
 
 			if (lastByteBitLength != 0)
 				WriteCodeSlow(code[fullByteLength * 8, lastByteBitLength]);
+
+			UpdateBitAwareStream();
 		}
 
 		private void WriteCodeSlow(Code code)
@@ -206,6 +213,18 @@ namespace BigRedProf.Data
 
 			foreach (Bit bit in code)
 				WriteBit(bit);
+
+			UpdateBitAwareStream();
+		}
+
+		private void UpdateBitAwareStream()
+		{
+			IBitAwareStream bitAwareStream = _stream as IBitAwareStream;
+			if (bitAwareStream != null)
+			{
+				bitAwareStream.CurrentByte = _currentByte;
+				bitAwareStream.OffsetIntoCurrentByte = _offsetIntoCurrentByte;
+			}
 		}
 		#endregion
 	}

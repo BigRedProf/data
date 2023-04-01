@@ -101,6 +101,19 @@ namespace BigRedProf.Data
 			: this(byteArray, byteArray.Length * 8)
 		{
 		}
+
+		/// <summary>
+		/// Creates a new <see cref="Code"/> from the specified array of bytes.
+		/// </summary>
+		/// <param name="byteArray">The byte array that comprises the code.</param>
+		/// <param name="length">The length of code, in bits.</param>
+		/// <param name="lastByte">The last byte which will be partly used based on length.</param>
+		/// <exception cref="ArgumentNullException"></exception>
+		public Code(byte[] byteArray, int length, byte lastByte)
+			: this(byteArray, length)
+		{
+			_byteArray[_byteArray.Length - 1] = lastByte;
+		}
 		#endregion
 
 		#region properties
@@ -219,6 +232,13 @@ namespace BigRedProf.Data
 					++currentOffset;
 				}
 			}
+		}
+		#endregion
+
+		#region methods
+		public byte[] ToByteArray()
+		{
+			return _byteArray;
 		}
 		#endregion
 

@@ -154,7 +154,7 @@ namespace BigRedProf.Data.Test
             IPiedPiper piedPiper = new PiedPiper();
             piedPiper.RegisterDefaultPackRats();
 
-            Assert.Throws<InvalidOperationException>(
+            Assert.Throws<ArgumentNullException>(
                 () =>
                 {
                     piedPiper.EncodeModel<string>(null, SchemaId.StringUtf8);
@@ -162,48 +162,72 @@ namespace BigRedProf.Data.Test
             );
         }
 
-        [Fact]
+		[Fact]
+		[Trait("Region", "methods")]
+		public void EncodeModel_ShouldThrowWhenSchemaIdIsNull()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterDefaultPackRats();
+
+			Assert.Throws<ArgumentNullException>(
+				() =>
+				{
+					piedPiper.EncodeModel<string>("foo", null);
+				}
+			);
+		}
+
+		[Fact]
         [Trait("Region", "methods")]
-        public void EncodeModel_ShouldWork()
+        public void EncodeModel_And_DecodeModel_ShouldWork()
         {
             IPiedPiper piedPiper = new PiedPiper();
             piedPiper.RegisterDefaultPackRats();
 
-            string model = "Go Big Red!";
-            Code actualCode = piedPiper.EncodeModel<string>(model, SchemaId.StringUtf8);
-
-            string expectedCode = "1";
-            Assert.Equal(expectedCode, actualCode);
+			TestModelEncodeAndDecode<bool>(piedPiper, true, SchemaId.Boolean);
+			TestModelEncodeAndDecode<int>(piedPiper, 43, SchemaId.Int32);
+			TestModelEncodeAndDecode<int>(piedPiper, 70719495, SchemaId.EfficientWholeNumber31);
+			TestModelEncodeAndDecode<string>(piedPiper, "Go Big Red!", SchemaId.StringUtf8);
         }
 
-        [Fact]
+		[Fact]
+		[Trait("Region", "methods")]
+		public void DecodeModel_ShouldThrowWhenCodeIsNull()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterDefaultPackRats();
+
+			Assert.Throws<ArgumentNullException>(
+				() =>
+				{
+					piedPiper.DecodeModel<string>(null, SchemaId.StringUtf8);
+				}
+			);
+		}
+
+		[Fact]
         [Trait("Region", "methods")]
-        public void DecodeModel_ShouldThrowWhenCodeIsNull()
+        public void DecodeModel_ShouldThrowWhenSchemaIdIsNull()
         {
             IPiedPiper piedPiper = new PiedPiper();
             piedPiper.RegisterDefaultPackRats();
 
-            Assert.Throws<InvalidOperationException>(
+            Assert.Throws<ArgumentNullException>(
                 () =>
                 {
-                    piedPiper.DecodeModel<string>(null, SchemaId.StringUtf8);
+                    piedPiper.DecodeModel<string>("100", null);
                 }
             );
         }
+		#endregion
 
-        [Fact]
-        [Trait("Region", "methods")]
-        public void DecodeModel_ShouldWork()
-        {
-            IPiedPiper piedPiper = new PiedPiper();
-            piedPiper.RegisterDefaultPackRats();
-
-            Code code = "1";
-            string actualModel = piedPiper.DecodeModel<string>(code, SchemaId.StringUtf8);
-
-            string expectedModel = "Go Big Red!";
-            Assert.Equal(expectedModel, actualModel);
-        }
-        #endregion
-    }
+		#region private methods
+		private void TestModelEncodeAndDecode<M>(IPiedPiper piedPiper, M model, string schemaId)
+		{
+			Code encodedModel = piedPiper.EncodeModel<M>(model, schemaId);
+			M decodedModel = piedPiper.DecodeModel<M>(encodedModel, schemaId);
+			Assert.Equal(model, decodedModel);
+		}
+		#endregion
+	}
 }

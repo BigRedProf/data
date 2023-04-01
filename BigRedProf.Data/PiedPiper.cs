@@ -1,6 +1,8 @@
-﻿using BigRedProf.Data.Internal.PackRats;
+﻿using BigRedProf.Data.Internal;
+using BigRedProf.Data.Internal.PackRats;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -285,19 +287,48 @@ namespace BigRedProf.Data
 		/// <inheritdoc/>
         public Code EncodeModel<M>(M model, string schemaId)
         {
-            throw new NotImplementedException();
+			if (model == null)
+				throw new ArgumentNullException(nameof(model));
+
+			if (schemaId == null)
+				throw new ArgumentNullException(nameof(schemaId));
+
+			PackRat<M> packRat = GetPackRat<M>(schemaId);
+			CodeStream codeStream = new CodeStream();
+			using(CodeWriter codeWriter = new CodeWriter(codeStream))
+			{
+				packRat.PackModel(codeWriter, model);
+			}
+			Code code = codeStream.ToCode();
+
+									
+			return code;
         }
 
         /// <inheritdoc/>
         public M DecodeModel<M>(Code code, string schemaId)
         {
-            throw new NotImplementedException();
-        }
+            if(code == null)
+				throw new ArgumentNullException(nameof(code));
 
-        #endregion
+			if(schemaId == null)
+				throw new ArgumentNullException(nameof(schemaId));
 
-        #region private methods
-        private void AddPackRatToDictionary(object packRat, string schemaId)
+			M model;
+			PackRat<M> packRat = GetPackRat<M>(schemaId);
+			MemoryStream memoryStream = new MemoryStream(code.ToByteArray());
+			using (CodeReader codeReader = new CodeReader(memoryStream))
+			{
+				model = packRat.UnpackModel(codeReader);
+			}
+
+			return model;
+		}
+
+		#endregion
+
+		#region private methods
+		private void AddPackRatToDictionary(object packRat, string schemaId)
 		{
 			Guid schemaIdAsGuid;
 			if (!Guid.TryParse(schemaId, out schemaIdAsGuid))
