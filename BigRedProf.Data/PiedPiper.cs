@@ -325,6 +325,17 @@ namespace BigRedProf.Data
 			return model;
 		}
 
+		/// <inheritdoc/>
+		public Code EncodeModelWithSchema<M>(M model, string schemaId)
+		{
+			throw new NotImplementedException();
+		}
+
+		/// <inheritdoc/>
+		public ModelWithSchema DecodeModelWithSchema(Code code)
+		{
+			throw new NotImplementedException();
+		}
 		#endregion
 
 		#region private methods
