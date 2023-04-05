@@ -2,6 +2,7 @@
 using BigRedProf.Data.Internal.PackRats;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -12,7 +13,7 @@ namespace BigRedProf.Data
 	public class PiedPiper : IPiedPiper
 	{
 		#region fields
-		private IDictionary<Guid, object> _dictionary;
+		private IDictionary<Guid, IWeaklyTypedPackRat> _dictionary;
 		#endregion
 
 		#region constructors
@@ -21,7 +22,7 @@ namespace BigRedProf.Data
 		/// </summary>
 		public PiedPiper()
 		{
-			_dictionary = new Dictionary<Guid, object>();
+			_dictionary = new Dictionary<Guid, IWeaklyTypedPackRat>();
 		}
 		#endregion
 
@@ -33,6 +34,7 @@ namespace BigRedProf.Data
 			RegisterPackRat<Code>(new CodePackRat(this), SchemaId.Code);
 			RegisterPackRat<int>(new EfficientWholeNumber31PackRat(this), SchemaId.EfficientWholeNumber31);
 			RegisterPackRat<int>(new Int32PackRat(this), SchemaId.Int32);
+			RegisterPackRat<Guid>(new GuidPackRat(this), SchemaId.Guid);
 			RegisterPackRat<string>(new StringPackRat(this), SchemaId.StringUtf8);
 		}
 
@@ -48,7 +50,7 @@ namespace BigRedProf.Data
 				if(attribute != null)
 				{
 					object packRat = Activator.CreateInstance(type, this);
-					AddPackRatToDictionary(packRat, attribute.SchemaId);
+					AddPackRatToDictionary((IWeaklyTypedPackRat) packRat, attribute.SchemaId);
 				}
 			}
 		}
@@ -59,24 +61,12 @@ namespace BigRedProf.Data
 			if(schemaId == null)
 				throw new ArgumentNullException(nameof(schemaId));
 
-			Guid schemaIdAsGuid;
-			if (!Guid.TryParse(schemaId, out schemaIdAsGuid))
-				throw new ArgumentException("The schema identifier must be a GUID.", nameof(schemaId));
-
-			object packRatAsObject;
-			if (!_dictionary.TryGetValue(schemaIdAsGuid, out packRatAsObject))
-			{
-				throw new ArgumentException(
-					$"No PackRat is registered for schema identifier {schemaId}.",
-					nameof(schemaId)
-				);
-			}
-
-			PackRat<T> packRat = packRatAsObject as PackRat<T>;
+			IWeaklyTypedPackRat nonGenericPackRat = GetPackRat(schemaId);
+			PackRat<T> packRat = nonGenericPackRat as PackRat<T>;
 			if (packRat == null)
 			{
 				throw new InvalidOperationException(
-					$"The registered PackRat is of type {packRatAsObject.GetType().FullName} instead of type {typeof(PackRat<T>).FullName}."
+					$"The registered PackRat is of type {nonGenericPackRat.GetType().FullName} instead of {typeof(PackRat<T>).FullName}."
 				);
 			}
 
@@ -300,7 +290,6 @@ namespace BigRedProf.Data
 				packRat.PackModel(codeWriter, model);
 			}
 			Code code = codeStream.ToCode();
-
 									
 			return code;
         }
@@ -328,18 +317,53 @@ namespace BigRedProf.Data
 		/// <inheritdoc/>
 		public Code EncodeModelWithSchema<M>(M model, string schemaId)
 		{
-			throw new NotImplementedException();
+			if (model == null)
+				throw new ArgumentNullException(nameof(model));
+
+			if (schemaId == null)
+				throw new ArgumentNullException(nameof(schemaId));
+
+			PackRat<Guid> guidPackRat = GetPackRat<Guid>(SchemaId.Guid);
+			PackRat<M> modelPackRat = GetPackRat<M>(schemaId);
+			CodeStream codeStream = new CodeStream();
+			using (CodeWriter codeWriter = new CodeWriter(codeStream))
+			{
+				// encode the schema identifier
+				guidPackRat.PackModel(codeWriter, new Guid(schemaId));
+
+				// then encode the model
+				modelPackRat.PackModel(codeWriter, model);
+			}
+			Code code = codeStream.ToCode();
+
+			return code;
 		}
 
 		/// <inheritdoc/>
 		public ModelWithSchema DecodeModelWithSchema(Code code)
 		{
-			throw new NotImplementedException();
+			if (code == null)
+				throw new ArgumentNullException(nameof(code));
+
+			ModelWithSchema modelWithSchema = new ModelWithSchema();
+			PackRat<Guid> guidPackRat = GetPackRat<Guid>(SchemaId.Guid);
+			MemoryStream memoryStream = new MemoryStream(code.ToByteArray());
+			using (CodeReader codeReader = new CodeReader(memoryStream))
+			{
+				// decode the schema identifier
+				modelWithSchema.SchemaId = guidPackRat.UnpackModel(codeReader).ToString();
+
+				// then decode the model
+				IWeaklyTypedPackRat modelPackRat = GetPackRat(modelWithSchema.SchemaId);
+				modelWithSchema.Model = modelPackRat.UnpackModel(codeReader);
+			}
+
+			return modelWithSchema;
 		}
 		#endregion
 
 		#region private methods
-		private void AddPackRatToDictionary(object packRat, string schemaId)
+		private void AddPackRatToDictionary(IWeaklyTypedPackRat packRat, string schemaId)
 		{
 			Guid schemaIdAsGuid;
 			if (!Guid.TryParse(schemaId, out schemaIdAsGuid))
@@ -354,6 +378,26 @@ namespace BigRedProf.Data
 
 			_dictionary.Add(schemaIdAsGuid, packRat);
 		}
-        #endregion
-    }
+
+		private IWeaklyTypedPackRat GetPackRat(string schemaId)
+		{
+			Debug.Assert(schemaId != null);
+
+			Guid schemaIdAsGuid;
+			if (!Guid.TryParse(schemaId, out schemaIdAsGuid))
+				throw new ArgumentException("The schema identifier must be a GUID.", nameof(schemaId));
+
+			IWeaklyTypedPackRat packRat;
+			if (!_dictionary.TryGetValue(schemaIdAsGuid, out packRat))
+			{
+				throw new ArgumentException(
+					$"No PackRat is registered for schema identifier {schemaId}.",
+					nameof(schemaId)
+				);
+			}
+
+			return packRat;
+		}
+		#endregion
+	}
 }

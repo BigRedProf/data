@@ -77,6 +77,24 @@ namespace BigRedProf.Data.Test
 			PackRat<int> packRat = new Int32PackRat(piedPiper);
 			PackRatTestHelper.TestUnpackModel<int>(packRat, "00000000 00000000 00000000 00000000", 0);
 			PackRatTestHelper.TestUnpackModel<int>(packRat, "10000000 00000000 00000000 00000000", 1);
+			PackRatTestHelper.TestUnpackModel<int>(packRat, "01000000 00000000 00000000 00000000", 2);
+			PackRatTestHelper.TestUnpackModel<int>(packRat, "11000000 00000000 00000000 00000000", 3);
+			PackRatTestHelper.TestUnpackModel<int>(packRat, "00100000 00000000 00000000 00000000", 4);
+			PackRatTestHelper.TestUnpackModel<int>(packRat, "11010100 00000000 00000000 00000000", 43);
+			PackRatTestHelper.TestUnpackModel<int>(packRat, "00000000 00100000 00000000 00000000", 1024);
+			PackRatTestHelper.TestUnpackModel<int>(packRat, "11100001 01101011 01001000 00000000", 1234567);
+			PackRatTestHelper.TestUnpackModel<int>(packRat, "01001011 01000000 01101001 10010010", 1234567890);
+			PackRatTestHelper.TestUnpackModel<int>(packRat, "11111111 11111111 11111111 11111110", 2147483647);
+			PackRatTestHelper.TestUnpackModel<int>(packRat, "11111111 11111111 11111111 11111111", - 1);
+			PackRatTestHelper.TestUnpackModel<int>(packRat, "01111111 11111111 11111111 11111111", - 2);
+			PackRatTestHelper.TestUnpackModel<int>(packRat, "10111111 11111111 11111111 11111111", - 3);
+			PackRatTestHelper.TestUnpackModel<int>(packRat, "00111111 11111111 11111111 11111111", - 4);
+			PackRatTestHelper.TestUnpackModel<int>(packRat, "10101011 11111111 11111111 11111111", - 43);
+			PackRatTestHelper.TestUnpackModel<int>(packRat, "00000000 00111111 11111111 11111111", - 1024);
+			PackRatTestHelper.TestUnpackModel<int>(packRat, "10011110 10010100 10110111 11111111", - 1234567);
+			PackRatTestHelper.TestUnpackModel<int>(packRat, "01110100 10111111 10010110 01101101", - 1234567890);
+			PackRatTestHelper.TestUnpackModel<int>(packRat, "10000000 00000000 00000000 00000001", - 2147483647);
+			PackRatTestHelper.TestUnpackModel<int>(packRat, "00000000 00000000 00000000 00000001", - 2147483648);
 		}
 		#endregion
 	}

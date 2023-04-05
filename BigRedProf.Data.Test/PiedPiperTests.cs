@@ -257,7 +257,8 @@ namespace BigRedProf.Data.Test
 			IPiedPiper piedPiper = new PiedPiper();
 			piedPiper.RegisterDefaultPackRats();
 
-			TestModelEncodeAndDecodeWithSchema<bool>(piedPiper, true, SchemaId.Boolean);
+            TestModelEncodeAndDecodeWithSchema<bool>(piedPiper, true, SchemaId.Boolean);
+			TestModelEncodeAndDecodeWithSchema<Guid>(piedPiper, new Guid("A1423247-DF48-42BC-87F1-D57D7045880D"), SchemaId.Guid);
 			TestModelEncodeAndDecodeWithSchema<int>(piedPiper, 43, SchemaId.Int32);
 			TestModelEncodeAndDecodeWithSchema<int>(piedPiper, 70719495, SchemaId.EfficientWholeNumber31);
 			TestModelEncodeAndDecodeWithSchema<string>(piedPiper, "Go Big Red!", SchemaId.StringUtf8);
@@ -291,7 +292,7 @@ namespace BigRedProf.Data.Test
 		{
 			Code encodedModel = piedPiper.EncodeModelWithSchema<M>(model, schemaId);
 			ModelWithSchema modelWithSchema = piedPiper.DecodeModelWithSchema(encodedModel);
-            Assert.Equal(schemaId, modelWithSchema.SchemaId);
+            Assert.Equal(new Guid(schemaId), new Guid(modelWithSchema.SchemaId));
 			Assert.Equal(model, modelWithSchema.Model);
 		}
 		#endregion
