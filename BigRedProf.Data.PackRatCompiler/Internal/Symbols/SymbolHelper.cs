@@ -113,9 +113,10 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 			return new PackFieldInfo()
 			{
 				Name = field.Name,
-				Type = type
-					.Replace("?", string.Empty),
-				IsNullable = isNullable,
+				// HACKHACK: For now, let's treat every enum as an int to simplify the packing of
+				// enum fields. Not sure yet if this will prove troublesome elsewhere.
+				Type = type.Replace("?", string.Empty),
+				IsEnum = IsEnum(field.Type),
 				ByteAligned = byteAligned,
 				Position = (int)packFieldAttribute.ConstructorArguments[0].Value!,
 				SchemaId = (string)packFieldAttribute.ConstructorArguments[1].Value!,
@@ -147,9 +148,10 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 			return new PackFieldInfo()
 			{
 				Name = property.Name,
-				Type = type
-					.Replace("?", string.Empty),
-				IsNullable = isNullable,
+				// HACKHACK: For now, let's treat every enum as an int to simplify the packing of
+				// enum fields. Not sure yet if this will prove troublesome elsewhere.
+				Type = type.Replace("?", string.Empty),
+				IsEnum = IsEnum(property.Type),
 				ByteAligned = byteAligned,
 				Position = (int)packFieldAttribute.ConstructorArguments[0].Value!,
 				SchemaId = (string)packFieldAttribute.ConstructorArguments[1].Value!,
@@ -209,9 +211,10 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 			return new PackListFieldInfo()
 			{
 				Name = field.Name,
-				Type = type
-					.Replace("?", string.Empty),
-				IsNullable = isNullable,
+				// HACKHACK: For now, let's treat every enum as an int to simplify the packing of
+				// enum fields. Not sure yet if this will prove troublesome elsewhere.
+				Type = type.Replace("?", string.Empty),
+				IsEnum = IsEnum(field.Type),
 				ByteAligned = (ByteAligned)packListFieldAttribute.ConstructorArguments[2].Value!,
 				IsElementNullable = isElementNullable,
 				Position = (int)packListFieldAttribute.ConstructorArguments[0].Value!,
@@ -272,8 +275,10 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 			return new PackListFieldInfo()
 			{
 				Name = property.Name,
-				Type = type
-					.Replace("?", string.Empty),
+				// HACKHACK: For now, let's treat every enum as an int to simplify the packing of
+				// enum fields. Not sure yet if this will prove troublesome elsewhere.
+				Type = type.Replace("?", string.Empty),
+				IsEnum = IsEnum(property.Type),
 				IsNullable = isNullable,
 				ByteAligned = (ByteAligned)packListFieldAttribute.ConstructorArguments[2].Value!,
 				IsElementNullable = isElementNullable,
@@ -282,6 +287,11 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 				SourceLineNumber = startLinePosition.Line + 1,
 				SourceColumn = startLinePosition.Character
 			};
+		}
+
+		public static bool IsEnum(ITypeSymbol symbol)
+		{
+			return symbol.TypeKind == TypeKind.Enum;
 		}
 		#endregion
 	}

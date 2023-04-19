@@ -34,6 +34,16 @@ namespace BigRedProf.Data.PackRatCompiler.Test
 				"_Resources/ExpectedPackRats/ListTestModelPackRat.cs"
 			);
 		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void GeneratePackRat_ShouldWorkForModelWithEnum()
+		{
+			PackRatCompilerTestHelper.TestGeneratePackRat(
+				"_Resources/Models/ModelWithEnum.cs",
+				"_Resources/ExpectedPackRats/ModelWithEnumPackRat.cs"
+			);
+		}
 		#endregion
 	}
 }

@@ -134,16 +134,21 @@ namespace BigRedProf.Data.PackRatCompiler
 				return;
 			}
 
+			string packType = field.IsEnum ? "int" : field.Type!;
+
 			if (field.IsNullable)
 			{
-				writer.WriteLine($"PiedPier.PackNullableModel<{field.Type}>(writer, \"{field.SchemaId}\")");
+				writer.WriteLine($"PiedPier.PackNullableModel<{packType}>(writer, \"{field.SchemaId}\")");
 			}
 			else
 			{
 				if (field.ByteAligned == ByteAligned.Yes)
 					writer.WriteLine("writer.AlignToByteBoundary();");
-				writer.WriteLine($"PiedPiper.GetPackRat<{field.Type}>(\"{field.SchemaId}\")");
-				writer.WriteLine($"\t.PackModel(writer, model.{field.Name});");
+				writer.WriteLine($"PiedPiper.GetPackRat<{packType}>(\"{field.SchemaId}\")");
+				if(field.IsEnum)
+					writer.WriteLine($"\t.PackModel(writer, (int) model.{field.Name});");
+				else
+					writer.WriteLine($"\t.PackModel(writer, model.{field.Name});");
 			}
 		}
 
@@ -186,14 +191,19 @@ namespace BigRedProf.Data.PackRatCompiler
 			if (field.ByteAligned == ByteAligned.Yes)
 				writer.WriteLine("reader.AlignToByteBoundary();");
 
+			string packType = field.IsEnum ? "int" : field.Type!;
+
 			if (field.IsNullable)
 			{
-				writer.WriteLine($"model.{field.Name} = PiedPiper.UnpackNullableModel<{field.Type}>("
+				writer.WriteLine($"model.{field.Name} = PiedPiper.UnpackNullableModel<{packType}>("
 					+ "reader, \"{field.SchemaId}\");");
 			}
 			else
 			{
-				writer.WriteLine($"model.{field.Name} = PiedPiper.GetPackRat<{field.Type}>(\"{field.SchemaId}\")");
+				if(field.IsEnum)
+					writer.WriteLine($"model.{field.Name} = ({field.Type}) PiedPiper.GetPackRat<{packType}>(\"{field.SchemaId}\")");
+				else
+					writer.WriteLine($"model.{field.Name} = PiedPiper.GetPackRat<{packType}>(\"{field.SchemaId}\")");
 				writer.WriteLine($"\t.UnpackModel(reader);");
 			}
 		}

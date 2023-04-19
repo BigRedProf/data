@@ -11,6 +11,7 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 		#region fields
 		public string? Name { get; set; }
 		public string? Type { get; set; }
+		public bool IsEnum { get; set; }
 		public bool IsNullable { get; set; }
 		public ByteAligned ByteAligned { get; set; }
 		public int Position { get; set; }

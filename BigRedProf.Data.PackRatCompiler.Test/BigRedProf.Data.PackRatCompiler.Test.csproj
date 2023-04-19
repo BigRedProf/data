@@ -10,9 +10,11 @@
 
   <ItemGroup>
     <Compile Remove="_Resources\ExpectedPackRats\ListTestModelPackRat.cs" />
+    <Compile Remove="_Resources\ExpectedPackRats\ModelWithEnumPackRat.cs" />
     <Compile Remove="_Resources\ExpectedPackRats\NullableTestModelPackRat.cs" />
     <Compile Remove="_Resources\ExpectedPackRats\PointPackRat.cs" />
     <Compile Remove="_Resources\Models\ListTestModel.cs" />
+    <Compile Remove="_Resources\Models\ModelWithEnum.cs" />
     <Compile Remove="_Resources\Models\NullableTestModel.cs" />
     <Compile Remove="_Resources\Models\Point.cs" />
   </ItemGroup>
@@ -20,8 +22,10 @@
   <ItemGroup>
     <EmbeddedResource Include="_Resources\ExpectedPackRats\ListTestModelPackRat.cs" />
     <EmbeddedResource Include="_Resources\ExpectedPackRats\NullableTestModelPackRat.cs" />
+    <EmbeddedResource Include="_Resources\ExpectedPackRats\ModelWithEnumPackRat.cs" />
     <EmbeddedResource Include="_Resources\ExpectedPackRats\PointPackRat.cs" />
     <EmbeddedResource Include="_Resources\Models\ListTestModel.cs" />
+    <EmbeddedResource Include="_Resources\Models\ModelWithEnum.cs" />
     <EmbeddedResource Include="_Resources\Models\Point.cs" />
     <EmbeddedResource Include="_Resources\Models\NullableTestModel.cs" />
   </ItemGroup>
