@@ -6,7 +6,7 @@ using Xunit;
 
 namespace BigRedProf.Data.Test
 {
-	public class EffecientWholeNumber31PackRatTests
+	public class EfficientWholeNumber31PackRatTests
 	{
 		#region PackRat methods
 		[Fact]
