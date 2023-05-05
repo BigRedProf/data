@@ -2,9 +2,9 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net7.0</TargetFramework>
 		<PackageType>DotNetCliTool</PackageType>
-		<Version>0.5.15</Version>
+		<Version>0.5.16</Version>
 		<RepositoryUrl>https://github.com/BigRedProf/data</RepositoryUrl>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
