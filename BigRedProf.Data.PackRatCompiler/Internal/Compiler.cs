@@ -49,12 +49,7 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 		#region private methods
 		private void ProcessProject(PackRatGenerator packRatGenerator, ICompilationContext context, FileInfo projectFile, DirectoryInfo outputDirectory)
 		{
-			Console.WriteLine("ProcessProject...");
-
 			SourceProject sourceProject = new SourceProject(context, projectFile);
-			IList<ISymbol> x = sourceProject.GetModelClasses2().ToList();
-			// check for debug output
-
 			foreach (INamedTypeSymbol modelClass in sourceProject.GetModelClasses3())
 			{
 				FileInfo outputFile = new FileInfo(Path.Combine(outputDirectory.FullName, modelClass.Name + "PackRat.g.cs"));
@@ -64,7 +59,6 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 
 		private void ProcessModelClass(PackRatGenerator packRatGenerator, INamedTypeSymbol modelClass, FileInfo outputFile)
 		{
-			Console.WriteLine($"Process Model Class to {outputFile.FullName}");
 			using (FileStream outputStream = new FileStream(outputFile.FullName, FileMode.Create, FileAccess.Write))
 			{
 				packRatGenerator.GeneratePackRat(modelClass, outputStream);
