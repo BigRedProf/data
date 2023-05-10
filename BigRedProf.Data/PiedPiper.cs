@@ -35,6 +35,7 @@ namespace BigRedProf.Data
 			RegisterPackRat<int>(new EfficientWholeNumber31PackRat(this), SchemaId.EfficientWholeNumber31);
 			RegisterPackRat<int>(new Int32PackRat(this), SchemaId.Int32);
 			RegisterPackRat<Guid>(new GuidPackRat(this), SchemaId.Guid);
+			RegisterPackRat<float>(new SinglePackRat(this), SchemaId.Single);
 			RegisterPackRat<string>(new StringPackRat(this), SchemaId.StringUtf8);
 		}
 
