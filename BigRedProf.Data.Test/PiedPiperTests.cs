@@ -230,7 +230,7 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					piedPiper.EncodeModelWithSchema<string>(null, SchemaId.StringUtf8);
+					piedPiper.EncodeModelWithSchema(null, SchemaId.StringUtf8);
 				}
 			);
 		}
@@ -245,7 +245,7 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					piedPiper.EncodeModelWithSchema<string>("foo", null);
+					piedPiper.EncodeModelWithSchema("foo", null);
 				}
 			);
 		}
@@ -257,11 +257,11 @@ namespace BigRedProf.Data.Test
 			IPiedPiper piedPiper = new PiedPiper();
 			piedPiper.RegisterDefaultPackRats();
 
-            TestModelEncodeAndDecodeWithSchema<bool>(piedPiper, true, SchemaId.Boolean);
-			TestModelEncodeAndDecodeWithSchema<Guid>(piedPiper, new Guid("A1423247-DF48-42BC-87F1-D57D7045880D"), SchemaId.Guid);
-			TestModelEncodeAndDecodeWithSchema<int>(piedPiper, 43, SchemaId.Int32);
-			TestModelEncodeAndDecodeWithSchema<int>(piedPiper, 70719495, SchemaId.EfficientWholeNumber31);
-			TestModelEncodeAndDecodeWithSchema<string>(piedPiper, "Go Big Red!", SchemaId.StringUtf8);
+            TestModelEncodeAndDecodeWithSchema(piedPiper, true, SchemaId.Boolean);
+			TestModelEncodeAndDecodeWithSchema(piedPiper, new Guid("A1423247-DF48-42BC-87F1-D57D7045880D"), SchemaId.Guid);
+			TestModelEncodeAndDecodeWithSchema(piedPiper, 43, SchemaId.Int32);
+			TestModelEncodeAndDecodeWithSchema(piedPiper, 70719495, SchemaId.EfficientWholeNumber31);
+			TestModelEncodeAndDecodeWithSchema(piedPiper, "Go Big Red!", SchemaId.StringUtf8);
 		}
 
 		[Fact]
@@ -288,9 +288,9 @@ namespace BigRedProf.Data.Test
 			Assert.Equal(model, decodedModel);
 		}
 
-		private void TestModelEncodeAndDecodeWithSchema<M>(IPiedPiper piedPiper, M model, string schemaId)
+		private void TestModelEncodeAndDecodeWithSchema(IPiedPiper piedPiper, object model, string schemaId)
 		{
-			Code encodedModel = piedPiper.EncodeModelWithSchema<M>(model, schemaId);
+			Code encodedModel = piedPiper.EncodeModelWithSchema(model, schemaId);
 			ModelWithSchema modelWithSchema = piedPiper.DecodeModelWithSchema(encodedModel);
             Assert.Equal(new Guid(schemaId), new Guid(modelWithSchema.SchemaId));
 			Assert.Equal(model, modelWithSchema.Model);

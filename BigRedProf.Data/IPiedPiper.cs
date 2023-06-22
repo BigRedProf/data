@@ -135,11 +135,10 @@ namespace BigRedProf.Data
 		/// Encodes a model with its schema using the <see cref="PackRat{M}"/> registered for the
 		/// provided schema.
 		/// </summary>
-		/// <typeparam name="M">The model type.</typeparam>
 		/// <param name="model">The model.</param>
 		/// <param name="schemaId">The schema identifier.</param>
 		/// <returns>The code.</returns>
-		Code EncodeModelWithSchema<M>(M model, string schemaId);
+		Code EncodeModelWithSchema(object model, string schemaId);
 
 		/// <summary>
 		/// Decodes a model with its schema using the <see cref="PackRat{M}"/> registered for the

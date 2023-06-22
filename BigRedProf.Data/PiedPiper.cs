@@ -316,7 +316,7 @@ namespace BigRedProf.Data
 		}
 
 		/// <inheritdoc/>
-		public Code EncodeModelWithSchema<M>(M model, string schemaId)
+		public Code EncodeModelWithSchema(object model, string schemaId)
 		{
 			if (model == null)
 				throw new ArgumentNullException(nameof(model));
@@ -325,7 +325,7 @@ namespace BigRedProf.Data
 				throw new ArgumentNullException(nameof(schemaId));
 
 			PackRat<Guid> guidPackRat = GetPackRat<Guid>(SchemaId.Guid);
-			PackRat<M> modelPackRat = GetPackRat<M>(schemaId);
+			IWeaklyTypedPackRat modelPackRat = GetPackRat(schemaId);
 			CodeStream codeStream = new CodeStream();
 			using (CodeWriter codeWriter = new CodeWriter(codeStream))
 			{
