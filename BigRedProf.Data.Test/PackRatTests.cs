@@ -215,7 +215,7 @@ namespace BigRedProf.Data.Test
 					PiedPiper.PackList<string>(
 						null, 
 						new string[] { "foo" }, 
-						SchemaId.StringUtf8, 
+						SchemaId.TextUtf8, 
 						false, 
 						false, 
 						ByteAligned.No
@@ -236,7 +236,7 @@ namespace BigRedProf.Data.Test
 					PiedPiper.PackList<string>(
 						codeWriter,
 						null,
-						SchemaId.StringUtf8,
+						SchemaId.TextUtf8,
 						false,
 						true,
 						ByteAligned.No
@@ -257,7 +257,7 @@ namespace BigRedProf.Data.Test
 					PiedPiper.PackList<string>(
 						codeWriter,
 						new string[] { "foo", null, "bar" },
-						SchemaId.StringUtf8,
+						SchemaId.TextUtf8,
 						true,
 						false,
 						ByteAligned.No
@@ -277,7 +277,7 @@ namespace BigRedProf.Data.Test
 			PiedPiper.PackList<string>(
 				writer,
 				null,
-				SchemaId.StringUtf8,
+				SchemaId.TextUtf8,
 				true,
 				false,
 				ByteAligned.No
@@ -304,7 +304,7 @@ namespace BigRedProf.Data.Test
 			PiedPiper.PackList<string>(
 				writer,
 				new string[] { "foo", "bar" },
-				SchemaId.StringUtf8,
+				SchemaId.TextUtf8,
 				false,
 				false,
 				ByteAligned.No
@@ -369,7 +369,7 @@ namespace BigRedProf.Data.Test
 			PiedPiper.PackList<string>(
 				writer,
 				new string[] { "foo", null, "bar" },
-				SchemaId.StringUtf8,
+				SchemaId.TextUtf8,
 				false,
 				true,
 				ByteAligned.No
@@ -399,7 +399,7 @@ namespace BigRedProf.Data.Test
 			PiedPiper.PackList<string>(
 				writer,
 				new string[] { "foo", null, "bar" },
-				SchemaId.StringUtf8,
+				SchemaId.TextUtf8,
 				false,
 				true,
 				ByteAligned.Yes
@@ -430,7 +430,7 @@ namespace BigRedProf.Data.Test
 			PiedPiper.PackList<string>(
 				writer,
 				new string[] { "foo", null, "bar" },
-				SchemaId.StringUtf8,
+				SchemaId.TextUtf8,
 				true,
 				true,
 				ByteAligned.No
@@ -461,7 +461,7 @@ namespace BigRedProf.Data.Test
 			PiedPiper.PackList<string>(
 				writer,
 				new string[] { "foo", null, "bar" },
-				SchemaId.StringUtf8,
+				SchemaId.TextUtf8,
 				true,
 				true,
 				ByteAligned.Yes
@@ -491,7 +491,7 @@ namespace BigRedProf.Data.Test
 				{
 					PiedPiper.UnpackList<string>(
 						null,
-						SchemaId.StringUtf8,
+						SchemaId.TextUtf8,
 						false,
 						false,
 						ByteAligned.No
@@ -509,7 +509,7 @@ namespace BigRedProf.Data.Test
 
 			IList<string> actualList = PiedPiper.UnpackList<string>(
 				reader,
-				SchemaId.StringUtf8,
+				SchemaId.TextUtf8,
 				true,
 				false,
 				ByteAligned.No
@@ -531,7 +531,7 @@ namespace BigRedProf.Data.Test
 
 			IList<string> actualList = PiedPiper.UnpackList<string>(
 				reader,
-				SchemaId.StringUtf8,
+				SchemaId.TextUtf8,
 				false,
 				false,
 				ByteAligned.No
@@ -585,7 +585,7 @@ namespace BigRedProf.Data.Test
 
 			IList<string> actualList = PiedPiper.UnpackList<string>(
 				reader,
-				SchemaId.StringUtf8,
+				SchemaId.TextUtf8,
 				false,
 				true,
 				ByteAligned.No
@@ -610,7 +610,7 @@ namespace BigRedProf.Data.Test
 
 			IList<string> actualList = PiedPiper.UnpackList<string>(
 				reader,
-				SchemaId.StringUtf8,
+				SchemaId.TextUtf8,
 				false,
 				true,
 				ByteAligned.Yes
@@ -636,7 +636,7 @@ namespace BigRedProf.Data.Test
 
 			IList<string> actualList = PiedPiper.UnpackList<string>(
 				reader,
-				SchemaId.StringUtf8,
+				SchemaId.TextUtf8,
 				true,
 				true,
 				ByteAligned.No
@@ -662,7 +662,7 @@ namespace BigRedProf.Data.Test
 
 			IList<string> actualList = PiedPiper.UnpackList<string>(
 				reader,
-				SchemaId.StringUtf8,
+				SchemaId.TextUtf8,
 				true,
 				true,
 				ByteAligned.Yes

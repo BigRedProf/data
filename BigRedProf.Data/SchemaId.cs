@@ -107,29 +107,29 @@ namespace BigRedProf.Data
 		public const string Single = "4687A488-4E7E-4CD9-8D7D-58D40B1A2D14";
 
 		/// <summary>
-		/// The schema identifier for ASCII-encoded strings.
+		/// The schema identifier for ASCII-encoded text.
 		/// </summary>
-		public const string StringAscii = "AF494088-5E94-44BF-81D9-E0BCD62DF092";
+		public const string TextAscii = "AF494088-5E94-44BF-81D9-E0BCD62DF092";
 
 		/// <summary>
-		/// The schema identifier for UTF-7-encoded strings.
+		/// The schema identifier for UTF-7-encoded text.
 		/// </summary>
-		public const string StringUtf7 = "4A7D3FE3-5945-4D25-AE6A-CE19F24E038C";
+		public const string TextUtf7 = "4A7D3FE3-5945-4D25-AE6A-CE19F24E038C";
 
 		/// <summary>
-		/// The schema identifier for UTF-8-encoded strings.
+		/// The schema identifier for UTF-8-encoded text.
 		/// </summary>
-		public const string StringUtf8 = "9CDF52B4-4C47-4B6D-BC17-34F33312B7A7";
+		public const string TextUtf8 = "9CDF52B4-4C47-4B6D-BC17-34F33312B7A7";
 
 		/// <summary>
-		/// The schema identifier for UTF-16-encoded strings.
+		/// The schema identifier for UTF-16-encoded text.
 		/// </summary>
-		public const string StringUtf16 = "CF1820E1-86B7-4E1C-909E-C9B874996E58";
+		public const string TextUtf16 = "CF1820E1-86B7-4E1C-909E-C9B874996E58";
 
 		/// <summary>
-		/// The schema identifier for UTF-32-encoded strings.
+		/// The schema identifier for UTF-32-encoded text.
 		/// </summary>
-		public const string StringUtf32 = "720B6A0A-48E9-426B-B84A-E03C43C6D209";
+		public const string TextUtf32 = "720B6A0A-48E9-426B-B84A-E03C43C6D209";
 
 		/// <summary>
 		/// The schema identifier for the <see cref="TimeSpan"/> type.

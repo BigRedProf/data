@@ -157,7 +157,7 @@ namespace BigRedProf.Data.Test
             Assert.Throws<ArgumentNullException>(
                 () =>
                 {
-                    piedPiper.EncodeModel<string>(null, SchemaId.StringUtf8);
+                    piedPiper.EncodeModel<string>(null, SchemaId.TextUtf8);
                 }
             );
         }
@@ -187,7 +187,7 @@ namespace BigRedProf.Data.Test
 			TestModelEncodeAndDecode<bool>(piedPiper, true, SchemaId.Boolean);
 			TestModelEncodeAndDecode<int>(piedPiper, 43, SchemaId.Int32);
 			TestModelEncodeAndDecode<int>(piedPiper, 70719495, SchemaId.EfficientWholeNumber31);
-			TestModelEncodeAndDecode<string>(piedPiper, "Go Big Red!", SchemaId.StringUtf8);
+			TestModelEncodeAndDecode<string>(piedPiper, "Go Big Red!", SchemaId.TextUtf8);
         }
 
 		[Fact]
@@ -200,7 +200,7 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					piedPiper.DecodeModel<string>(null, SchemaId.StringUtf8);
+					piedPiper.DecodeModel<string>(null, SchemaId.TextUtf8);
 				}
 			);
 		}
@@ -230,7 +230,7 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					piedPiper.EncodeModelWithSchema(null, SchemaId.StringUtf8);
+					piedPiper.EncodeModelWithSchema(null, SchemaId.TextUtf8);
 				}
 			);
 		}
@@ -261,7 +261,7 @@ namespace BigRedProf.Data.Test
 			TestModelEncodeAndDecodeWithSchema(piedPiper, new Guid("A1423247-DF48-42BC-87F1-D57D7045880D"), SchemaId.Guid);
 			TestModelEncodeAndDecodeWithSchema(piedPiper, 43, SchemaId.Int32);
 			TestModelEncodeAndDecodeWithSchema(piedPiper, 70719495, SchemaId.EfficientWholeNumber31);
-			TestModelEncodeAndDecodeWithSchema(piedPiper, "Go Big Red!", SchemaId.StringUtf8);
+			TestModelEncodeAndDecodeWithSchema(piedPiper, "Go Big Red!", SchemaId.TextUtf8);
 		}
 
 		[Fact]
