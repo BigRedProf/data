@@ -17,7 +17,7 @@ namespace BigRedProf.Data
 		{
 		}
 
-		public PackFieldAttribute(int position, string schemaId, ByteAligned byteAligned)
+		public PackFieldAttribute(int position, string schemaId, ByteAligned byteAligned)			
 		{
 			Position = position;
 			SchemaId = schemaId;
@@ -47,6 +47,22 @@ namespace BigRedProf.Data
 		/// before packing this field.
 		/// </summary>
 		public ByteAligned ByteAligned
+		{
+			get;
+		}
+
+		/// <summary>
+		/// Whether or not null values are allowed (and thus an extra bit is encoded 
+		/// when packing).
+		/// </summary>
+		/// <remarks>
+		/// If not specified, the <see cref="Nullable"/> attribute (C# question mark
+		/// operator) will determine whether or not the object is nullable. But, in
+		/// practice, it is often necessary to explicitly set this property because the
+		/// C# compiler doesn't allow default constructors with non-nullable
+		/// properties.
+		/// </remarks>
+		public bool? IsNullable
 		{
 			get;
 		}

@@ -99,8 +99,22 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 			AttributeData packFieldAttribute = GetAttributes(field, "BigRedProf.Data.PackField").First();
 
 			string type = field.Type.ToDisplayString();
-			bool isNullable = SymbolHelper.HasAttribute(field, "System.Runtime.CompilerServices.Nullable");
 			LinePosition startLinePosition = field.Locations[0].GetLineSpan().StartLinePosition;
+
+			bool isNullable;
+			KeyValuePair<string, TypedConstant>? isNullableNamedArgument =
+				packFieldAttribute.NamedArguments.Where(kvp => kvp.Key == "IsNullable")
+				.FirstOrDefault();
+			if (isNullableNamedArgument.HasValue)
+			{
+				// first see if the IsNullable named argument was provided
+				isNullable = isNullableNamedArgument.Value.Value.Value as bool? == true;
+			}
+			else
+			{
+				// if not, fallback to the Nullable attribute (C# question mark)
+				isNullable = SymbolHelper.HasAttribute(field, "System.Runtime.CompilerServices.Nullable");
+			}
 
 			// HACKHACK: Not sure if there a way to "instantiate" the attribute and read the actual
 			// ByteAligned property. So in the mean-time we'll just have to know that the default
@@ -134,8 +148,22 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 			AttributeData packFieldAttribute = GetAttributes(property, "BigRedProf.Data.PackField").First();
 
 			string type = property.Type.ToDisplayString();
-			bool isNullable = SymbolHelper.HasAttribute(property, "System.Runtime.CompilerServices.Nullable");
 			LinePosition startLinePosition = property.Locations[0].GetLineSpan().StartLinePosition;
+
+			bool isNullable;
+			KeyValuePair<string, TypedConstant>? isNullableNamedArgument =
+				packFieldAttribute.NamedArguments.Where(kvp => kvp.Key == "IsNullable")
+				.FirstOrDefault();
+			if (isNullableNamedArgument.HasValue)
+			{
+				// first see if the IsNullable named argument was provided
+				isNullable = isNullableNamedArgument.Value.Value.Value as bool? == true;
+			}
+			else
+			{
+				// if not, fallback to the Nullable attribute (C# question mark)
+				isNullable = SymbolHelper.HasAttribute(property, "System.Runtime.CompilerServices.Nullable");
+			}
 
 			// HACKHACK: Not sure if there a way to "instantiate" the attribute and read the actual
 			// ByteAligned property. So in the mean-time we'll just have to know that the default
