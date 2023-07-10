@@ -19,9 +19,13 @@ namespace BigRedProf.Data.Internal.PackRats
 			if(writer == null)
 				throw new ArgumentNullException(nameof(writer));
 
-			PiedPiper.GetPackRat<int>(SchemaId.EfficientWholeNumber31).PackModel(writer, model.Length);
-			writer.AlignToNextByteBoundary();
+			// NOTE: We don't have to worry much about byte alignment here because the
+			// EfficientWholeNumber31PackRat yields 8-, 16-, or 32-bit numbers for any values above
+			// 4. In other words, codes of length 3 or less will fit in 7 bits and should never need to
+			// be byte aligned, while codes of length 4 or more will naturally be byte aligned which
+			// is essentially for really long codes.
 
+			PiedPiper.GetPackRat<int>(SchemaId.EfficientWholeNumber31).PackModel(writer, model.Length);
 			writer.WriteCode(model);
 		}
 
@@ -31,8 +35,6 @@ namespace BigRedProf.Data.Internal.PackRats
 				throw new ArgumentNullException(nameof(reader));
 
 			int length = PiedPiper.GetPackRat<int>(SchemaId.EfficientWholeNumber31).UnpackModel(reader);
-			reader.AlignToNextByteBoundary();
-
 			Code model = reader.Read(length);
 			
 			return model;

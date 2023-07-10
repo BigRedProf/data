@@ -33,9 +33,10 @@ namespace BigRedProf.Data.Test
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			PackRat<Code> packRat = new CodePackRat(piedPiper);
 			
-			PackRatTestHelper.TestPackModel<Code>(packRat, "0", "1010 0000 0");
-			PackRatTestHelper.TestPackModel<Code>(packRat, "1", "1010 0000 1");
-			PackRatTestHelper.TestPackModel<Code>(packRat, "101", "1011 0000 101");
+			PackRatTestHelper.TestPackModel<Code>(packRat, "0", "1010 0");
+			PackRatTestHelper.TestPackModel<Code>(packRat, "1", "1010 1");
+			PackRatTestHelper.TestPackModel<Code>(packRat, "101", "1011 101");
+			PackRatTestHelper.TestPackModel<Code>(packRat, "111", "1011 111");
 		}
 
 		[Fact]
@@ -83,9 +84,10 @@ namespace BigRedProf.Data.Test
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			PackRat<Code> packRat = new CodePackRat(piedPiper);
 
-			PackRatTestHelper.TestUnpackModel<Code>(packRat, "1010 0000 0", "0");
-			PackRatTestHelper.TestUnpackModel<Code>(packRat, "1010 0000 1", "1");
-			PackRatTestHelper.TestUnpackModel<Code>(packRat, "1011 0000 101", "101");
+			PackRatTestHelper.TestUnpackModel<Code>(packRat, "1010 0", "0");
+			PackRatTestHelper.TestUnpackModel<Code>(packRat, "1010 1", "1");
+			PackRatTestHelper.TestUnpackModel<Code>(packRat, "1011 101", "101");
+			PackRatTestHelper.TestUnpackModel<Code>(packRat, "1011 111", "111");
 		}
 
 		[Fact]
