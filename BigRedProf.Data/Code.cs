@@ -264,7 +264,13 @@ namespace BigRedProf.Data
 
 		public override int GetHashCode()
 		{
-			return (this.ByteArray.GetHashCode() ^ this.Length);
+			// TODO: Find a better hash code.
+			//
+			// This is quick, but doesn't work (since there can be extra unused bytes).
+			//return (this.ByteArray.GetHashCode() ^ this.Length);
+			//
+			// And this works but is slow.
+			return this.ToString().GetHashCode();
 		}
 
 		public override string ToString()
