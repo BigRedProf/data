@@ -278,6 +278,51 @@ namespace BigRedProf.Data.Test
 				}
 			);
 		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void SaveCodeToByteArray_ShouldThrowWhenCodeIsNull()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterDefaultPackRats();
+
+			Assert.Throws<ArgumentNullException>(
+				() =>
+				{
+					piedPiper.SaveCodeToByteArray(null);
+				}
+			);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void SaveCodeTo_And_LoadCodeFrom_ByteArray_ShouldWork()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterDefaultPackRats();
+
+            TestSaveCodeToAndLoadCodeFromByteArray(piedPiper, "0");
+			TestSaveCodeToAndLoadCodeFromByteArray(piedPiper, "1");
+			TestSaveCodeToAndLoadCodeFromByteArray(piedPiper, "101011");
+			TestSaveCodeToAndLoadCodeFromByteArray(piedPiper, "11011000 10110011 1111");
+			TestSaveCodeToAndLoadCodeFromByteArray(piedPiper, "01010001 00101110 01100010 00100111 00001101");
+			TestSaveCodeToAndLoadCodeFromByteArray(piedPiper, "01101010 11010001 11011001 00101001 01010100 10010100 11");
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void LoadCodeFromByteArray_ShouldThrowWhenByteArrayIsNull()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterDefaultPackRats();
+
+			Assert.Throws<ArgumentNullException>(
+				() =>
+				{
+                    piedPiper.LoadCodeFromByteArray(null);
+				}
+			);
+		}
 		#endregion
 
 		#region private methods
@@ -294,6 +339,13 @@ namespace BigRedProf.Data.Test
 			ModelWithSchema modelWithSchema = piedPiper.DecodeModelWithSchema(encodedModel);
             Assert.Equal(new Guid(schemaId), new Guid(modelWithSchema.SchemaId));
 			Assert.Equal(model, modelWithSchema.Model);
+		}
+
+		private void TestSaveCodeToAndLoadCodeFromByteArray(IPiedPiper piedPiper, Code code)
+		{
+			byte[] byteArray = piedPiper.SaveCodeToByteArray(code);
+			Code roundTrippedCode = piedPiper.LoadCodeFromByteArray(byteArray);
+			Assert.Equal(code, roundTrippedCode);
 		}
 		#endregion
 	}

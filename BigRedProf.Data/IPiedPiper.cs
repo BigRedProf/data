@@ -148,6 +148,23 @@ namespace BigRedProf.Data
 		/// <param name="code">The encoded model.</param>
 		/// <returns>The model.</returns>
 		ModelWithSchema DecodeModelWithSchema(Code code);
+
+		/// <summary>
+		/// Stores a <see cref="Code"/> to an array of bytes. The resulting byte array will include
+		/// a prefix that encodes the length of the code so that this method can be used in tandem
+		/// with <see cref="LoadCodeFromByteArray(IPiedPiper, byte[])"/> to roundtrip codes.
+		/// </summary>
+		/// <param name="code">The codes to save.</param>
+		/// <returns>The byte array.</returns>
+		byte[] SaveCodeToByteArray(Code code);
+
+		/// <summary>
+		/// Load a <see cref="Code"/> from an array of bytes. This method can be used to
+		/// in tandem with <see cref="SaveCodeToByteArray(IPiedPiper, Code)"/> to roundtrip codes.
+		/// </summary>
+		/// <param name="byteArray">The byte array to load.</param>
+		/// <returns>The code.</returns>
+		Code LoadCodeFromByteArray(byte[] byteArray);
 	}
 	#endregion
 }

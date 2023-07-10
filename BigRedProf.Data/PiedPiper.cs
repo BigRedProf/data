@@ -361,6 +361,37 @@ namespace BigRedProf.Data
 
 			return modelWithSchema;
 		}
+
+		public byte[] SaveCodeToByteArray(Code code)
+		{
+			if (code == null)
+				throw new ArgumentNullException(nameof(code));
+
+			MemoryStream memoryStream = new MemoryStream((code.Length + 7) / 8);
+			PackRat<Code> packRat = GetPackRat<Code>(SchemaId.Code);
+			using (CodeWriter writer = new CodeWriter(memoryStream))
+			{
+				packRat.PackModel(writer, code);
+			}
+
+			return memoryStream.ToArray();
+		}
+
+		public Code LoadCodeFromByteArray(byte[] byteArray)
+		{
+			if (byteArray == null)
+				throw new ArgumentNullException(nameof(byteArray));
+
+			Code code;
+			MemoryStream memoryStream = new MemoryStream(byteArray);
+			PackRat<Code> packRat = GetPackRat<Code>(SchemaId.Code);
+			using (CodeReader reader = new CodeReader(memoryStream))
+			{
+				code = packRat.UnpackModel(reader);
+			}
+
+			return code;
+		}
 		#endregion
 
 		#region private methods
