@@ -15,6 +15,7 @@ namespace BigRedProf.Data
 		public PackFieldAttribute(int position, string schemaId)
 			: this(position, schemaId, ByteAligned.No)
 		{
+			IsNullable = false;
 		}
 
 		public PackFieldAttribute(int position, string schemaId, ByteAligned byteAligned)			
@@ -32,6 +33,7 @@ namespace BigRedProf.Data
 		public int Position
 		{
 			get;
+			private set;
 		}
 
 		/// <summary>
@@ -40,6 +42,7 @@ namespace BigRedProf.Data
 		public string SchemaId
 		{
 			get; 
+			private set;
 		}
 
 		/// <summary>
@@ -48,7 +51,8 @@ namespace BigRedProf.Data
 		/// </summary>
 		public ByteAligned ByteAligned
 		{
-			get;
+			get; 
+			private set;
 		}
 
 		/// <summary>
@@ -62,9 +66,10 @@ namespace BigRedProf.Data
 		/// C# compiler doesn't allow default constructors with non-nullable
 		/// properties.
 		/// </remarks>
-		public bool? IsNullable
+		public bool IsNullable
 		{
 			get;
+			set;
 		}
 		#endregion
 	}

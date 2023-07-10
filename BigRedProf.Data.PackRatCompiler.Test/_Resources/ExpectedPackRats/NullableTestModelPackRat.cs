@@ -15,8 +15,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 		public override void PackModel(CodeWriter writer, NullableTestModel model)
 		{
 			// ExplicitlyNullableField
-			PiedPiper.GetPackRat<string>("9CDF52B4-4C47-4B6D-BC17-34F33312B7A7")
-				.PackModel(writer, model.ExplicitlyNullableField);
+			PiedPiper.PackNullableModel<string>(writer, model.ExplicitlyNullableField, "9CDF52B4-4C47-4B6D-BC17-34F33312B7A7", ByteAligned.No);
 
 			// ExplicitlyNonNullableField
 			PiedPiper.GetPackRat<string>("9CDF52B4-4C47-4B6D-BC17-34F33312B7A7")
@@ -35,8 +34,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			NullableTestModel model = new NullableTestModel();
 
 			// ExplicitlyNullableField
-			model.ExplicitlyNullableField = PiedPiper.GetPackRat<string>("9CDF52B4-4C47-4B6D-BC17-34F33312B7A7")
-				.UnpackModel(reader);
+			model.ExplicitlyNullableField = PiedPiper.UnpackNullableModel<string>(reader, PiedPiper.GetPackRat<string>("9CDF52B4-4C47-4B6D-BC17-34F33312B7A7"), ByteAligned.No);
 
 			// ExplicitlyNonNullableField
 			model.ExplicitlyNonNullableField = PiedPiper.GetPackRat<string>("9CDF52B4-4C47-4B6D-BC17-34F33312B7A7")

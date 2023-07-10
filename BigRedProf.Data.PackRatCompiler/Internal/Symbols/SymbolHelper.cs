@@ -325,6 +325,11 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 				{
 					// HACKHACK: The Nullable attribute check above doesn't seem to work
 					// for lists. This hack does.
+					// UPDATE: I think this is because we're currently using C# 7.3 (.NET 7.0). If we update the
+					// prc compiler to a newer version of C# the hack might not be required. For example,
+					// you may see (apparently non-critical) prc errors like:
+					// error PRC101: (15,16): error CS8370: Feature 'nullable reference types' is not available in
+					// C# 7.3. Please use language version 8.0 or greater.
 					IFieldSymbol? fieldAsField = field as IFieldSymbol;
 					if (fieldAsField != null)
 						isNullable = fieldAsField.Type.ToDisplayString().EndsWith("?");

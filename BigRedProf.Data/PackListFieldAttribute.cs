@@ -22,6 +22,8 @@ namespace BigRedProf.Data
 		/// </param>
 		public PackListFieldAttribute(int position, string elementSchemaId, ByteAligned byteAligned)
 		{
+			Position = position;
+			ElementSchemaId = elementSchemaId;
 			ByteAligned = byteAligned;
 		}
 		#endregion
@@ -66,6 +68,7 @@ namespace BigRedProf.Data
 		public bool? IsNullable
 		{
 			get;
+			set;
 		}
 		#endregion
 	}
