@@ -2,6 +2,8 @@
 using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
+using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -101,21 +103,6 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 			string type = field.Type.ToDisplayString();
 			LinePosition startLinePosition = field.Locations[0].GetLineSpan().StartLinePosition;
 
-			bool isNullable;
-			KeyValuePair<string, TypedConstant>? isNullableNamedArgument =
-				packFieldAttribute.NamedArguments.Where(kvp => kvp.Key == "IsNullable")
-				.FirstOrDefault();
-			if (isNullableNamedArgument.HasValue)
-			{
-				// first see if the IsNullable named argument was provided
-				isNullable = isNullableNamedArgument.Value.Value.Value as bool? == true;
-			}
-			else
-			{
-				// if not, fallback to the Nullable attribute (C# question mark)
-				isNullable = SymbolHelper.HasAttribute(field, "System.Runtime.CompilerServices.Nullable");
-			}
-
 			// HACKHACK: Not sure if there a way to "instantiate" the attribute and read the actual
 			// ByteAligned property. So in the mean-time we'll just have to know that the default
 			// value when not specified is ByteAligned.No. Guess that same knowledge is required
@@ -131,6 +118,7 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 				// enum fields. Not sure yet if this will prove troublesome elsewhere.
 				Type = type.Replace("?", string.Empty),
 				IsEnum = IsEnum(field.Type),
+				IsNullable = IsPackRatFieldNullable(field, packFieldAttribute),
 				ByteAligned = byteAligned,
 				Position = (int)packFieldAttribute.ConstructorArguments[0].Value!,
 				SchemaId = (string)packFieldAttribute.ConstructorArguments[1].Value!,
@@ -150,21 +138,6 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 			string type = property.Type.ToDisplayString();
 			LinePosition startLinePosition = property.Locations[0].GetLineSpan().StartLinePosition;
 
-			bool isNullable;
-			KeyValuePair<string, TypedConstant>? isNullableNamedArgument =
-				packFieldAttribute.NamedArguments.Where(kvp => kvp.Key == "IsNullable")
-				.FirstOrDefault();
-			if (isNullableNamedArgument.HasValue)
-			{
-				// first see if the IsNullable named argument was provided
-				isNullable = isNullableNamedArgument.Value.Value.Value as bool? == true;
-			}
-			else
-			{
-				// if not, fallback to the Nullable attribute (C# question mark)
-				isNullable = SymbolHelper.HasAttribute(property, "System.Runtime.CompilerServices.Nullable");
-			}
-
 			// HACKHACK: Not sure if there a way to "instantiate" the attribute and read the actual
 			// ByteAligned property. So in the mean-time we'll just have to know that the default
 			// value when not specified is ByteAligned.No. Guess that same knowledge is required
@@ -180,6 +153,7 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 				// enum fields. Not sure yet if this will prove troublesome elsewhere.
 				Type = type.Replace("?", string.Empty),
 				IsEnum = IsEnum(property.Type),
+				IsNullable = IsPackRatFieldNullable(property, packFieldAttribute),
 				ByteAligned = byteAligned,
 				Position = (int)packFieldAttribute.ConstructorArguments[0].Value!,
 				SchemaId = (string)packFieldAttribute.ConstructorArguments[1].Value!,
@@ -193,7 +167,6 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 			AttributeData packListFieldAttribute = GetAttributes(field, "BigRedProf.Data.PackListField").First();
 
 			string type = field.Type.ToDisplayString();
-			bool isNullable = SymbolHelper.HasAttribute(field, "System.Runtime.CompilerServices.Nullable");
 			LinePosition startLinePosition = field.Locations[0].GetLineSpan().StartLinePosition;
 
 			// TODO: account for arrays, List<T>, non-generic lists, etc.
@@ -205,12 +178,10 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 				if (type.EndsWith("?"))
 				{
 					type = type.Substring(25, type.Length - 27);
-					isNullable = true;
 				}
 				else
 				{
 					type = type.Substring(25, type.Length - 26);
-					isNullable = false;
 				}
 				isElementNullable = type.EndsWith("?");
 			}
@@ -219,12 +190,10 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 				if (type.EndsWith("?"))
 				{
 					type = type.Substring(33, type.Length - 35);
-					isNullable = true;
 				}
 				else
 				{
 					type = type.Substring(33, type.Length - 34);
-					isNullable = false;
 				}
 				isElementNullable = type.EndsWith("?");
 			}
@@ -243,6 +212,7 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 				// enum fields. Not sure yet if this will prove troublesome elsewhere.
 				Type = type.Replace("?", string.Empty),
 				IsEnum = IsEnum(field.Type),
+				IsNullable = IsPackRatFieldNullable(field, packListFieldAttribute),
 				ByteAligned = (ByteAligned)packListFieldAttribute.ConstructorArguments[2].Value!,
 				IsElementNullable = isElementNullable,
 				Position = (int)packListFieldAttribute.ConstructorArguments[0].Value!,
@@ -257,7 +227,6 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 			AttributeData packListFieldAttribute = GetAttributes(property, "BigRedProf.Data.PackListField").First();
 
 			string type = property.Type.ToDisplayString();
-			bool isNullable = SymbolHelper.HasAttribute(property, "System.Runtime.CompilerServices.Nullable");
 			LinePosition startLinePosition = property.Locations[0].GetLineSpan().StartLinePosition;
 
 			// TODO: account for arrays, List<T>, non-generic lists, etc.
@@ -269,12 +238,10 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 				if (type.EndsWith("?"))
 				{
 					type = type.Substring(25, type.Length - 27);
-					isNullable = true;
 				}
 				else
 				{
 					type = type.Substring(25, type.Length - 26);
-					isNullable = false;
 				}
 				isElementNullable = type.EndsWith("?");
 			}
@@ -283,12 +250,10 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 				if (type.EndsWith("?"))
 				{
 					type = type.Substring(33, type.Length - 35);
-					isNullable = true;
 				}
 				else
 				{
 					type = type.Substring(33, type.Length - 34);
-					isNullable = false;
 				}
 				isElementNullable = type.EndsWith("?");
 			}
@@ -307,7 +272,7 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 				// enum fields. Not sure yet if this will prove troublesome elsewhere.
 				Type = type.Replace("?", string.Empty),
 				IsEnum = IsEnum(property.Type),
-				IsNullable = isNullable,
+				IsNullable = IsPackRatFieldNullable(property, packListFieldAttribute),
 				ByteAligned = (ByteAligned)packListFieldAttribute.ConstructorArguments[2].Value!,
 				IsElementNullable = isElementNullable,
 				Position = (int)packListFieldAttribute.ConstructorArguments[0].Value!,
@@ -320,6 +285,56 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 		public static bool IsEnum(ITypeSymbol symbol)
 		{
 			return symbol.TypeKind == TypeKind.Enum;
+		}
+
+		public static bool TryGetNamedArgumentValue<M>(
+			AttributeData attribute,
+			string argumentName,
+			out M? value
+		)
+		{
+			if (!attribute.NamedArguments.Where(kvp => kvp.Key == argumentName).Any())
+			{
+				value = default;
+				return false;
+			}
+
+			KeyValuePair<string, TypedConstant>? argument =
+				attribute.NamedArguments
+				.Where(kvp => kvp.Key == argumentName)
+				.First()
+			;
+			value = (M?)argument.Value.Value.Value;
+			return true;
+		}
+
+		public static bool IsPackRatFieldNullable(ISymbol field, AttributeData packFieldAttribute)
+		{
+			bool isNullable;
+			if (TryGetNamedArgumentValue<bool?>(packFieldAttribute, "IsNullable", out bool? isExplicitlyNullable))
+			{
+				// first see if the IsNullable named argument was provided
+				isNullable = (isExplicitlyNullable == true);
+			}
+			else
+			{
+				// if not, fallback to the Nullable attribute (C# question mark)
+				isNullable = SymbolHelper.HasAttribute(field, "System.Runtime.CompilerServices.Nullable");
+
+				if(!isNullable)
+				{
+					// HACKHACK: The Nullable attribute check above doesn't seem to work
+					// for lists. This hack does.
+					IFieldSymbol? fieldAsField = field as IFieldSymbol;
+					if (fieldAsField != null)
+						isNullable = fieldAsField.Type.ToDisplayString().EndsWith("?");
+					IPropertySymbol? fieldAsProperty = field as IPropertySymbol;
+					if(fieldAsProperty != null)
+						isNullable = fieldAsProperty.Type.ToDisplayString().EndsWith("?");
+				}
+			}
+
+			return isNullable;
 		}
 		#endregion
 	}

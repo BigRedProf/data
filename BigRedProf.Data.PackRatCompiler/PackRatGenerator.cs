@@ -138,7 +138,12 @@ namespace BigRedProf.Data.PackRatCompiler
 
 			if (field.IsNullable)
 			{
-				writer.WriteLine($"PiedPier.PackNullableModel<{packType}>(writer, \"{field.SchemaId}\")");
+				writer.WriteLine(
+					$"PiedPiper.PackNullableModel<{packType}>(" +
+					$"writer, model.{field.Name}, \"{field.SchemaId}\", " +
+					((field.ByteAligned == ByteAligned.Yes) ? "ByteAligned.Yes" : "ByteAligned.No") +
+					$");"
+				);
 			}
 			else
 			{
@@ -196,7 +201,11 @@ namespace BigRedProf.Data.PackRatCompiler
 			if (field.IsNullable)
 			{
 				writer.WriteLine($"model.{field.Name} = PiedPiper.UnpackNullableModel<{packType}>("
-					+ "reader, \"{field.SchemaId}\");");
+					+ "reader, " +
+					$"PiedPiper.GetPackRat<{packType}>(\"{field.SchemaId}\"), " +
+					(field.ByteAligned == ByteAligned.Yes ? "ByteAligned.Yes" : "ByteAligned.No") +
+					");"
+				);
 			}
 			else
 			{
