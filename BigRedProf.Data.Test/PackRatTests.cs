@@ -8,29 +8,18 @@ using Xunit;
 
 namespace BigRedProf.Data.Test
 {
-	// TODO: We probably don't need to subclass PackRat anymore.
-	// That was a hacky way during an early design when the
-	// Pack/UnpackList/Nullable methods were in PackRat instead
-	// of IPiedPiper.
-	public class PackRatTests : PackRat<object>
+	public class PackRatTests
 	{
-		#region constructors
-		public PackRatTests()
-			: base(PackRatTestHelper.GetPiedPiper())
-		{
-		}
-		#endregion
-
 		#region protected methods
 		[Fact]
 		[Trait("Region", "protected methods")]
-		public void PackNullableModel_ShouldThrowWhenWriterIsNull()
+		public void PackNullableModel_ShouldThrowWhenSchemaIdIsNull()
 		{
-			PackRatTests packRatTests = new PackRatTests();
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					PiedPiper.PackNullableModel<object>(null, "foo", packRatTests, ByteAligned.No);
+					piedPiper.PackNullableModel<object>(null, "foo", string.Empty, ByteAligned.No);
 				}
 			);
 		}
@@ -39,12 +28,12 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void PackNullableModel_ShouldThrowWhenPackRatIsNull()
 		{
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper(); 
 			CodeWriter writer = new CodeWriter(new MemoryStream());
-			PackRatTests packRatTests = new PackRatTests();
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					PiedPiper.PackNullableModel<object>(writer, null, null, ByteAligned.No);
+					piedPiper.PackNullableModel<object>(writer, null, null, ByteAligned.No);
 				}
 			);
 		}
@@ -53,11 +42,11 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void PackNullableModel_ShouldWorkForNullModels()
 		{
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			MemoryStream writerStream = new MemoryStream();
 			CodeWriter writer = new CodeWriter(writerStream);
-			PackRatTests packRatTests = new PackRatTests();
 
-			PiedPiper.PackNullableModel(writer, null, packRatTests, ByteAligned.No);
+			piedPiper.PackNullableModel<string>(writer, null, SchemaId.TextUtf8, ByteAligned.No);
 			Code expectedCode = "0";
 			// null bit -> 0
 
@@ -73,11 +62,11 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void PackNullableModel_ShouldWorkForNullByteAlignedModels()
 		{
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			MemoryStream writerStream = new MemoryStream();
 			CodeWriter writer = new CodeWriter(writerStream);
-			PackRatTests packRatTests = new PackRatTests();
 
-			PiedPiper.PackNullableModel(writer, null, packRatTests, ByteAligned.Yes);
+			piedPiper.PackNullableModel<string>(writer, null, SchemaId.TextUtf8, ByteAligned.Yes);
 			Code expectedCode = "0";
 			// null bit -> 0
 
@@ -93,11 +82,11 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void PackNullableModel_ShouldWorkForNonNullModels()
 		{
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			MemoryStream writerStream = new MemoryStream();
 			CodeWriter writer = new CodeWriter(writerStream);
-			PackRatTests packRatTests = new PackRatTests();
 
-			PiedPiper.PackNullableModel(writer, "foo", packRatTests, ByteAligned.No);
+			piedPiper.PackNullableModel<bool>(writer, true, SchemaId.Boolean, ByteAligned.No);
 
 			writer.Dispose();
 			Stream readerStream = new MemoryStream(writerStream.ToArray());
@@ -111,15 +100,15 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void PackNullableModel_ShouldWorkForNonNullByteAlignedModels()
 		{
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			MemoryStream writerStream = new MemoryStream();
 			CodeWriter writer = new CodeWriter(writerStream);
-			PackRatTests packRatTests = new PackRatTests();
 
-			PiedPiper.PackNullableModel(writer, "foo", packRatTests, ByteAligned.Yes);
+			piedPiper.PackNullableModel<bool>(writer, true, SchemaId.Boolean, ByteAligned.Yes);
 			Code expectedCode = "10000000 1";
 			// null bit -> 1
 			// byte alignment
-			// our dummy model -> 1
+			// our model -> 1
 
 			writer.Dispose();
 			Stream readerStream = new MemoryStream(writerStream.ToArray());
@@ -133,11 +122,11 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void UnpackNullableModel_ShouldThrowWhenReaderIsNull()
 		{
-			PackRatTests packRatTests = new PackRatTests();
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					PiedPiper.UnpackNullableModel<object>(null, packRatTests, ByteAligned.No);
+					piedPiper.UnpackNullableModel<bool?>(null, SchemaId.Boolean, ByteAligned.No);
 				}
 			);
 		}
@@ -146,12 +135,12 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void UnpackNullableModel_ShouldThrowWhenPackRatIsNull()
 		{
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			CodeReader reader = new CodeReader(new MemoryStream());
-			PackRatTests packRatTests = new PackRatTests();
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					PiedPiper.UnpackNullableModel<object>(reader, null, ByteAligned.No);
+					piedPiper.UnpackNullableModel<object>(reader, null, ByteAligned.No);
 				}
 			);
 		}
@@ -160,10 +149,10 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void UnpackNullableModel_ShouldWorkForNullModels()
 		{
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			CodeReader reader = PackRatTestHelper.CreateCodeReader("0");
-			PackRatTests packRatTests = new PackRatTests();
 
-			object actualModel = PiedPiper.UnpackNullableModel(reader, packRatTests, ByteAligned.No);
+			bool? actualModel = piedPiper.UnpackNullableModel<bool?>(reader, SchemaId.Boolean, ByteAligned.No);
 
 			Assert.Null(actualModel);
 		}
@@ -172,10 +161,10 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void UnpackNullableModel_ShouldWorkForNullByteAlignedModels()
 		{
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			CodeReader reader = PackRatTestHelper.CreateCodeReader("0");
-			PackRatTests packRatTests = new PackRatTests();
 
-			object actualModel = PiedPiper.UnpackNullableModel(reader, packRatTests, ByteAligned.Yes);
+			bool? actualModel = piedPiper.UnpackNullableModel<bool?>(reader, SchemaId.Boolean, ByteAligned.Yes);
 
 			Assert.Null(actualModel);
 		}
@@ -184,35 +173,35 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void UnpackNullableModel_ShouldWorkForNonNullModels()
 		{
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			CodeReader reader = PackRatTestHelper.CreateCodeReader("11");
-			PackRatTests packRatTests = new PackRatTests();
 
-			object actualModel = PiedPiper.UnpackNullableModel(reader, packRatTests, ByteAligned.No);
+			bool actualModel = piedPiper.UnpackNullableModel<bool>(reader, SchemaId.Boolean, ByteAligned.No);
 
-			Assert.Equal("foo", actualModel);
+			Assert.True(actualModel);
 		}
 
 		[Fact]
 		[Trait("Region", "protected methods")]
 		public void UnpackNullableModel_ShouldWorkForNonNullByteAlignedModels()
 		{
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			CodeReader reader = PackRatTestHelper.CreateCodeReader("10000000 1");
-			PackRatTests packRatTests = new PackRatTests();
 
-			object actualModel = PiedPiper.UnpackNullableModel(reader, packRatTests, ByteAligned.Yes);
+			bool actualModel = piedPiper.UnpackNullableModel<bool>(reader, SchemaId.Boolean, ByteAligned.Yes);
 
-			Assert.Equal("foo", actualModel);
+			Assert.True(actualModel);
 		}
 
 		[Fact]
 		[Trait("Region", "protected methods")]
 		public void PackList_ShouldThrowWhenWriterIsNull()
 		{
-			PackRatTests packRatTests = new PackRatTests();
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					PiedPiper.PackList<string>(
+					piedPiper.PackList<string>(
 						null, 
 						new string[] { "foo" }, 
 						SchemaId.TextUtf8, 
@@ -228,12 +217,12 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void PackList_ShouldThrowWhenListIsNullAndNullListsAreNotAllowed()
 		{
-			PackRatTests packRatTests = new PackRatTests();
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			CodeWriter codeWriter = new CodeWriter(new MemoryStream());
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					PiedPiper.PackList<string>(
+					piedPiper.PackList<string>(
 						codeWriter,
 						null,
 						SchemaId.TextUtf8,
@@ -249,12 +238,12 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void PackList_ShouldThrowWhenListHasNullElementsAndNullElementsAreNotAllowed()
 		{
-			PackRatTests packRatTests = new PackRatTests();
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			CodeWriter codeWriter = new CodeWriter(new MemoryStream());
 			Assert.Throws<ArgumentException>(
 				() =>
 				{
-					PiedPiper.PackList<string>(
+					piedPiper.PackList<string>(
 						codeWriter,
 						new string[] { "foo", null, "bar" },
 						SchemaId.TextUtf8,
@@ -270,11 +259,11 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void PackList_ShouldWorkForNullLists()
 		{
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			MemoryStream writerStream = new MemoryStream();
 			CodeWriter writer = new CodeWriter(writerStream);
-			PackRatTests packRatTests = new PackRatTests();
 
-			PiedPiper.PackList<string>(
+			piedPiper.PackList<string>(
 				writer,
 				null,
 				SchemaId.TextUtf8,
@@ -297,11 +286,11 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void PackList_ShouldWorkForNonNullableListsWithoutNullElements()
 		{
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			MemoryStream writerStream = new MemoryStream();
 			CodeWriter writer = new CodeWriter(writerStream);
-			PackRatTests packRatTests = new PackRatTests();
 
-			PiedPiper.PackList<string>(
+			piedPiper.PackList<string>(
 				writer,
 				new string[] { "foo", "bar" },
 				SchemaId.TextUtf8,
@@ -326,11 +315,11 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void PackList_ShouldWorkForNonNullableListsWithoutNullElementsByteAligned()
 		{
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			MemoryStream writerStream = new MemoryStream();
 			CodeWriter writer = new CodeWriter(writerStream);
-			PackRatTests packRatTests = new PackRatTests();
 
-			PiedPiper.PackList<bool>(
+			piedPiper.PackList<bool>(
 				writer,
 				new bool[] { true, false, true, true, false },
 				SchemaId.Boolean,
@@ -362,11 +351,11 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void PackList_ShouldWorkForNonNullableListsWithNullElements()
 		{
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			MemoryStream writerStream = new MemoryStream();
 			CodeWriter writer = new CodeWriter(writerStream);
-			PackRatTests packRatTests = new PackRatTests();
 
-			PiedPiper.PackList<string>(
+			piedPiper.PackList<string>(
 				writer,
 				new string[] { "foo", null, "bar" },
 				SchemaId.TextUtf8,
@@ -392,11 +381,11 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void PackList_ShouldWorkForNonNullableListsWithNullElementsByteAligned()
 		{
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			MemoryStream writerStream = new MemoryStream();
 			CodeWriter writer = new CodeWriter(writerStream);
-			PackRatTests packRatTests = new PackRatTests();
 
-			PiedPiper.PackList<string>(
+			piedPiper.PackList<string>(
 				writer,
 				new string[] { "foo", null, "bar" },
 				SchemaId.TextUtf8,
@@ -423,11 +412,11 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void PackList_ShouldWorkForNullableListsWithNullElements()
 		{
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			MemoryStream writerStream = new MemoryStream();
 			CodeWriter writer = new CodeWriter(writerStream);
-			PackRatTests packRatTests = new PackRatTests();
 
-			PiedPiper.PackList<string>(
+			piedPiper.PackList<string>(
 				writer,
 				new string[] { "foo", null, "bar" },
 				SchemaId.TextUtf8,
@@ -454,11 +443,11 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void PackList_ShouldWorkForNullableListsWithNullElementsByteAligned()
 		{
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			MemoryStream writerStream = new MemoryStream();
 			CodeWriter writer = new CodeWriter(writerStream);
-			PackRatTests packRatTests = new PackRatTests();
 
-			PiedPiper.PackList<string>(
+			piedPiper.PackList<string>(
 				writer,
 				new string[] { "foo", null, "bar" },
 				SchemaId.TextUtf8,
@@ -485,11 +474,11 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void UnpackList_ShouldThrowWhenReaderIsNull()
 		{
-			PackRatTests packRatTests = new PackRatTests();
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					PiedPiper.UnpackList<string>(
+					piedPiper.UnpackList<string>(
 						null,
 						SchemaId.TextUtf8,
 						false,
@@ -504,10 +493,10 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void UnpackList_ShouldWorkForNullLists()
 		{
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			CodeReader reader = PackRatTestHelper.CreateCodeReader("0");
-			PackRatTests packRatTests = new PackRatTests();
 
-			IList<string> actualList = PiedPiper.UnpackList<string>(
+			IList<string> actualList = piedPiper.UnpackList<string>(
 				reader,
 				SchemaId.TextUtf8,
 				true,
@@ -524,12 +513,12 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void UnpackList_ShouldWorkForNonNullableListsWithoutNullElements()
 		{
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			CodeReader reader = PackRatTestHelper.CreateCodeReader(
 				"1001 1011 01100110 11110110 11110110 1011 0000 01000110 10000110 01001110"
 			);
-			PackRatTests packRatTests = new PackRatTests();
 
-			IList<string> actualList = PiedPiper.UnpackList<string>(
+			IList<string> actualList = piedPiper.UnpackList<string>(
 				reader,
 				SchemaId.TextUtf8,
 				false,
@@ -548,12 +537,12 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void UnpackList_ShouldWorkForNonNullableListsWithoutNullElementsByteAligned()
 		{
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			CodeReader reader = PackRatTestHelper.CreateCodeReader(
 				"11010000 1 0000000 0 0000000 1 0000000 1 0000000 0"
 			);
-			PackRatTests packRatTests = new PackRatTests();
 
-			IList<bool> actualList = PiedPiper.UnpackList<bool>(
+			IList<bool> actualList = piedPiper.UnpackList<bool>(
 				reader,
 				SchemaId.Boolean,
 				false,
@@ -581,9 +570,9 @@ namespace BigRedProf.Data.Test
 			CodeReader reader = PackRatTestHelper.CreateCodeReader(
 				"1011 101 1011 00000 01100110 11110110 11110110 1011 0000 01000110 10000110 01001110"
 			);
-			PackRatTests packRatTests = new PackRatTests();
 
-			IList<string> actualList = PiedPiper.UnpackList<string>(
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
+			IList<string> actualList = piedPiper.UnpackList<string>(
 				reader,
 				SchemaId.TextUtf8,
 				false,
@@ -606,9 +595,9 @@ namespace BigRedProf.Data.Test
 			CodeReader reader = PackRatTestHelper.CreateCodeReader(
 				"1011 101 0 1011 0000 01100110 11110110 11110110 1011 0000 01000110 10000110 01001110"
 			);
-			PackRatTests packRatTests = new PackRatTests();
 
-			IList<string> actualList = PiedPiper.UnpackList<string>(
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
+			IList<string> actualList = piedPiper.UnpackList<string>(
 				reader,
 				SchemaId.TextUtf8,
 				false,
@@ -632,9 +621,9 @@ namespace BigRedProf.Data.Test
 			CodeReader reader = PackRatTestHelper.CreateCodeReader(
 				"1 1011 101 1011 0000 01100110 11110110 11110110 1011 0000 01000110 10000110 01001110"
 			);
-			PackRatTests packRatTests = new PackRatTests();
 
-			IList<string> actualList = PiedPiper.UnpackList<string>(
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
+			IList<string> actualList = piedPiper.UnpackList<string>(
 				reader,
 				SchemaId.TextUtf8,
 				true,
@@ -658,9 +647,9 @@ namespace BigRedProf.Data.Test
 			CodeReader reader = PackRatTestHelper.CreateCodeReader(
 				"1 1011 101 1011 0000 01100110 11110110 11110110 1011 0000 01000110 10000110 01001110"
 			);
-			PackRatTests packRatTests = new PackRatTests();
 
-			IList<string> actualList = PiedPiper.UnpackList<string>(
+			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
+			IList<string> actualList = piedPiper.UnpackList<string>(
 				reader,
 				SchemaId.TextUtf8,
 				true,
@@ -675,19 +664,6 @@ namespace BigRedProf.Data.Test
 			// "bar" -> 1011 ba0000000 .01100010 .01100001 .01110010
 
 			Assert.Equal(expectedList, actualList);
-		}
-		#endregion
-
-		#region abstract PackRat methods
-		public override void PackModel(CodeWriter writer, object model)
-		{
-			writer.WriteCode("1");
-		}
-
-		public override object UnpackModel(CodeReader reader)
-		{
-			bool isNull = reader.Read(1) == "0";
-			return isNull ? null : "foo";
 		}
 		#endregion
 	}

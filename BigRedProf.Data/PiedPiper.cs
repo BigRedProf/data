@@ -90,34 +90,35 @@ namespace BigRedProf.Data
 		public void PackNullableModel<M>(
 			CodeWriter writer,
 			M model,
-			PackRat<M> packRat,
+			string schemaId,
 			ByteAligned byteAligned
 		)
-			where M : new()
 		{
 			if (writer == null)
 				throw new ArgumentNullException(nameof(writer));
 
-			if (packRat == null)
-				throw new ArgumentNullException(nameof(packRat));
+			if (schemaId == null)
+				throw new ArgumentNullException(nameof(schemaId));
 
 			writer.WriteCode(model == null ? "0" : "1");
 			if (byteAligned == ByteAligned.Yes)
 				writer.AlignToNextByteBoundary();
 
 			if (model != null)
+			{
+				PackRat<M> packRat = GetPackRat<M>(schemaId);
 				packRat.PackModel(writer, model);
+			}
 		}
 
 		/// <inheritdoc/>
-		public M UnpackNullableModel<M>(CodeReader reader, PackRat<M> packRat, ByteAligned byteAligned)
-			where M : new()
+		public M UnpackNullableModel<M>(CodeReader reader, string schemaId, ByteAligned byteAligned)
 		{
 			if (reader == null)
 				throw new ArgumentNullException(nameof(reader));
 
-			if (packRat == null)
-				throw new ArgumentNullException(nameof(packRat));
+			if (schemaId == null)
+				throw new ArgumentNullException(nameof(schemaId));
 
 			M model = default;
 
@@ -126,7 +127,10 @@ namespace BigRedProf.Data
 				reader.AlignToNextByteBoundary();
 
 			if (!isNull)
+			{
+				PackRat<M> packRat = GetPackRat<M>(schemaId);
 				model = packRat.UnpackModel(reader);
+			}
 
 			return model;
 		}

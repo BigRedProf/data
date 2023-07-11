@@ -55,26 +55,24 @@ namespace BigRedProf.Data
 		/// <typeparam name="M"></typeparam>
 		/// <param name="writer">The code writer.</param>
 		/// <param name="model">The model.</param>
-		/// <param name="packRat">The pack rat.</param>
+		/// <param name="schemaId">The schema identifier.</param>
 		/// <param name="byteAligned">Controls the packing size of the null marker.</param>
 		void PackNullableModel<M>(
 			CodeWriter writer,
 			M model,
-			PackRat<M> packRat,
+			string schemaId,
 			ByteAligned byteAligned
-		)
-		where M : new();
+		);
 
 		/// <summary>
 		/// Unpacks a nullable model using the specified pack rat.
 		/// </summary>
 		/// <typeparam name="M"></typeparam>
 		/// <param name="reader">The code reader.</param>
-		/// <param name="packRat">The pack rat.</param>
+		/// <param name="schemaId">The schema identifier.</param>
 		/// <param name="byteAligned">Controls the packing size of the null marker.</param>
 		/// <returns>The model.</returns>
-		M UnpackNullableModel<M>(CodeReader reader, PackRat<M> packRat, ByteAligned byteAligned)
-			where M : new();
+		M UnpackNullableModel<M>(CodeReader reader, string schemaId, ByteAligned byteAligned);			
 
 		/// <summary>
 		/// Packs a list using the specified list element pack rat.
