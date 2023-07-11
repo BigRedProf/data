@@ -34,14 +34,14 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			NullableTestModel model = new NullableTestModel();
 
 			// ExplicitlyNullableField
-			model.ExplicitlyNullableField = PiedPiper.UnpackNullableModel<string>(reader, PiedPiper.GetPackRat<string>("9CDF52B4-4C47-4B6D-BC17-34F33312B7A7"), ByteAligned.No);
+			model.ExplicitlyNullableField = PiedPiper.UnpackNullableModel<string>(reader, "9CDF52B4-4C47-4B6D-BC17-34F33312B7A7", ByteAligned.No);
 
 			// ExplicitlyNonNullableField
 			model.ExplicitlyNonNullableField = PiedPiper.GetPackRat<string>("9CDF52B4-4C47-4B6D-BC17-34F33312B7A7")
 				.UnpackModel(reader);
 
 			// ImplicitlyNullableField
-			model.ImplicitlyNullableField = PiedPiper.UnpackNullableModel<string>(reader, PiedPiper.GetPackRat<string>("9CDF52B4-4C47-4B6D-BC17-34F33312B7A7"), ByteAligned.No);
+			model.ImplicitlyNullableField = PiedPiper.UnpackNullableModel<string>(reader, "9CDF52B4-4C47-4B6D-BC17-34F33312B7A7", ByteAligned.No);
 
 			// ImplicitlyNonNullableField
 			model.ImplicitlyNonNullableField = PiedPiper.GetPackRat<string>("9CDF52B4-4C47-4B6D-BC17-34F33312B7A7")

@@ -202,7 +202,7 @@ namespace BigRedProf.Data.PackRatCompiler
 			{
 				writer.WriteLine($"model.{field.Name} = PiedPiper.UnpackNullableModel<{packType}>("
 					+ "reader, " +
-					$"PiedPiper.GetPackRat<{packType}>(\"{field.SchemaId}\"), " +
+					$"\"{field.SchemaId}\", " +
 					(field.ByteAligned == ByteAligned.Yes ? "ByteAligned.Yes" : "ByteAligned.No") +
 					");"
 				);
