@@ -304,10 +304,10 @@ namespace BigRedProf.Data.Test
 			IPiedPiper piedPiper = new PiedPiper();
 			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
 			CodeTester codeTester = new CodeTester();
-			Code expectedAlignmentMess1 = "10101010 10101010 10101010 1010101";
+			Code expectedAlignmentMess1 = "10101010 10101010 10101010 10101";
 			Code expectedAlignmentMess2 = "11011011 01101101 01101101 1";
 			Code fortyThreeCode = "11010100 00000000 00000000 00000000";
-			Code expectedCode = "10000000" + fortyThreeCode;
+			Code expectedCode = "1" + "00" + fortyThreeCode;	// 00 for byte alignment
 
 			codeTester.Write(expectedAlignmentMess1);
 			piedPiper.PackNullableModel<int>(codeTester.Writer, 43, SchemaId.Int32, ByteAligned.Yes);
@@ -327,7 +327,7 @@ namespace BigRedProf.Data.Test
 			IPiedPiper piedPiper = new PiedPiper();
 			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
 			CodeTester codeTester = new CodeTester();
-			Code expectedAlignmentMess1 = "10101010 10101010 10101010 1010101";
+			Code expectedAlignmentMess1 = "10101010 10101010 10101010 10101";
 			Code expectedAlignmentMess2 = "11011011 01101101 01101101 1";
 			Code fortyThreeCode = "11010100 00000000 00000000 00000000";
 			Code expectedCode = "1" + fortyThreeCode;
@@ -350,9 +350,9 @@ namespace BigRedProf.Data.Test
 			IPiedPiper piedPiper = new PiedPiper();
 			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
 			CodeTester codeTester = new CodeTester();
-			Code expectedAlignmentMess1 = "10101010 10101010 10101010 1010101";
+			Code expectedAlignmentMess1 = "10101010 10101010 10101010 10101";
 			Code expectedAlignmentMess2 = "11011011 01101101 01101101 1";
-			Code expectedCode = "00000000";
+			Code expectedCode = "0" + "00";	// 00 for byte alignment
 
 			codeTester.Write(expectedAlignmentMess1);
 			piedPiper.PackNullableModel<int?>(codeTester.Writer, null, SchemaId.Int32, ByteAligned.Yes);
@@ -372,7 +372,7 @@ namespace BigRedProf.Data.Test
 			IPiedPiper piedPiper = new PiedPiper();
 			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
 			CodeTester codeTester = new CodeTester();
-			Code expectedAlignmentMess1 = "10101010 10101010 10101010 1010101";
+			Code expectedAlignmentMess1 = "10101010 10101010 10101010 10101";
 			Code expectedAlignmentMess2 = "11011011 01101101 01101101 1";
 			Code expectedCode = "0";
 
