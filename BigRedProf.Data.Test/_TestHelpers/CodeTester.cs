@@ -56,6 +56,17 @@ namespace BigRedProf.Data.Test._TestHelpers
 			Stream readerStream = new MemoryStream(bytes);
 			_reader = new CodeReader(readerStream);
 		}
+
+		public void Write(Code code)
+		{
+			Writer.WriteCode(code);
+		}
+
+		public void ReadAndVerify(Code expectedCode)
+		{
+			Code actualCode = Reader.Read(expectedCode.Length);
+			Assert.Equal<Code>(expectedCode, actualCode);
+		}
 		#endregion
 	}
 }
