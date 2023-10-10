@@ -387,6 +387,111 @@ namespace BigRedProf.Data.Test
 
 		[Fact]
 		[Trait("Region", "methods")]
+		public void UnpackNullableModel_ShouldThrowWhenCodeReaderIsNull()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
+
+			Assert.Throws<ArgumentNullException>(
+				() =>
+				{
+					piedPiper.UnpackNullableModel<int>(null, SchemaId.Int32, ByteAligned.No);
+				}
+			);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void UnpackNullableModel_ShouldWorkWhenByteAligned()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
+
+			Code fortyThreeCode = "11010100 00000000 00000000 00000000";
+			Code code = "10000000" + fortyThreeCode;
+			int expectedValue = 43;
+
+			MemoryStream writerStream = new MemoryStream();
+			CodeWriter writer = new CodeWriter(writerStream);
+			writer.WriteCode(code);
+			writer.Dispose();
+			Stream readerStream = new MemoryStream(writerStream.ToArray());
+			CodeReader reader = new CodeReader(readerStream);
+
+			int actualValue = piedPiper.UnpackNullableModel<int>(reader,SchemaId.Int32, ByteAligned.Yes);
+
+			Assert.Equal<int>(expectedValue, actualValue);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void UnpackNullableModel_ShouldWorkWhenNotByteAligned()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
+
+			Code fortyThreeCode = "11010100 00000000 00000000 00000000";
+			Code code = "1" + fortyThreeCode;
+			int expectedValue = 43;
+
+			MemoryStream writerStream = new MemoryStream();
+			CodeWriter writer = new CodeWriter(writerStream);
+			writer.WriteCode(code);
+			writer.Dispose();
+			Stream readerStream = new MemoryStream(writerStream.ToArray());
+			CodeReader reader = new CodeReader(readerStream);
+
+			int actualValue = piedPiper.UnpackNullableModel<int>(reader, SchemaId.Int32, ByteAligned.No);
+
+			Assert.Equal<int>(expectedValue, actualValue);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void UnpackNullableModel_ShouldWorkWhenNullAndByteAligned()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
+
+			Code code = "00000000";
+			int? expectedValue = null;
+
+			MemoryStream writerStream = new MemoryStream();
+			CodeWriter writer = new CodeWriter(writerStream);
+			writer.WriteCode(code);
+			writer.Dispose();
+			Stream readerStream = new MemoryStream(writerStream.ToArray());
+			CodeReader reader = new CodeReader(readerStream);
+
+			int? actualValue = piedPiper.UnpackNullableModel<int?>(reader, SchemaId.Int32, ByteAligned.Yes);
+
+			Assert.Equal<int?>(expectedValue, actualValue);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void UnpackNullableModel_ShouldWorkWhenNullAndNotByteAligned()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
+
+			Code code = "0";
+			int? expectedValue = null;
+
+			MemoryStream writerStream = new MemoryStream();
+			CodeWriter writer = new CodeWriter(writerStream);
+			writer.WriteCode(code);
+			writer.Dispose();
+			Stream readerStream = new MemoryStream(writerStream.ToArray());
+			CodeReader reader = new CodeReader(readerStream);
+
+			int? actualValue = piedPiper.UnpackNullableModel<int?>(reader, SchemaId.Int32, ByteAligned.No);
+
+			Assert.Equal<int?>(expectedValue, actualValue);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
 		public void SaveCodeToByteArray_ShouldThrowWhenCodeIsNull()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
