@@ -1,5 +1,6 @@
 using BigRedProf.Data.Internal.PackRats;
 using System;
+using System.IO;
 using Xunit;
 
 namespace BigRedProf.Data.Test
@@ -277,6 +278,111 @@ namespace BigRedProf.Data.Test
 					piedPiper.DecodeModelWithSchema(null);
 				}
 			);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void PackNullableModel_ShouldThrowWhenCodeWriterIsNull()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+            piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
+
+			Assert.Throws<ArgumentNullException>(
+				() =>
+				{
+					piedPiper.PackNullableModel<int>(null, 43, SchemaId.Int32, ByteAligned.No);
+				}
+			);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void PackNullableModel_ShouldWorkWhenByteAligned()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
+			MemoryStream writerStream = new MemoryStream();
+			CodeWriter writer = new CodeWriter(writerStream);
+
+			Code fortyThreeCode = "11010100 00000000 00000000 00000000";
+			Code expectedCode = "10000000" + fortyThreeCode;
+
+			piedPiper.PackNullableModel<int>(writer, 43, SchemaId.Int32, ByteAligned.Yes);
+
+			writer.Dispose();
+			Stream readerStream = new MemoryStream(writerStream.ToArray());
+			CodeReader reader = new CodeReader(readerStream);
+			int expectedStreamLength = (expectedCode.Length / 8) + ((expectedCode.Length % 8) > 0 ? 1 : 0);
+			Assert.Equal(expectedStreamLength, readerStream.Length);
+			Code actualCode = reader.Read(expectedCode.Length);
+			Assert.Equal<Code>(expectedCode, actualCode);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void PackNullableModel_ShouldWorkWhenNotByteAligned()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
+			MemoryStream writerStream = new MemoryStream();
+			CodeWriter writer = new CodeWriter(writerStream);
+
+			Code fortyThreeCode = "11010100 00000000 00000000 00000000";
+			Code expectedCode = "1" + fortyThreeCode;
+
+			piedPiper.PackNullableModel<int>(writer, 43, SchemaId.Int32, ByteAligned.No);
+
+			writer.Dispose();
+			Stream readerStream = new MemoryStream(writerStream.ToArray());
+			CodeReader reader = new CodeReader(readerStream);
+			int expectedStreamLength = (expectedCode.Length / 8) + ((expectedCode.Length % 8) > 0 ? 1 : 0);
+			Assert.Equal(expectedStreamLength, readerStream.Length);
+			Code actualCode = reader.Read(expectedCode.Length);
+			Assert.Equal<Code>(expectedCode, actualCode);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void PackNullableModel_ShouldWorkWhenNullAndByteAligned()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
+			MemoryStream writerStream = new MemoryStream();
+			CodeWriter writer = new CodeWriter(writerStream);
+
+			Code expectedCode = "00000000";
+
+			piedPiper.PackNullableModel<int?>(writer, null, SchemaId.Int32, ByteAligned.Yes);
+
+			writer.Dispose();
+			Stream readerStream = new MemoryStream(writerStream.ToArray());
+			CodeReader reader = new CodeReader(readerStream);
+			int expectedStreamLength = (expectedCode.Length / 8) + ((expectedCode.Length % 8) > 0 ? 1 : 0);
+			Assert.Equal(expectedStreamLength, readerStream.Length);
+			Code actualCode = reader.Read(expectedCode.Length);
+			Assert.Equal<Code>(expectedCode, actualCode);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void PackNullableModel_ShouldWorkWhenNullAndNotByteAligned()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
+			MemoryStream writerStream = new MemoryStream();
+			CodeWriter writer = new CodeWriter(writerStream);
+
+			Code expectedCode = "0";
+
+			piedPiper.PackNullableModel<int?>(writer, null, SchemaId.Int32, ByteAligned.No);
+
+			writer.Dispose();
+			Stream readerStream = new MemoryStream(writerStream.ToArray());
+			CodeReader reader = new CodeReader(readerStream);
+			int expectedStreamLength = (expectedCode.Length / 8) + ((expectedCode.Length % 8) > 0 ? 1 : 0);
+			Assert.Equal(expectedStreamLength, readerStream.Length);
+			Code actualCode = reader.Read(expectedCode.Length);
+			Assert.Equal<Code>(expectedCode, actualCode);
 		}
 
 		[Fact]
