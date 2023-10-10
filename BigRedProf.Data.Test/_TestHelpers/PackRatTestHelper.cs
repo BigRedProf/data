@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Reflection;
 using Xunit;
 
 namespace BigRedProf.Data.Test._TestHelpers
@@ -32,11 +33,20 @@ namespace BigRedProf.Data.Test._TestHelpers
 
 		public static void TestUnpackModel<M>(PackRat<M> packRat, Code code, M expectedModel)
 		{
-			CodeReader reader = CreateCodeReader(code);
+			CodeTester codeTester = new CodeTester();
+			Code expectedAlignmentMess1 = "10101010 10101010 1";
+			Code expectedAlignmentMess2 = "11011011 01101101 10110";
 
-			M actualModel = packRat.UnpackModel(reader);
+			codeTester.Write(expectedAlignmentMess1);
+			codeTester.Write(code);
+			codeTester.Write(expectedAlignmentMess2);
 
+			codeTester.StopWritingAndStartReading();
+
+			codeTester.ReadAndVerify(expectedAlignmentMess1);
+			M actualModel = packRat.UnpackModel(codeTester.Reader);
 			Assert.Equal<M>(expectedModel, actualModel);
+			codeTester.ReadAndVerify(expectedAlignmentMess2);
 		}
 
 		public static CodeReader CreateCodeReader(Code code)
