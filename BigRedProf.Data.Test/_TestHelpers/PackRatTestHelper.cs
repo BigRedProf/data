@@ -1,11 +1,4 @@
-﻿using BigRedProf.Data.Internal.PackRats;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 using Xunit;
 
 namespace BigRedProf.Data.Test._TestHelpers
@@ -22,17 +15,13 @@ namespace BigRedProf.Data.Test._TestHelpers
 
 		public static void TestPackModel<M>(PackRat<M> packRat, M model, Code expectedCode)
 		{
-			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
+			CodeTester codeTester = new CodeTester();
 
-			packRat.PackModel(writer, model);
+			packRat.PackModel(codeTester.Writer, model);
 
-			writer.Dispose();
-			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
-			int expectedStreamLength = (expectedCode.Length / 8) + ((expectedCode.Length % 8) > 0 ? 1 : 0);
-			Assert.Equal(expectedStreamLength, readerStream.Length);
-			Code actualCode = reader.Read(expectedCode.Length);
+			codeTester.StopWritingAndStartReading();
+
+			Code actualCode = codeTester.Reader.Read(expectedCode.Length);
 			Assert.Equal<Code>(expectedCode, actualCode);
 		}
 
