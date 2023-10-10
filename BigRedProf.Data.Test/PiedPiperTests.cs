@@ -408,21 +408,23 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = new PiedPiper();
 			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
-
+			CodeTester codeTester = new CodeTester();
+			Code expectedAlignmentMess1 = "10101010 10101010 10101010 10101";
+			Code expectedAlignmentMess2 = "11011011 01101101 01101101 1";
 			Code fortyThreeCode = "11010100 00000000 00000000 00000000";
-			Code code = "10000000" + fortyThreeCode;
+			Code code = "1" + "00" + fortyThreeCode;    // 00 for byte alignment
 			int expectedValue = 43;
 
-			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
-			writer.WriteCode(code);
-			writer.Dispose();
-			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
+			codeTester.Write(expectedAlignmentMess1);
+			piedPiper.PackNullableModel<int>(codeTester.Writer, 43, SchemaId.Int32, ByteAligned.Yes);
+			codeTester.Write(expectedAlignmentMess2);
 
-			int actualValue = piedPiper.UnpackNullableModel<int>(reader,SchemaId.Int32, ByteAligned.Yes);
+			codeTester.StopWritingAndStartReading();
 
+			codeTester.ReadAndVerify(expectedAlignmentMess1);
+			int actualValue = piedPiper.UnpackNullableModel<int>(codeTester.Reader, SchemaId.Int32, ByteAligned.Yes);
 			Assert.Equal<int>(expectedValue, actualValue);
+			codeTester.ReadAndVerify(expectedAlignmentMess2);
 		}
 
 		[Fact]
@@ -431,21 +433,23 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = new PiedPiper();
 			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
-
+			CodeTester codeTester = new CodeTester();
+			Code expectedAlignmentMess1 = "10101010 10101010 10101010 10101";
+			Code expectedAlignmentMess2 = "11011011 01101101 01101101 1";
 			Code fortyThreeCode = "11010100 00000000 00000000 00000000";
-			Code code = "1" + fortyThreeCode;
+			Code code = "1" + "00" + fortyThreeCode;    // 00 for byte alignment
 			int expectedValue = 43;
 
-			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
-			writer.WriteCode(code);
-			writer.Dispose();
-			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
+			codeTester.Write(expectedAlignmentMess1);
+			piedPiper.PackNullableModel<int>(codeTester.Writer, 43, SchemaId.Int32, ByteAligned.No);
+			codeTester.Write(expectedAlignmentMess2);
 
-			int actualValue = piedPiper.UnpackNullableModel<int>(reader, SchemaId.Int32, ByteAligned.No);
+			codeTester.StopWritingAndStartReading();
 
+			codeTester.ReadAndVerify(expectedAlignmentMess1);
+			int actualValue = piedPiper.UnpackNullableModel<int>(codeTester.Reader, SchemaId.Int32, ByteAligned.No);
 			Assert.Equal<int>(expectedValue, actualValue);
+			codeTester.ReadAndVerify(expectedAlignmentMess2);
 		}
 
 		[Fact]
@@ -454,20 +458,22 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = new PiedPiper();
 			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
-
-			Code code = "00000000";
+			CodeTester codeTester = new CodeTester();
+			Code expectedAlignmentMess1 = "10101010 10101010 10101010 10101";
+			Code expectedAlignmentMess2 = "11011011 01101101 01101101 1";
+			Code code = "0" + "00";    // 00 for byte alignment
 			int? expectedValue = null;
 
-			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
-			writer.WriteCode(code);
-			writer.Dispose();
-			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
+			codeTester.Write(expectedAlignmentMess1);
+			piedPiper.PackNullableModel<int?>(codeTester.Writer, null, SchemaId.Int32, ByteAligned.Yes);
+			codeTester.Write(expectedAlignmentMess2);
 
-			int? actualValue = piedPiper.UnpackNullableModel<int?>(reader, SchemaId.Int32, ByteAligned.Yes);
+			codeTester.StopWritingAndStartReading();
 
+			codeTester.ReadAndVerify(expectedAlignmentMess1);
+			int? actualValue = piedPiper.UnpackNullableModel<int?>(codeTester.Reader, SchemaId.Int32, ByteAligned.Yes);
 			Assert.Equal<int?>(expectedValue, actualValue);
+			codeTester.ReadAndVerify(expectedAlignmentMess2);
 		}
 
 		[Fact]
@@ -476,20 +482,22 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = new PiedPiper();
 			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
-
+			CodeTester codeTester = new CodeTester();
+			Code expectedAlignmentMess1 = "10101010 10101010 10101010 10101";
+			Code expectedAlignmentMess2 = "11011011 01101101 01101101 1";
 			Code code = "0";
 			int? expectedValue = null;
 
-			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
-			writer.WriteCode(code);
-			writer.Dispose();
-			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
+			codeTester.Write(expectedAlignmentMess1);
+			piedPiper.PackNullableModel<int?>(codeTester.Writer, null, SchemaId.Int32, ByteAligned.Yes);
+			codeTester.Write(expectedAlignmentMess2);
 
-			int? actualValue = piedPiper.UnpackNullableModel<int?>(reader, SchemaId.Int32, ByteAligned.No);
+			codeTester.StopWritingAndStartReading();
 
+			codeTester.ReadAndVerify(expectedAlignmentMess1);
+			int? actualValue = piedPiper.UnpackNullableModel<int?>(codeTester.Reader, SchemaId.Int32, ByteAligned.Yes);
 			Assert.Equal<int?>(expectedValue, actualValue);
+			codeTester.ReadAndVerify(expectedAlignmentMess2);
 		}
 
 		[Fact]
