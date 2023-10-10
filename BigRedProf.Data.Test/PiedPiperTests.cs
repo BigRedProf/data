@@ -1,6 +1,8 @@
 using BigRedProf.Data.Internal.PackRats;
+using BigRedProf.Data.Test._TestHelpers;
 using System;
 using System.IO;
+using System.Reflection;
 using Xunit;
 
 namespace BigRedProf.Data.Test
@@ -301,21 +303,21 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = new PiedPiper();
 			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
-			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
-
+			CodeTester codeTester = new CodeTester();
+			Code expectedAlignmentMess1 = "10101010 10101010 10101010 1010101";
+			Code expectedAlignmentMess2 = "11011011 01101101 01101101 1";
 			Code fortyThreeCode = "11010100 00000000 00000000 00000000";
 			Code expectedCode = "10000000" + fortyThreeCode;
 
-			piedPiper.PackNullableModel<int>(writer, 43, SchemaId.Int32, ByteAligned.Yes);
+			codeTester.Write(expectedAlignmentMess1);
+			piedPiper.PackNullableModel<int>(codeTester.Writer, 43, SchemaId.Int32, ByteAligned.Yes);
+			codeTester.Write(expectedAlignmentMess2);
 
-			writer.Dispose();
-			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
-			int expectedStreamLength = (expectedCode.Length / 8) + ((expectedCode.Length % 8) > 0 ? 1 : 0);
-			Assert.Equal(expectedStreamLength, readerStream.Length);
-			Code actualCode = reader.Read(expectedCode.Length);
-			Assert.Equal<Code>(expectedCode, actualCode);
+			codeTester.StopWritingAndStartReading();
+
+			codeTester.ReadAndVerify(expectedAlignmentMess1);
+			codeTester.ReadAndVerify(expectedCode);
+			codeTester.ReadAndVerify(expectedAlignmentMess2);
 		}
 
 		[Fact]
@@ -324,21 +326,21 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = new PiedPiper();
 			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
-			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
-
+			CodeTester codeTester = new CodeTester();
+			Code expectedAlignmentMess1 = "10101010 10101010 10101010 1010101";
+			Code expectedAlignmentMess2 = "11011011 01101101 01101101 1";
 			Code fortyThreeCode = "11010100 00000000 00000000 00000000";
 			Code expectedCode = "1" + fortyThreeCode;
 
-			piedPiper.PackNullableModel<int>(writer, 43, SchemaId.Int32, ByteAligned.No);
+			codeTester.Write(expectedAlignmentMess1);
+			piedPiper.PackNullableModel<int>(codeTester.Writer, 43, SchemaId.Int32, ByteAligned.No);
+			codeTester.Write(expectedAlignmentMess2);
 
-			writer.Dispose();
-			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
-			int expectedStreamLength = (expectedCode.Length / 8) + ((expectedCode.Length % 8) > 0 ? 1 : 0);
-			Assert.Equal(expectedStreamLength, readerStream.Length);
-			Code actualCode = reader.Read(expectedCode.Length);
-			Assert.Equal<Code>(expectedCode, actualCode);
+			codeTester.StopWritingAndStartReading();
+
+			codeTester.ReadAndVerify(expectedAlignmentMess1);
+			codeTester.ReadAndVerify(expectedCode);
+			codeTester.ReadAndVerify(expectedAlignmentMess2);
 		}
 
 		[Fact]
@@ -347,20 +349,20 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = new PiedPiper();
 			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
-			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
-
+			CodeTester codeTester = new CodeTester();
+			Code expectedAlignmentMess1 = "10101010 10101010 10101010 1010101";
+			Code expectedAlignmentMess2 = "11011011 01101101 01101101 1";
 			Code expectedCode = "00000000";
 
-			piedPiper.PackNullableModel<int?>(writer, null, SchemaId.Int32, ByteAligned.Yes);
+			codeTester.Write(expectedAlignmentMess1);
+			piedPiper.PackNullableModel<int?>(codeTester.Writer, null, SchemaId.Int32, ByteAligned.Yes);
+			codeTester.Write(expectedAlignmentMess2);
 
-			writer.Dispose();
-			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
-			int expectedStreamLength = (expectedCode.Length / 8) + ((expectedCode.Length % 8) > 0 ? 1 : 0);
-			Assert.Equal(expectedStreamLength, readerStream.Length);
-			Code actualCode = reader.Read(expectedCode.Length);
-			Assert.Equal<Code>(expectedCode, actualCode);
+			codeTester.StopWritingAndStartReading();
+
+			codeTester.ReadAndVerify(expectedAlignmentMess1);
+			codeTester.ReadAndVerify(expectedCode);
+			codeTester.ReadAndVerify(expectedAlignmentMess2);
 		}
 
 		[Fact]
@@ -369,20 +371,20 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = new PiedPiper();
 			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
-			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
-
+			CodeTester codeTester = new CodeTester();
+			Code expectedAlignmentMess1 = "10101010 10101010 10101010 1010101";
+			Code expectedAlignmentMess2 = "11011011 01101101 01101101 1";
 			Code expectedCode = "0";
 
-			piedPiper.PackNullableModel<int?>(writer, null, SchemaId.Int32, ByteAligned.No);
+			codeTester.Write(expectedAlignmentMess1);
+			piedPiper.PackNullableModel<int?>(codeTester.Writer, null, SchemaId.Int32, ByteAligned.No);
+			codeTester.Write(expectedAlignmentMess2);
 
-			writer.Dispose();
-			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
-			int expectedStreamLength = (expectedCode.Length / 8) + ((expectedCode.Length % 8) > 0 ? 1 : 0);
-			Assert.Equal(expectedStreamLength, readerStream.Length);
-			Code actualCode = reader.Read(expectedCode.Length);
-			Assert.Equal<Code>(expectedCode, actualCode);
+			codeTester.StopWritingAndStartReading();
+
+			codeTester.ReadAndVerify(expectedAlignmentMess1);
+			codeTester.ReadAndVerify(expectedCode);
+			codeTester.ReadAndVerify(expectedAlignmentMess2);
 		}
 
 		[Fact]
