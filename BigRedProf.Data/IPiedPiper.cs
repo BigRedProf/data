@@ -37,7 +37,7 @@ namespace BigRedProf.Data
 
 		/// <summary>
 		/// Registers pack rats for all the models in a given assembly decorated with
-		/// <see cref="RegisterPackRatAttribute"/>.
+		/// <see cref="GeneratePackRatAttribute"/>.
 		/// </summary>
 		/// <param name="assembly">The assembly to reflect.</param>
 		/// <remarks>

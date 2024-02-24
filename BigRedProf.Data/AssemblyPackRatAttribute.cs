@@ -10,7 +10,7 @@ namespace BigRedProf.Data
 	/// </summary>
 	/// <remarks>
 	/// For pack rats created using the pack rat compiler, this attribute gets applied automatically
-	/// to any pack rats generated from models decorated with <see cref="RegisterPackRatAttribute"/>.
+	/// to any pack rats generated from models decorated with <see cref="GeneratePackRatAttribute"/>.
 	/// </remarks>
 	[AttributeUsage(AttributeTargets.Class)]
 	public class AssemblyPackRatAttribute : Attribute

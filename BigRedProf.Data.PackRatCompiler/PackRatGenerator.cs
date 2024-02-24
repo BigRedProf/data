@@ -70,8 +70,8 @@ namespace BigRedProf.Data.PackRatCompiler
 			string className = modelClass.Name + "PackRat";
 			string modelType = modelClass.Name;
 
-			AttributeData registerPackRatAttribute = SymbolHelper.GetAttribute(modelClass, "BigRedProf.Data.RegisterPackRat");
-			string schemaId = (string)registerPackRatAttribute.ConstructorArguments[0].Value!;
+			AttributeData generatePackRatAttribute = SymbolHelper.GetAttribute(modelClass, "BigRedProf.Data.GeneratePackRat");
+			string schemaId = (string)generatePackRatAttribute.ConstructorArguments[0].Value!;
 
 			IList<PackFieldInfo> fields = SymbolHelper.GetPackRatFields(modelClass);
 			ValidatePackRatFields(modelClass, fields);

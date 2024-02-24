@@ -12,7 +12,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 		Magenta = 10
 	}
 
-	[RegisterPackRat("2993c2cf-3d21-4d94-94af-091cfc5594ad")]
+	[GeneratePackRat("2993c2cf-3d21-4d94-94af-091cfc5594ad")]
 	public class ModelWithEnum
 	{
 		[PackField(1, SchemaId.Int32)]

@@ -6,13 +6,13 @@ namespace BigRedProf.Data
 {
 	/// <summary>
 	/// Instructs the pack rat compiler to generate a <see cref="PackRat"/> for this
-	/// model and to register it with the specified schema identifier.
+	/// model.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class)]
-	public class RegisterPackRatAttribute : Attribute
+	public class GeneratePackRatAttribute : Attribute
 	{
 		#region constructors
-		public RegisterPackRatAttribute(string schemaId)
+		public GeneratePackRatAttribute(string schemaId)
 		{
 			SchemaId = schemaId;
 		}

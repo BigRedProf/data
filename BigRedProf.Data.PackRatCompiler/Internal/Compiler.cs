@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace BigRedProf.Data.PackRatCompiler.Internal
 {
-	[RegisterPackRat("123")]
+	[GeneratePackRat("123")]
 	internal class Compiler
 	{
 		#region methods

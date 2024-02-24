@@ -95,7 +95,7 @@ namespace BigRedProf.Data.Test._TestHelpers
 				.Where(
 					n => n.AttributeLists.Any(
 						a => a.Attributes.Any(
-							attr => IsAttribute(attr, typeof(RegisterPackRatAttribute))
+							attr => IsAttribute(attr, typeof(GeneratePackRatAttribute))
 						)
 					)
 				);
