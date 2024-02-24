@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace BigRedProf.Data.PackRats
 {
 	/// <summary>
-	/// The <see cref="TokenPackRat{TValue}"/> encodes potentially large models that are repeated
+	/// The <see cref="TokenizedModelPackRat{TValue}"/> encodes potentially large models that are repeated
 	/// often as small <see cref="Code"/> values called tokens. This helps to achieve efficiency by
 	/// packing the models into small tokens while still working with them as natural models.
 	/// </summary>
@@ -16,24 +16,24 @@ namespace BigRedProf.Data.PackRats
 	/// models can be added over time, the client must take care to ensure tokens are unique and
 	/// each token pack rat has defined a model before it encounters that model's token.
 	/// </remarks>
-	/// <typeparam name="TValue">The model, or token definition, to be tokenized.</typeparam>
-	public class TokenPackRat<TValue> : PackRat<TokenValue<TValue>>
+	/// <typeparam name="TModel">The model, or token definition, to be tokenized.</typeparam>
+	public class TokenizedModelPackRat<TModel> : PackRat<TokenizedModel<TModel>>
 	{
 		#region fields
-		private IDictionary<Code, TValue> _tokenToTokenDefinitionMap;
-		private IDictionary<TValue, Code> _tokenDefinitionToTokenMap;
+		private IDictionary<Code, TModel> _tokenToModelMap;
+		private IDictionary<TModel, Code> _modelToTokenMap;
 		#endregion
 
 		#region constructors
 		/// <summary>
-		/// Creates a <see cref="TokenPackRat{TTokenValue}"/>.
+		/// Creates a <see cref="TokenizedModelPackRat{TModel}"/>.
 		/// </summary>
 		/// <param name="piedPiper">The pied piper.</param>
-		public TokenPackRat(IPiedPiper piedPiper)
+		public TokenizedModelPackRat(IPiedPiper piedPiper)
 			: base(piedPiper)
 		{
-			_tokenToTokenDefinitionMap = new Dictionary<Code, TValue>();
-			_tokenDefinitionToTokenMap = new Dictionary<TValue, Code>();
+			_tokenToModelMap = new Dictionary<Code, TModel>();
+			_modelToTokenMap = new Dictionary<TModel, Code>();
 		}
 		#endregion
 
@@ -42,17 +42,17 @@ namespace BigRedProf.Data.PackRats
 		/// Defines a new token.
 		/// </summary>
 		/// <param name="token">The token.</param>
-		/// <param name="tokenDefinition">The model, or token definition.</param>
-		public void DefineToken(Code token,  TValue tokenDefinition)
+		/// <param name="model">The model, or token definition.</param>
+		public void DefineToken(Code token,  TModel model)
 		{
 			if (token == null)
 				throw new ArgumentNullException(nameof(token));
 
-			if (_tokenToTokenDefinitionMap.ContainsKey(token))
+			if (_tokenToModelMap.ContainsKey(token))
 				throw new ArgumentException("Cannot define the same token twice.", nameof(token));
 
-			_tokenToTokenDefinitionMap[token] = tokenDefinition;
-			_tokenDefinitionToTokenMap[tokenDefinition] = token;
+			_tokenToModelMap[token] = model;
+			_modelToTokenMap[model] = token;
 		}
 
 		/// <summary>
@@ -62,55 +62,55 @@ namespace BigRedProf.Data.PackRats
 		/// <returns>True if the token has been defined, otherwise false.</returns>
 		public bool HasTokenDefinition(Code token)
 		{
-			return _tokenToTokenDefinitionMap.ContainsKey(token);
+			return _tokenToModelMap.ContainsKey(token);
 		}
 
 		/// <summary>
-		/// Gets the token value for a given token.
+		/// Gets the tokenized model for a given token.
 		/// </summary>
 		/// <param name="token">The token.</param>
-		/// <returns>The token value.</returns>
+		/// <returns>The tokenized model.</returns>
 		/// <exception cref="ArgumentNullException"></exception>
 		/// <exception cref="ArgumentException"></exception>
-		public TokenValue<TValue> GetTokenValue(Code token)
+		public TokenizedModel<TModel> GetTokenizedModel(Code token)
 		{
 			if(token == null)
 				throw new ArgumentNullException(nameof(token));
 
-			TValue tokenDefinition;
-			if (!_tokenToTokenDefinitionMap.TryGetValue(token, out tokenDefinition))
+			TModel model;
+			if (!_tokenToModelMap.TryGetValue(token, out model))
 				throw new ArgumentException("Token not defined.", nameof(token));
 
-			TokenValue<TValue> tokenValue = new TokenValue<TValue>();
-			tokenValue.Token = token; 
-			tokenValue.Value = tokenDefinition;
+			TokenizedModel<TModel> tokenizedModel = new TokenizedModel<TModel>();
+			tokenizedModel.Token = token; 
+			tokenizedModel.Model = model;
 
-			return tokenValue;
+			return tokenizedModel;
 		}
 
 		/// <summary>
 		/// Checks to see if a token has been defined and, provided it has been, returns
-		/// the token value.
+		/// the model it represents.
 		/// </summary>
 		/// <param name="token">The token.</param>
-		/// <param name="tokenValue">
-		/// The out parameter in which to return the token value, if it has been defined.
+		/// <param name="model">
+		/// The out parameter in which to return the model, if it has been defined.
 		/// </param>
 		/// <returns>True if the token has been defined, otherwise false.</returns>
 		/// <exception cref="ArgumentNullException"></exception>
-		public bool TryGetTokenValue(Code token, out TokenValue<TValue> tokenValue)
+		public bool TryGetModel(Code token, out TokenizedModel<TModel> model)
 		{
 			if (token == null)
 				throw new ArgumentNullException(nameof(token));
 
-			TValue tokenDefinition;
-			bool hasTokenDefinition = _tokenToTokenDefinitionMap.TryGetValue(token, out tokenDefinition);
+			TModel tokenDefinition;
+			bool hasTokenDefinition = _tokenToModelMap.TryGetValue(token, out tokenDefinition);
 
-			tokenValue = new TokenValue<TValue>();
+			model = new TokenizedModel<TModel>();
 			if (hasTokenDefinition)
 			{
-				tokenValue.Token = token;
-				tokenValue.Value = tokenDefinition;
+				model.Token = token;
+				model.Model = tokenDefinition;
 			}
 
 			return hasTokenDefinition;
@@ -119,17 +119,17 @@ namespace BigRedProf.Data.PackRats
 
 		#region PackRat methods
 		/// <inheritdoc/>
-		public override void PackModel(CodeWriter writer, TokenValue<TValue> tokenValue)
+		public override void PackModel(CodeWriter writer, TokenizedModel<TModel> tokenizedModel)
 		{
 			if(writer == null)
 				throw new ArgumentNullException(nameof(writer));
 
 			PackRat<Code> codePackRat = PiedPiper.GetPackRat<Code>(SchemaId.Code);
-			codePackRat.PackModel(writer, tokenValue.Token);
+			codePackRat.PackModel(writer, tokenizedModel.Token);
 		}
 
 		/// <inheritdoc/>
-		public override TokenValue<TValue> UnpackModel(CodeReader reader)
+		public override TokenizedModel<TModel> UnpackModel(CodeReader reader)
 		{
 			if(reader == null)
 				throw new ArgumentNullException(nameof(reader));
@@ -137,11 +137,11 @@ namespace BigRedProf.Data.PackRats
 			PackRat<Code> codePackRat = PiedPiper.GetPackRat<Code>(SchemaId.Code);
 			Code token = codePackRat.UnpackModel(reader);
 
-			TokenValue<TValue> tokenValue;
-			if (!TryGetTokenValue(token, out tokenValue))
+			TokenizedModel<TModel> tokenizedModel;
+			if (!TryGetModel(token, out tokenizedModel))
 				throw new InvalidOperationException($"Token '{token}' not defined.");
 
-			return tokenValue;
+			return tokenizedModel;
 		}
 		#endregion
 	}

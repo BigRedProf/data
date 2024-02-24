@@ -16,10 +16,10 @@ namespace BigRedProf.Data.Test.PackRats
 		{
 			PiedPiper piedPiper = new PiedPiper();
 
-			TokenPackRat<string> packRat = new TokenPackRat<string>(piedPiper);
-			TokenValue<string> model = new TokenValue<string>();
+			TokenizedModelPackRat<string> packRat = new TokenizedModelPackRat<string>(piedPiper);
+			TokenizedModel<string> model = new TokenizedModel<string>();
 			model.Token = "0111";
-			model.Value = "Huskers";
+			model.Model = "Huskers";
 
 			Assert.Throws<ArgumentNullException>(
 				() =>
@@ -34,7 +34,7 @@ namespace BigRedProf.Data.Test.PackRats
 		public void PackModel_ShouldWork()
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
-			TokenPackRat<string> packRat = new TokenPackRat<string>(piedPiper);
+			TokenizedModelPackRat<string> packRat = new TokenizedModelPackRat<string>(piedPiper);
 
 			packRat.DefineToken("0000", "Illinois Fighting Illini");
 			packRat.DefineToken("0001", "Indiana Hoosiers");
@@ -53,84 +53,84 @@ namespace BigRedProf.Data.Test.PackRats
 			packRat.DefineToken("1110", "USC Trojans");
 			packRat.DefineToken("1111", "Wisconsin Badgers");
 
-			PackRatTestHelper.TestPackModel<TokenValue<string>>(
+			PackRatTestHelper.TestPackModel<TokenizedModel<string>>(
 				packRat,
-				new TokenValue<string> { Token = "0000", Value = "Illinois Fighting Illini" },
+				new TokenizedModel<string> { Token = "0000", Model = "Illinois Fighting Illini" },
 				"11 000000 0000"
 			);
-			PackRatTestHelper.TestPackModel<TokenValue<string>>(
+			PackRatTestHelper.TestPackModel<TokenizedModel<string>>(
 				packRat,
-				new TokenValue<string> { Token = "0001", Value = "Indiana Hoosiers" },
+				new TokenizedModel<string> { Token = "0001", Model = "Indiana Hoosiers" },
 				"11 000000 0001"
 			);
-			PackRatTestHelper.TestPackModel<TokenValue<string>>(
+			PackRatTestHelper.TestPackModel<TokenizedModel<string>>(
 				packRat,
-				new TokenValue<string> { Token = "0010", Value = "Iowa Hawkeyes" },
+				new TokenizedModel<string> { Token = "0010", Model = "Iowa Hawkeyes" },
 				"11 000000 0010"
 			);
-			PackRatTestHelper.TestPackModel<TokenValue<string>>(
+			PackRatTestHelper.TestPackModel<TokenizedModel<string>>(
 				packRat,
-				new TokenValue<string> { Token = "0011", Value = "Maryland Terrapins" },
+				new TokenizedModel<string> { Token = "0011", Model = "Maryland Terrapins" },
 				"11 000000 0011"
 			);
-			PackRatTestHelper.TestPackModel<TokenValue<string>>(
+			PackRatTestHelper.TestPackModel<TokenizedModel<string>>(
 				packRat,
-				new TokenValue<string> { Token = "0100", Value = "Michigan Wolverines" },
+				new TokenizedModel<string> { Token = "0100", Model = "Michigan Wolverines" },
 				"11 000000 0100"
 			);
-			PackRatTestHelper.TestPackModel<TokenValue<string>>(
+			PackRatTestHelper.TestPackModel<TokenizedModel<string>>(
 				packRat,
-				new TokenValue<string> { Token = "0101", Value = "Michigan State Spartans" },
+				new TokenizedModel<string> { Token = "0101", Model = "Michigan State Spartans" },
 				"11 000000 0101"
 			);
-			PackRatTestHelper.TestPackModel<TokenValue<string>>(
+			PackRatTestHelper.TestPackModel<TokenizedModel<string>>(
 				packRat,
-				new TokenValue<string> { Token = "0110", Value = "Minnesota Golden Gophers" },
+				new TokenizedModel<string> { Token = "0110", Model = "Minnesota Golden Gophers" },
 				"11 000000 0110"
 			);
-			PackRatTestHelper.TestPackModel<TokenValue<string>>(
+			PackRatTestHelper.TestPackModel<TokenizedModel<string>>(
 				packRat,
-				new TokenValue<string> { Token = "0111", Value = "Nebraska Cornhuskers" },
+				new TokenizedModel<string> { Token = "0111", Model = "Nebraska Cornhuskers" },
 				"11 000000 0111"
 			);
-			PackRatTestHelper.TestPackModel<TokenValue<string>>(
+			PackRatTestHelper.TestPackModel<TokenizedModel<string>>(
 				packRat,
-				new TokenValue<string> { Token = "1000", Value = "Northwestern Wildcats" },
+				new TokenizedModel<string> { Token = "1000", Model = "Northwestern Wildcats" },
 				"11 000000 1000"
 			);
-			PackRatTestHelper.TestPackModel<TokenValue<string>>(
+			PackRatTestHelper.TestPackModel<TokenizedModel<string>>(
 				packRat,
-				new TokenValue<string> { Token = "1001", Value = "Ohio State Buckeyes" },
+				new TokenizedModel<string> { Token = "1001", Model = "Ohio State Buckeyes" },
 				"11 000000 1001"
 			);
-			PackRatTestHelper.TestPackModel<TokenValue<string>>(
+			PackRatTestHelper.TestPackModel<TokenizedModel<string>>(
 				packRat,
-				new TokenValue<string> { Token = "1010", Value = "Penn State Nittany Lions" },
+				new TokenizedModel<string> { Token = "1010", Model = "Penn State Nittany Lions" },
 				"11 000000 1010"
 			);
-			PackRatTestHelper.TestPackModel<TokenValue<string>>(
+			PackRatTestHelper.TestPackModel<TokenizedModel<string>>(
 				packRat,
-				new TokenValue<string> { Token = "1011", Value = "Purdue Boilermakers" },
+				new TokenizedModel<string> { Token = "1011", Model = "Purdue Boilermakers" },
 				"11 000000 1011"
 			);
-			PackRatTestHelper.TestPackModel<TokenValue<string>>(
+			PackRatTestHelper.TestPackModel<TokenizedModel<string>>(
 				packRat,
-				new TokenValue<string> { Token = "1100", Value = "Rutgers Scarlet Knights" },
+				new TokenizedModel<string> { Token = "1100", Model = "Rutgers Scarlet Knights" },
 				"11 000000 1100"
 			);
-			PackRatTestHelper.TestPackModel<TokenValue<string>>(
+			PackRatTestHelper.TestPackModel<TokenizedModel<string>>(
 				packRat,
-				new TokenValue<string> { Token = "1101", Value = "UCLA Bruins" },
+				new TokenizedModel<string> { Token = "1101", Model = "UCLA Bruins" },
 				"11 000000 1101"
 			);
-			PackRatTestHelper.TestPackModel<TokenValue<string>>(
+			PackRatTestHelper.TestPackModel<TokenizedModel<string>>(
 				packRat,
-				new TokenValue<string> { Token = "1110", Value = "USC Trojans" },
+				new TokenizedModel<string> { Token = "1110", Model = "USC Trojans" },
 				"11 000000 1110"
 			);
-			PackRatTestHelper.TestPackModel<TokenValue<string>>(
+			PackRatTestHelper.TestPackModel<TokenizedModel<string>>(
 				packRat,
-				new TokenValue<string> { Token = "1111", Value = "Wisconsin Badgers" },
+				new TokenizedModel<string> { Token = "1111", Model = "Wisconsin Badgers" },
 				"11 000000 1111"
 			);
 		}
@@ -140,7 +140,7 @@ namespace BigRedProf.Data.Test.PackRats
 		public void UnpackModel_ShouldThrowWhenReaderIsNull()
 		{
 			PiedPiper piedPiper = new PiedPiper();
-			TokenPackRat<string> packRat = new TokenPackRat<string>(piedPiper);
+			TokenizedModelPackRat<string> packRat = new TokenizedModelPackRat<string>(piedPiper);
 
 			Assert.Throws<ArgumentNullException>(
 				() =>
@@ -155,7 +155,7 @@ namespace BigRedProf.Data.Test.PackRats
 		public void UnpackModel_ShouldWork()
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
-			TokenPackRat<string> packRat = new TokenPackRat<string>(piedPiper);
+			TokenizedModelPackRat<string> packRat = new TokenizedModelPackRat<string>(piedPiper);
 
 			packRat.DefineToken("0000", "Illinois Fighting Illini");
 			packRat.DefineToken("0001", "Indiana Hoosiers");
@@ -174,85 +174,85 @@ namespace BigRedProf.Data.Test.PackRats
 			packRat.DefineToken("1110", "USC Trojans");
 			packRat.DefineToken("1111", "Wisconsin Badgers");
 
-			PackRatTestHelper.TestUnpackModel<TokenValue<string>>(
+			PackRatTestHelper.TestUnpackModel<TokenizedModel<string>>(
 				packRat,
 				"11 000000 0000",
-				new TokenValue<string> { Token = "0000", Value = "Illinois Fighting Illini" }
+				new TokenizedModel<string> { Token = "0000", Model = "Illinois Fighting Illini" }
 			);
-			PackRatTestHelper.TestUnpackModel<TokenValue<string>>(
+			PackRatTestHelper.TestUnpackModel<TokenizedModel<string>>(
 				packRat,
 				"11 000000 0001",
-				new TokenValue<string> { Token = "0001", Value = "Indiana Hoosiers" }
+				new TokenizedModel<string> { Token = "0001", Model = "Indiana Hoosiers" }
 			);
-			PackRatTestHelper.TestUnpackModel<TokenValue<string>>(
+			PackRatTestHelper.TestUnpackModel<TokenizedModel<string>>(
 				packRat,
 				"11 000000 0010",
-				new TokenValue<string> { Token = "0010", Value = "Iowa Hawkeyes" }
+				new TokenizedModel<string> { Token = "0010", Model = "Iowa Hawkeyes" }
 			);
-			PackRatTestHelper.TestUnpackModel<TokenValue<string>>(
+			PackRatTestHelper.TestUnpackModel<TokenizedModel<string>>(
 				packRat,
 				"11 000000 0011",
-				new TokenValue<string> { Token = "0011", Value = "Maryland Terrapins" }
+				new TokenizedModel<string> { Token = "0011", Model = "Maryland Terrapins" }
 			);
-			PackRatTestHelper.TestUnpackModel<TokenValue<string>>(
+			PackRatTestHelper.TestUnpackModel<TokenizedModel<string>>(
 				packRat,
 				"11 000000 0100",
-				new TokenValue<string> { Token = "0100", Value = "Michigan Wolverines" }
+				new TokenizedModel<string> { Token = "0100", Model = "Michigan Wolverines" }
 			);
-			PackRatTestHelper.TestUnpackModel<TokenValue<string>>(
+			PackRatTestHelper.TestUnpackModel<TokenizedModel<string>>(
 				packRat,
 				"11 000000 0101",
-				new TokenValue<string> { Token = "0101", Value = "Michigan State Spartans" }
+				new TokenizedModel<string> { Token = "0101", Model = "Michigan State Spartans" }
 			);
-			PackRatTestHelper.TestUnpackModel<TokenValue<string>>(
+			PackRatTestHelper.TestUnpackModel<TokenizedModel<string>>(
 				packRat,
 				"11 000000 0110",
-				new TokenValue<string> { Token = "0110", Value = "Minnesota Golden Gophers" }
+				new TokenizedModel<string> { Token = "0110", Model = "Minnesota Golden Gophers" }
 			);
-			PackRatTestHelper.TestUnpackModel<TokenValue<string>>(
+			PackRatTestHelper.TestUnpackModel<TokenizedModel<string>>(
 				packRat,
 				"11 000000 0111",
-				new TokenValue<string> { Token = "0111", Value = "Nebraska Cornhuskers" }
+				new TokenizedModel<string> { Token = "0111", Model = "Nebraska Cornhuskers" }
 			);
-			PackRatTestHelper.TestUnpackModel<TokenValue<string>>(
+			PackRatTestHelper.TestUnpackModel<TokenizedModel<string>>(
 				packRat,
 				"11 000000 1000",
-				new TokenValue<string> { Token = "1000", Value = "Northwestern Wildcats" }
+				new TokenizedModel<string> { Token = "1000", Model = "Northwestern Wildcats" }
 			);
-			PackRatTestHelper.TestUnpackModel<TokenValue<string>>(
+			PackRatTestHelper.TestUnpackModel<TokenizedModel<string>>(
 				packRat,
 				"11 000000 1001",
-				new TokenValue<string> { Token = "1001", Value = "Ohio State Buckeyes" }
+				new TokenizedModel<string> { Token = "1001", Model = "Ohio State Buckeyes" }
 			);
-			PackRatTestHelper.TestUnpackModel<TokenValue<string>>(
+			PackRatTestHelper.TestUnpackModel<TokenizedModel<string>>(
 				packRat,
 				"11 000000 1010",
-				new TokenValue<string> { Token = "1010", Value = "Penn State Nittany Lions" }
+				new TokenizedModel<string> { Token = "1010", Model = "Penn State Nittany Lions" }
 			);
-			PackRatTestHelper.TestUnpackModel<TokenValue<string>>(
+			PackRatTestHelper.TestUnpackModel<TokenizedModel<string>>(
 				packRat,
 				"11 000000 1011",
-				new TokenValue<string> { Token = "1011", Value = "Purdue Boilermakers" }
+				new TokenizedModel<string> { Token = "1011", Model = "Purdue Boilermakers" }
 			);
-			PackRatTestHelper.TestUnpackModel<TokenValue<string>>(
+			PackRatTestHelper.TestUnpackModel<TokenizedModel<string>>(
 				packRat,
 				"11 000000 1100",
-				new TokenValue<string> { Token = "1100", Value = "Rutgers Scarlet Knights" }
+				new TokenizedModel<string> { Token = "1100", Model = "Rutgers Scarlet Knights" }
 			);
-			PackRatTestHelper.TestUnpackModel<TokenValue<string>>(
+			PackRatTestHelper.TestUnpackModel<TokenizedModel<string>>(
 				packRat,
 				"11 000000 1101",
-				new TokenValue<string> { Token = "1101", Value = "UCLA Bruins" }
+				new TokenizedModel<string> { Token = "1101", Model = "UCLA Bruins" }
 			);
-			PackRatTestHelper.TestUnpackModel<TokenValue<string>>(
+			PackRatTestHelper.TestUnpackModel<TokenizedModel<string>>(
 				packRat,
 				"11 000000 1110",
-				new TokenValue<string> { Token = "1110", Value = "USC Trojans" }
+				new TokenizedModel<string> { Token = "1110", Model = "USC Trojans" }
 			);
-			PackRatTestHelper.TestUnpackModel<TokenValue<string>>(
+			PackRatTestHelper.TestUnpackModel<TokenizedModel<string>>(
 				packRat,
 				"11 000000 1111",
-				new TokenValue<string> { Token = "1111", Value = "Wisconsin Badgers" }
+				new TokenizedModel<string> { Token = "1111", Model = "Wisconsin Badgers" }
 			);
 		}
 		#endregion

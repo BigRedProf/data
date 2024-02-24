@@ -1,6 +1,6 @@
 ﻿namespace BigRedProf.Data
 {
-	public struct TokenValue<TValue>
+	public struct TokenizedModel<TModel>
 	{
 		#region properties
 		/// <summary>
@@ -9,9 +9,9 @@
 		public Code Token { get; set; }
 
 		/// <summary>
-		/// The value, or token definition.
+		/// The model represented by the token.
 		/// </summary>
-		public TValue Value { get; set; }
+		public TModel Model { get; set; }
 		#endregion
 	}
 }
