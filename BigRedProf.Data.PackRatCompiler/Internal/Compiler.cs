@@ -50,7 +50,7 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 		private void ProcessProject(PackRatGenerator packRatGenerator, ICompilationContext context, FileInfo projectFile, DirectoryInfo outputDirectory)
 		{
 			SourceProject sourceProject = new SourceProject(context, projectFile);
-			foreach (INamedTypeSymbol modelClass in sourceProject.GetModelClasses3())
+			foreach (INamedTypeSymbol modelClass in sourceProject.GetGeneratePackRatClasses())
 			{
 				FileInfo outputFile = new FileInfo(Path.Combine(outputDirectory.FullName, modelClass.Name + "PackRat.g.cs"));
 				ProcessModelClass(packRatGenerator, modelClass, outputFile);
