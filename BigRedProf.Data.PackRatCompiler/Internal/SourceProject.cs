@@ -22,10 +22,24 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 		#endregion
 
 		#region methods
+		/// <summary>
+		/// Gets all model classes decorated with the <see cref="GeneratePackRatAttribute"/>.
+		/// </summary>
+		/// <returns>all model classes decorated with the <see cref="GeneratePackRatAttribute"/>.</returns>
 		public IEnumerable<INamedTypeSymbol> GetGeneratePackRatClasses()
 		{
 			return SymbolHelper.GetTypes(_compilationContext.Compilation.GlobalNamespace)
 				.Where(t => SymbolHelper.HasAttribute(t, "BigRedProf.Data.GeneratePackRat"));
+		}
+
+		/// <summary>
+		/// Gets all model classes decorated with the <see cref="AssemblyPackRatAttribute"/>.
+		/// </summary>
+		/// <returns>all model classes decorated with the <see cref="AssemblyPackRatAttribute"/>.</returns>
+		public IEnumerable<INamedTypeSymbol> GetAssemblyPackRatClasses()
+		{
+			return SymbolHelper.GetTypes(_compilationContext.Compilation.GlobalNamespace)
+				.Where(t => SymbolHelper.HasAttribute(t, "BigRedProf.Data.AssemblyPackRat"));
 		}
 
 		public void PrintMembers(ISymbol symbol)

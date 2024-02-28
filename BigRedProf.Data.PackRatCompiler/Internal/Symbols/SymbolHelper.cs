@@ -69,6 +69,25 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 			return GetAttributes(symbol, fullyQualifiedAttributeName).First();
 		}
 
+		public static object? GetAttributeArgument(AttributeData attribute, int position)
+		{
+			return attribute.ConstructorArguments[position].Value;
+		}
+
+		public static object? GetAttributeArgument(AttributeData attribute, string name)
+		{
+			return attribute.NamedArguments.Where(na => na.Key == name).FirstOrDefault().Value.Value;
+		}
+
+		public static object? GetAttributeArgument(AttributeData attribute, string name, int position)
+		{
+			object? value = GetAttributeArgument(attribute, name);
+			if (value != null)
+				return value;
+
+			return GetAttributeArgument(attribute, position);
+		}
+
 		public static IList<PackFieldInfo> GetPackRatFields(INamedTypeSymbol modelClass)
 		{
 			return GetFieldsAndProperties(modelClass).
@@ -340,6 +359,11 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 			}
 
 			return isNullable;
+		}
+
+		public static string GetFullName(INamedTypeSymbol type)
+		{
+			return $"{type.ContainingNamespace.ToDisplayString()}.{type.Name}";
 		}
 		#endregion
 	}

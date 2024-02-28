@@ -46,15 +46,15 @@ namespace BigRedProf.Data
 			if (assembly == null)
 				throw new ArgumentNullException(nameof(assembly));
 
-			foreach(Type type in assembly.GetTypes())
+			if (!ReflectionHelper.TryCreateTypeInAssemblyWithAttribute<AssemblyRegistrar, AssemblyRegistrarAttribute>(
+				assembly,
+				out AssemblyRegistrar assemblyRegistrar)
+			)
 			{
-				AssemblyPackRatAttribute attribute = type.GetCustomAttributes<AssemblyPackRatAttribute>().FirstOrDefault();
-				if(attribute != null)
-				{
-					object packRat = Activator.CreateInstance(type, this);
-					AddPackRatToDictionary((IWeaklyTypedPackRat) packRat, attribute.SchemaId);
-				}
+				throw new ArgumentException("The assembly has no [AssemblyRegistrar] class.", nameof(assembly));
 			}
+
+			assemblyRegistrar.RegisterAssemblies(this, assembly);
 		}
 
 		/// <inheritdoc/>

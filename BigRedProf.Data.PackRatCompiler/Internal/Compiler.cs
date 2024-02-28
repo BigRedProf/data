@@ -1,4 +1,5 @@
-﻿using Microsoft.Build.Locator;
+﻿using BigRedProf.Data.PackRatCompiler.Internal.Symbols;
+using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.MSBuild;
@@ -50,11 +51,41 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 		private void ProcessProject(PackRatGenerator packRatGenerator, ICompilationContext context, FileInfo projectFile, DirectoryInfo outputDirectory)
 		{
 			SourceProject sourceProject = new SourceProject(context, projectFile);
+
+			AssemblyRegistrationHelperGenerator assemblyRegistrationHelperGenerator = new AssemblyRegistrationHelperGenerator(outputDirectory);
+			assemblyRegistrationHelperGenerator.GenerateStart();
+
+			assemblyRegistrationHelperGenerator.StartGeneratedPackRatsSection();
+			HashSet<string> generatedPackRatClassesSet = new HashSet<string>();
 			foreach (INamedTypeSymbol modelClass in sourceProject.GetGeneratePackRatClasses())
 			{
 				FileInfo outputFile = new FileInfo(Path.Combine(outputDirectory.FullName, modelClass.Name + "PackRat.g.cs"));
 				ProcessModelClass(packRatGenerator, modelClass, outputFile);
+
+				string type = SymbolHelper.GetFullName(modelClass);
+				string @class = type + "PackRat";
+				AttributeData generatePackRatAttribute = SymbolHelper.GetAttribute(modelClass, "BigRedProf.Data.GeneratePackRat");
+				string schemaId = (string) SymbolHelper.GetAttributeArgument(generatePackRatAttribute, 0)!;
+				assemblyRegistrationHelperGenerator.AddPackRat(type, @class, schemaId);
+
+				generatedPackRatClassesSet.Add(@class);
 			}
+
+			assemblyRegistrationHelperGenerator.StartCodedPackRatsSection();
+			foreach (INamedTypeSymbol packRatClass in sourceProject.GetAssemblyPackRatClasses())
+			{
+				string baseClassGenericType = SymbolHelper.GetFullName((INamedTypeSymbol)packRatClass.BaseType!.TypeArguments[0])!;
+				string type = $"BigRedProf.Data.TokenizedModel<{baseClassGenericType}>";
+				string @class = SymbolHelper.GetFullName(packRatClass);
+				if (!generatedPackRatClassesSet.Contains(@class))
+				{
+					AttributeData assemblyPackRatAttribute = SymbolHelper.GetAttribute(packRatClass, "BigRedProf.Data.AssemblyPackRat");
+					string schemaId = (string)SymbolHelper.GetAttributeArgument(assemblyPackRatAttribute, 0)!;
+					assemblyRegistrationHelperGenerator.AddPackRat(type, @class, schemaId);
+				}
+			}
+
+			assemblyRegistrationHelperGenerator.GenerateEnd();
 		}
 
 		private void ProcessModelClass(PackRatGenerator packRatGenerator, INamedTypeSymbol modelClass, FileInfo outputFile)
