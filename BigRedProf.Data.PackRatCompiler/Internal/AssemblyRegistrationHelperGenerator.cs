@@ -27,13 +27,13 @@
 			_writer.WriteLine("namespace BigRedProf.Data.PackRatCompiler.Generated");
 			_writer.WriteOpeningCurlyBrace();
 
-			_writer.WriteLine("[GeneratedAssemblyRegistrationHelper]");
+			_writer.WriteLine("[AssemblyRegistrationHelper]");
 			_writer.WriteLine("public class GeneratedAssemblyRegistrationHelper : AssemblyRegistrationHelper");
 			_writer.WriteOpeningCurlyBrace();
 
 			_writer.WriteLine("#region AssemblyRegistrationHelper methods");
 			
-			_writer.WriteLine("override public RegisterPackRats(IPiedPiper piedPiper)");
+			_writer.WriteLine("override public void RegisterPackRats(IPiedPiper piedPiper)");
 			_writer.WriteOpeningCurlyBrace();
 		}
 
