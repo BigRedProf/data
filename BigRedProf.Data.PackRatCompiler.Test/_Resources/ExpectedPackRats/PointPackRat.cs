@@ -15,7 +15,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 		public override void PackModel(CodeWriter writer, Point model)
 		{
 			// X
-			PiedPiper.GetPackRat<int>("FFDB57BB-BE6B-4CC3-A0F6-48596C8A8B2B")
+			PiedPiper.GetPackRat<int>("ffdb57bb-be6b-4cc3-a0f6-48596c8a8b2b")
 				.PackModel(writer, model.X);
 
 			// Y
@@ -28,7 +28,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			Point model = new Point();
 
 			// X
-			model.X = PiedPiper.GetPackRat<int>("FFDB57BB-BE6B-4CC3-A0F6-48596C8A8B2B")
+			model.X = PiedPiper.GetPackRat<int>("ffdb57bb-be6b-4cc3-a0f6-48596c8a8b2b")
 				.UnpackModel(reader);
 
 			// Y

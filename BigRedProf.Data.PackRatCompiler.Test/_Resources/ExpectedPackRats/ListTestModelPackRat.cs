@@ -18,7 +18,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			PiedPiper.PackList<string>(
 				writer,
 				model.List,
-				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
+				"9cdf52b4-4c47-4b6d-bc17-34f33312b7a7",
 				false,
 				false,
 				ByteAligned.Yes
@@ -28,7 +28,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			PiedPiper.PackList<string>(
 				writer,
 				model.NullableList,
-				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
+				"9cdf52b4-4c47-4b6d-bc17-34f33312b7a7",
 				true,
 				false,
 				ByteAligned.No
@@ -38,7 +38,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			PiedPiper.PackList<string>(
 				writer,
 				model.ListOfNullableElements,
-				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
+				"9cdf52b4-4c47-4b6d-bc17-34f33312b7a7",
 				false,
 				true,
 				ByteAligned.No
@@ -48,7 +48,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			PiedPiper.PackList<string>(
 				writer,
 				model.NullableListOfNullableElements,
-				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
+				"9cdf52b4-4c47-4b6d-bc17-34f33312b7a7",
 				true,
 				true,
 				ByteAligned.Yes
@@ -62,7 +62,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			// List
 			model.List = PiedPiper.UnpackList<string>(
 				reader,
-				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
+				"9cdf52b4-4c47-4b6d-bc17-34f33312b7a7",
 				false,
 				false,
 				ByteAligned.Yes
@@ -71,7 +71,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			// NullableList
 			model.NullableList = PiedPiper.UnpackList<string>(
 				reader,
-				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
+				"9cdf52b4-4c47-4b6d-bc17-34f33312b7a7",
 				true,
 				false,
 				ByteAligned.No
@@ -80,7 +80,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			// ListOfNullableElements
 			model.ListOfNullableElements = PiedPiper.UnpackList<string>(
 				reader,
-				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
+				"9cdf52b4-4c47-4b6d-bc17-34f33312b7a7",
 				false,
 				true,
 				ByteAligned.No
@@ -89,7 +89,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			// NullableListOfNullableElements
 			model.NullableListOfNullableElements = PiedPiper.UnpackList<string>(
 				reader,
-				"9CDF52B4-4C47-4B6D-BC17-34F33312B7A7",
+				"9cdf52b4-4c47-4b6d-bc17-34f33312b7a7",
 				true,
 				true,
 				ByteAligned.Yes

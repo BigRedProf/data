@@ -15,11 +15,11 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 		public override void PackModel(CodeWriter writer, ModelWithEnum model)
 		{
 			// Color1
-			PiedPiper.GetPackRat<int>("FFDB57BB-BE6B-4CC3-A0F6-48596C8A8B2B")
+			PiedPiper.GetPackRat<int>("ffdb57bb-be6b-4cc3-a0f6-48596c8a8b2b")
 				.PackModel(writer, (int) model.Color1);
 
 			// Color2
-			PiedPiper.GetPackRat<int>("303EEDD7-2F7F-4D6A-9E94-DE3523322B33")
+			PiedPiper.GetPackRat<int>("303eedd7-2f7f-4d6a-9e94-de3523322b33")
 				.PackModel(writer, (int) model.Color2);
 		}
 
@@ -28,11 +28,11 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			ModelWithEnum model = new ModelWithEnum();
 
 			// Color1
-			model.Color1 = (BigRedProf.Data.PackRatCompiler.Test._Resources.Models.ColorHexagon) PiedPiper.GetPackRat<int>("FFDB57BB-BE6B-4CC3-A0F6-48596C8A8B2B")
+			model.Color1 = (BigRedProf.Data.PackRatCompiler.Test._Resources.Models.ColorHexagon) PiedPiper.GetPackRat<int>("ffdb57bb-be6b-4cc3-a0f6-48596c8a8b2b")
 				.UnpackModel(reader);
 
 			// Color2
-			model.Color2 = (BigRedProf.Data.PackRatCompiler.Test._Resources.Models.ColorHexagon) PiedPiper.GetPackRat<int>("303EEDD7-2F7F-4D6A-9E94-DE3523322B33")
+			model.Color2 = (BigRedProf.Data.PackRatCompiler.Test._Resources.Models.ColorHexagon) PiedPiper.GetPackRat<int>("303eedd7-2f7f-4d6a-9e94-de3523322b33")
 				.UnpackModel(reader);
 
 			return model;

@@ -2,6 +2,7 @@
 using BigRedProf.Data.Internal.PackRats;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -64,6 +65,9 @@ namespace BigRedProf.Data
 			if(schemaId == null)
 				throw new ArgumentNullException(nameof(schemaId));
 
+			if (!IsValidSchemaId(schemaId))
+				throw CreateInvalidSchemaIdArgumentException(nameof(schemaId));
+
 			IWeaklyTypedPackRat nonGenericPackRat = GetPackRat(schemaId);
 			PackRat<T> packRat = nonGenericPackRat as PackRat<T>;
 			if (packRat == null)
@@ -84,6 +88,9 @@ namespace BigRedProf.Data
 
 			if (schemaId == null)
 				throw new ArgumentNullException(nameof(schemaId));
+
+			if (!IsValidSchemaId(schemaId))
+				throw CreateInvalidSchemaIdArgumentException(nameof(schemaId));
 
 			AddPackRatToDictionary(packRat, schemaId);
 		}
@@ -134,6 +141,9 @@ namespace BigRedProf.Data
 			if (schemaId == null)
 				throw new ArgumentNullException(nameof(schemaId));
 
+			if (!IsValidSchemaId(schemaId))
+				throw CreateInvalidSchemaIdArgumentException(nameof(schemaId));
+
 			writer.WriteCode(model == null ? "0" : "1");
 			if (byteAligned == ByteAligned.Yes)
 				writer.AlignToNextByteBoundary();
@@ -153,6 +163,9 @@ namespace BigRedProf.Data
 
 			if (schemaId == null)
 				throw new ArgumentNullException(nameof(schemaId));
+
+			if (!IsValidSchemaId(schemaId))
+				throw CreateInvalidSchemaIdArgumentException(nameof(schemaId));
 
 			M model = default;
 
@@ -192,6 +205,9 @@ namespace BigRedProf.Data
 
 			if (elementSchemaId == null)
 				throw new ArgumentNullException(nameof(elementSchemaId));
+
+			if (!IsValidSchemaId(elementSchemaId))
+				throw CreateInvalidSchemaIdArgumentException(nameof(elementSchemaId));
 
 			if (allowNullLists)
 				writer.WriteCode(list == null ? "0" : "1");
@@ -256,6 +272,9 @@ namespace BigRedProf.Data
 
 			if (elementSchemaId == null)
 				throw new ArgumentNullException(nameof(elementSchemaId));
+
+			if (!IsValidSchemaId(elementSchemaId))
+				throw CreateInvalidSchemaIdArgumentException(nameof(elementSchemaId));
 
 			if (allowNullLists)
 			{
@@ -322,6 +341,9 @@ namespace BigRedProf.Data
 			if (schemaId == null)
 				throw new ArgumentNullException(nameof(schemaId));
 
+			if (!IsValidSchemaId(schemaId))
+				throw CreateInvalidSchemaIdArgumentException(nameof(schemaId));
+
 			PackRat<M> packRat = GetPackRat<M>(schemaId);
 			CodeStream codeStream = new CodeStream();
 			using(CodeWriter codeWriter = new CodeWriter(codeStream))
@@ -341,6 +363,9 @@ namespace BigRedProf.Data
 
 			if(schemaId == null)
 				throw new ArgumentNullException(nameof(schemaId));
+
+			if (!IsValidSchemaId(schemaId))
+				throw CreateInvalidSchemaIdArgumentException(nameof(schemaId));
 
 			M model;
 			PackRat<M> packRat = GetPackRat<M>(schemaId);
@@ -421,6 +446,44 @@ namespace BigRedProf.Data
 			}
 
 			return packRat;
+		}
+		#endregion
+
+		#region private functions
+		private static bool IsValidSchemaId(string schemaId)
+		{
+			if (schemaId == null)
+				return false;
+
+			if (schemaId.Length != 36)
+				return false;
+
+			for (int i = 0; i < 36; ++i)
+			{
+				char character = schemaId[i];
+
+				if (i == 8 || i == 13 || i == 18 || i == 23)
+				{
+					if (character != '-')
+						return false;
+				}
+				else
+				{
+					if (!((character >= '0' && character <= '9') || (character >= 'a' && character <= 'f')))
+						return false;
+				}
+			}
+
+			return true;
+		}
+
+		private static Exception CreateInvalidSchemaIdArgumentException(string argumentName)
+		{
+			return new ArgumentException(
+				"Invalid schema identifier. Please use only lowercase hexadecimal digits and hyphens. " +
+				"\"Eg: 01234567-89ab-cdef-0123-456789abcdef\"",
+				argumentName
+			);
 		}
 		#endregion
 	}

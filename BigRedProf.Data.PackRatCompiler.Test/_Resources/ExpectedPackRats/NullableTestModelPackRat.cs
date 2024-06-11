@@ -15,17 +15,17 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 		public override void PackModel(CodeWriter writer, NullableTestModel model)
 		{
 			// ExplicitlyNullableField
-			PiedPiper.PackNullableModel<string>(writer, model.ExplicitlyNullableField, "9CDF52B4-4C47-4B6D-BC17-34F33312B7A7", ByteAligned.No);
+			PiedPiper.PackNullableModel<string>(writer, model.ExplicitlyNullableField, "9cdf52b4-4c47-4b6d-bc17-34f33312b7a7", ByteAligned.No);
 
 			// ExplicitlyNonNullableField
-			PiedPiper.GetPackRat<string>("9CDF52B4-4C47-4B6D-BC17-34F33312B7A7")
+			PiedPiper.GetPackRat<string>("9cdf52b4-4c47-4b6d-bc17-34f33312b7a7")
 				.PackModel(writer, model.ExplicitlyNonNullableField);
 
 			// ImplicitlyNullableField
-			PiedPiper.PackNullableModel<string>(writer, model.ImplicitlyNullableField, "9CDF52B4-4C47-4B6D-BC17-34F33312B7A7", ByteAligned.No);
+			PiedPiper.PackNullableModel<string>(writer, model.ImplicitlyNullableField, "9cdf52b4-4c47-4b6d-bc17-34f33312b7a7", ByteAligned.No);
 
 			// ImplicitlyNonNullableField
-			PiedPiper.GetPackRat<string>("9CDF52B4-4C47-4B6D-BC17-34F33312B7A7")
+			PiedPiper.GetPackRat<string>("9cdf52b4-4c47-4b6d-bc17-34f33312b7a7")
 				.PackModel(writer, model.ImplicitlyNonNullableField);
 		}
 
@@ -34,17 +34,17 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			NullableTestModel model = new NullableTestModel();
 
 			// ExplicitlyNullableField
-			model.ExplicitlyNullableField = PiedPiper.UnpackNullableModel<string>(reader, "9CDF52B4-4C47-4B6D-BC17-34F33312B7A7", ByteAligned.No);
+			model.ExplicitlyNullableField = PiedPiper.UnpackNullableModel<string>(reader, "9cdf52b4-4c47-4b6d-bc17-34f33312b7a7", ByteAligned.No);
 
 			// ExplicitlyNonNullableField
-			model.ExplicitlyNonNullableField = PiedPiper.GetPackRat<string>("9CDF52B4-4C47-4B6D-BC17-34F33312B7A7")
+			model.ExplicitlyNonNullableField = PiedPiper.GetPackRat<string>("9cdf52b4-4c47-4b6d-bc17-34f33312b7a7")
 				.UnpackModel(reader);
 
 			// ImplicitlyNullableField
-			model.ImplicitlyNullableField = PiedPiper.UnpackNullableModel<string>(reader, "9CDF52B4-4C47-4B6D-BC17-34F33312B7A7", ByteAligned.No);
+			model.ImplicitlyNullableField = PiedPiper.UnpackNullableModel<string>(reader, "9cdf52b4-4c47-4b6d-bc17-34f33312b7a7", ByteAligned.No);
 
 			// ImplicitlyNonNullableField
-			model.ImplicitlyNonNullableField = PiedPiper.GetPackRat<string>("9CDF52B4-4C47-4B6D-BC17-34F33312B7A7")
+			model.ImplicitlyNonNullableField = PiedPiper.GetPackRat<string>("9cdf52b4-4c47-4b6d-bc17-34f33312b7a7")
 				.UnpackModel(reader);
 
 			return model;
