@@ -87,6 +87,11 @@ namespace BigRedProf.Data
 		public const string Int64 = "05D2E9CE-16CB-4FA0-832A-F933D9BFE1D6";
 
 		/// <summary>
+		/// The schema identifier for the <see cref="ModelWithSchema"/> type.
+		/// </summary>
+		public const string ModelWithSchema = "ADCE8290-2438-420D-9658-49296CF456F3";
+
+		/// <summary>
 		/// The schema identifier for packs.
 		/// </summary>
 		public const string Pack = "98BDC72C-E554-4EC8-BD45-DAFE012DA009";

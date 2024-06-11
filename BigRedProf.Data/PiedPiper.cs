@@ -36,6 +36,7 @@ namespace BigRedProf.Data
 			RegisterPackRat<int>(new Int32PackRat(this), SchemaId.Int32);
 			RegisterPackRat<long>(new Int64PackRat(this), SchemaId.Int64);
 			RegisterPackRat<Guid>(new GuidPackRat(this), SchemaId.Guid);
+			RegisterPackRat<ModelWithSchema>(new ModelWithSchemaPackRat(this), SchemaId.ModelWithSchema);
 			RegisterPackRat<float>(new SinglePackRat(this), SchemaId.Single);
 			RegisterPackRat<string>(new StringPackRat(this), SchemaId.TextUtf8);
 		}
@@ -85,6 +86,38 @@ namespace BigRedProf.Data
 				throw new ArgumentNullException(nameof(schemaId));
 
 			AddPackRatToDictionary(packRat, schemaId);
+		}
+
+		/// <inheritdoc/>
+		public void PackModel<M>(CodeWriter writer, M model, string schemaId)
+		{
+			PackRat<M> modelPackRat = GetPackRat<M>(schemaId);
+			modelPackRat.PackModel(writer, model);
+		}
+
+		/// <inheritdoc/>
+		public M UnpackModel<M>(CodeReader reader, string schemaId)
+		{
+			PackRat<M> modelPackRat = GetPackRat<M>(schemaId);
+			M model = modelPackRat.UnpackModel(reader);
+
+			return model;
+		}
+
+		/// <inheritdoc/>
+		public void PackModel(CodeWriter writer, object model, string schemaId)
+		{
+			IWeaklyTypedPackRat modelPackRat = GetPackRat(schemaId);
+			modelPackRat.PackModel(writer, model);
+		}
+
+		/// <inheritdoc/>
+		public object UnpackModel(CodeReader reader, string schemaId)
+		{
+			IWeaklyTypedPackRat packRat = GetPackRat(schemaId);
+			object model = packRat.UnpackModel(reader);
+			
+			return model;
 		}
 
 		/// <inheritdoc/>
@@ -321,52 +354,6 @@ namespace BigRedProf.Data
 		}
 
 		/// <inheritdoc/>
-		public Code EncodeModelWithSchema(object model, string schemaId)
-		{
-			if (model == null)
-				throw new ArgumentNullException(nameof(model));
-
-			if (schemaId == null)
-				throw new ArgumentNullException(nameof(schemaId));
-
-			PackRat<Guid> guidPackRat = GetPackRat<Guid>(SchemaId.Guid);
-			IWeaklyTypedPackRat modelPackRat = GetPackRat(schemaId);
-			CodeStream codeStream = new CodeStream();
-			using (CodeWriter codeWriter = new CodeWriter(codeStream))
-			{
-				// encode the schema identifier
-				guidPackRat.PackModel(codeWriter, new Guid(schemaId));
-
-				// then encode the model
-				modelPackRat.PackModel(codeWriter, model);
-			}
-			Code code = codeStream.ToCode();
-
-			return code;
-		}
-
-		/// <inheritdoc/>
-		public ModelWithSchema DecodeModelWithSchema(Code code)
-		{
-			if (code == null)
-				throw new ArgumentNullException(nameof(code));
-
-			ModelWithSchema modelWithSchema = new ModelWithSchema();
-			PackRat<Guid> guidPackRat = GetPackRat<Guid>(SchemaId.Guid);
-			MemoryStream memoryStream = new MemoryStream(code.ToByteArray());
-			using (CodeReader codeReader = new CodeReader(memoryStream))
-			{
-				// decode the schema identifier
-				modelWithSchema.SchemaId = guidPackRat.UnpackModel(codeReader).ToString();
-
-				// then decode the model
-				IWeaklyTypedPackRat modelPackRat = GetPackRat(modelWithSchema.SchemaId);
-				modelWithSchema.Model = modelPackRat.UnpackModel(codeReader);
-			}
-
-			return modelWithSchema;
-		}
-
 		public byte[] SaveCodeToByteArray(Code code)
 		{
 			if (code == null)

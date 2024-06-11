@@ -50,6 +50,40 @@ namespace BigRedProf.Data
 		void RegisterPackRats(Assembly assembly);
 
 		/// <summary>
+		/// Packs a model using the specified pack rat.
+		/// </summary>
+		/// <typeparam name="M"></typeparam>
+		/// <param name="writer">The code writer.</param>
+		/// <param name="model">The model.</param>
+		/// <param name="schemaId">The schema identifier.</param>
+		void PackModel<M>(CodeWriter writer, M model, string schemaId);
+
+		/// <summary>
+		/// Unpacks a model using the specified pack rat.
+		/// </summary>
+		/// <typeparam name="M"></typeparam>
+		/// <param name="reader">The code reader.</param>
+		/// <param name="schemaId">The schema identifier.</param>
+		/// <returns>The model.</returns>
+		M UnpackModel<M>(CodeReader reader, string schemaId);
+
+		/// <summary>
+		/// Packs a model using the specified pack rat.
+		/// </summary>
+		/// <param name="writer">The code writer.</param>
+		/// <param name="model">The model.</param>
+		/// <param name="schemaId">The schema identifier.</param>
+		void PackModel(CodeWriter writer, object model, string schemaId);
+
+		/// <summary>
+		/// Unpacks a model using the specified pack rat.
+		/// </summary>
+		/// <param name="reader">The code reader.</param>
+		/// <param name="schemaId">The schema identifier.</param>
+		/// <returns>The model.</returns>
+		object UnpackModel(CodeReader reader, string schemaId);
+
+		/// <summary>
 		/// Packs a nullable model using the specified pack rat.
 		/// </summary>
 		/// <typeparam name="M"></typeparam>
@@ -128,24 +162,6 @@ namespace BigRedProf.Data
         /// <param name="schemaId">The schema identifier.</param>
         /// <returns>The model.</returns>
         M DecodeModel<M>(Code code, string schemaId);
-
-		/// <summary>
-		/// Encodes a model with its schema using the <see cref="PackRat{M}"/> registered for the
-		/// provided schema.
-		/// </summary>
-		/// <param name="model">The model.</param>
-		/// <param name="schemaId">The schema identifier.</param>
-		/// <returns>The code.</returns>
-		Code EncodeModelWithSchema(object model, string schemaId);
-
-		/// <summary>
-		/// Decodes a model with its schema using the <see cref="PackRat{M}"/> registered for the
-		/// provided schema.
-		/// </summary>
-		/// <typeparam name="M"></typeparam>
-		/// <param name="code">The encoded model.</param>
-		/// <returns>The model.</returns>
-		ModelWithSchema DecodeModelWithSchema(Code code);
 
 		/// <summary>
 		/// Stores a <see cref="Code"/> to an array of bytes. The resulting byte array will include
