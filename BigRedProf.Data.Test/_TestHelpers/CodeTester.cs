@@ -65,7 +65,12 @@ namespace BigRedProf.Data.Test._TestHelpers
 		public void ReadAndVerify(Code expectedCode)
 		{
 			Code actualCode = Reader.Read(expectedCode.Length);
-			Assert.Equal<Code>(expectedCode, actualCode);
+			
+			// Compare the text representation of the codes as it makes troubleshooting much easier.
+			//Assert.Equal<Code>(expectedCode, actualCode);
+			string expectedCodeText = expectedCode.ToString();
+			string actualCodeText = actualCode.ToString();
+			Assert.Equal(expectedCodeText, actualCodeText);
 		}
 		#endregion
 	}
