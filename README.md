@@ -28,6 +28,14 @@ The **BigRedProf.Data** library is a simple, flexible .NET library for defining 
 
 **trait** - a model and its purpose (eg: "My name is Memorial Stadium." or "My location is Lincoln, Nebraska.")
 
+---
+
+**token** - a small **code** representing a larger model (think the heap address of a reference type or the foreign key of a database row)
+
+**tokenized model** - a model that's **packed** as its **token** value rather than as its full value
+
+**tokenizer** - a mapping of tokens to models and models to tokens; can be hard-coded if known at compile-time or dynamically loaded at runtime
+
 ## License
 
 BigRedProf.Data is licensed under the MIT License. See LICENSE for more information.
