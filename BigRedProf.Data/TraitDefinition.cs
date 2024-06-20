@@ -1,20 +1,19 @@
 ﻿namespace BigRedProf.Data
 {
 	/// <summary>
-	/// A trait represents a model with a specific purpose or intent.
+	/// A trait definition defines a type of trait.
 	/// </summary>
-	/// <typeparam name="M">The type of model.</typeparam>
-	public class Trait<M>
+	public class TraitDefinition
 	{
 		#region constructors
-		public Trait()
+		public TraitDefinition()
 		{
 		}
 
-		public Trait(string traitId, M model)
+		public TraitDefinition(string traitId, string schemaId)
 		{
 			TraitId = traitId;
-			Model = model;
+			SchemaId = schemaId;
 		}
 		#endregion
 
@@ -29,9 +28,9 @@
 		}
 
 		/// <summary>
-		/// The model.
+		/// The schema identifier.
 		/// </summary>
-		public M Model
+		public string SchemaId
 		{
 			get;
 			set;

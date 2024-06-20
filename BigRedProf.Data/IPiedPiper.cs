@@ -50,6 +50,20 @@ namespace BigRedProf.Data
 		void RegisterPackRats(Assembly assembly);
 
 		/// <summary>
+		/// Defines a trait by associating a <see cref="TraitDefinition"/> with a given trait 
+		/// identifier.
+		/// </summary>
+		/// <param name="traitDefintion">The trait definition.</param>
+		void DefineTrait(TraitDefinition traitDefintion);
+
+		/// <summary>
+		/// Returns the <see cref="TraitDefinition"/> for a given trait identifier.
+		/// </summary>
+		/// <param name="traitId">The trait identifier.</param>
+		/// <returns>The trait definition.</returns>
+		TraitDefinition GetTraitDefinition(string traitId);
+
+		/// <summary>
 		/// Packs a model using the specified pack rat.
 		/// </summary>
 		/// <typeparam name="M"></typeparam>

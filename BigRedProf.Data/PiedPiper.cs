@@ -2,12 +2,9 @@
 using BigRedProf.Data.Internal.PackRats;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace BigRedProf.Data
 {
@@ -15,6 +12,7 @@ namespace BigRedProf.Data
 	{
 		#region fields
 		private IDictionary<Guid, IWeaklyTypedPackRat> _dictionary;
+		private IDictionary<Guid, TraitDefinition> _traitDefinitions;
 		#endregion
 
 		#region constructors
@@ -24,6 +22,7 @@ namespace BigRedProf.Data
 		public PiedPiper()
 		{
 			_dictionary = new Dictionary<Guid, IWeaklyTypedPackRat>();
+			_traitDefinitions = new Dictionary<Guid, TraitDefinition>();
 		}
 		#endregion
 
@@ -93,6 +92,35 @@ namespace BigRedProf.Data
 				throw CreateInvalidSchemaIdArgumentException(nameof(schemaId));
 
 			AddPackRatToDictionary(packRat, schemaId);
+		}
+
+		/// <inheritdoc/>
+		public void DefineTrait(TraitDefinition traitDefintion)
+		{
+			if(traitDefintion == null)
+				throw new ArgumentNullException(nameof(traitDefintion));
+
+			if (!IsValidSchemaId(traitDefintion.TraitId))
+				throw new ArgumentException("Invalid trait identifier.", nameof(traitDefintion));
+
+			Guid traitId = new Guid(traitDefintion.TraitId);
+
+			if (_traitDefinitions.ContainsKey(traitId))
+				throw new ArgumentException($"Trait '{traitId}' already defined.");
+
+			_traitDefinitions.Add(traitId, traitDefintion);
+		}
+
+		/// <inheritdoc/>
+		public TraitDefinition GetTraitDefinition(string traitId)
+		{
+			if (!IsValidSchemaId(traitId))
+				throw new ArgumentException("Invalid trait identifier.", nameof(traitId));
+
+			if (!_traitDefinitions.TryGetValue(new Guid(traitId), out TraitDefinition traitDefinition))
+				throw new ArgumentException($"Trait '{traitId}' not defined.", nameof(traitId));
+
+			return traitDefinition;
 		}
 
 		/// <inheritdoc/>

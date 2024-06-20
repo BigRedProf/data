@@ -9,12 +9,6 @@
 			set;
 		}
 
-		public string SchemaId
-		{
-			get;
-			set;
-		}
-
 		public Code EncodedModel
 		{
 			get;

@@ -6,14 +6,32 @@ namespace BigRedProf.Data.Test
 {
 	public class FlexModelTests
 	{
-		#region methods
+		private IPiedPiper CreatePiedPiper()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterDefaultPackRats();
+			DefineTraits(piedPiper);
+			return piedPiper;
+		}
+
+		private void DefineTraits(IPiedPiper piedPiper)
+		{
+			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000002", SchemaId.Int32));
+			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000003", SchemaId.Int32));
+			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000005", SchemaId.Int32));
+			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000001", SchemaId.Int32));
+			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000004", SchemaId.Int32));
+			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000006", SchemaId.Int32));
+			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000007", SchemaId.Int32));
+			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000008", SchemaId.Int32));
+		}
 
 		[Fact]
 		[Trait("Region", "methods")]
 		public void GetTraitIds_ShouldReturnEmptyList_WhenNoTraitsAdded()
 		{
-			var model = new FlexModel();
-			var traitIds = model.GetTraitIds();
+			FlexModel model = new FlexModel();
+			IList<string> traitIds = model.GetTraitIds();
 			Assert.Empty(traitIds);
 		}
 
@@ -21,8 +39,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "methods")]
 		public void HasTrait_ShouldReturnFalse_WhenTraitNotPresent()
 		{
-			var model = new FlexModel();
-			bool hasTrait = model.HasTrait("nonexistent");
+			FlexModel model = new FlexModel();
+			bool hasTrait = model.HasTrait("00000000-0000-0000-0000-000000000001");
 			Assert.False(hasTrait);
 		}
 
@@ -30,10 +48,12 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "methods")]
 		public void AddTrait_ShouldAddTrait()
 		{
-			var model = new FlexModel();
-			var trait = new Trait<int>("Height", "Int32", 72);
-			model.AddTrait(trait);
-			bool hasTrait = model.HasTrait("Height");
+			IPiedPiper piedPiper = CreatePiedPiper();
+			FlexModel model = new FlexModel();
+			string traitId = "00000000-0000-0000-0000-000000000002";
+			Trait<int> trait = new Trait<int>(traitId, 72);
+			model.AddTrait(piedPiper, trait);
+			bool hasTrait = model.HasTrait(traitId);
 			Assert.True(hasTrait);
 		}
 
@@ -41,10 +61,12 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "methods")]
 		public void GetTrait_ShouldReturnTraitValue_WhenTraitExists()
 		{
-			var model = new FlexModel();
-			var trait = new Trait<int>("Height", "Int32", 72);
-			model.AddTrait(trait);
-			int value = model.GetTrait<int>("Height");
+			IPiedPiper piedPiper = CreatePiedPiper();
+			FlexModel model = new FlexModel();
+			string traitId = "00000000-0000-0000-0000-000000000003";
+			Trait<int> trait = new Trait<int>(traitId, 72);
+			model.AddTrait(piedPiper, trait);
+			int value = model.GetTrait<int>(piedPiper, traitId);
 			Assert.Equal(72, value);
 		}
 
@@ -52,18 +74,21 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "methods")]
 		public void GetTrait_ShouldThrow_WhenTraitDoesNotExist()
 		{
-			var model = new FlexModel();
-			Assert.Throws<ArgumentException>(() => model.GetTrait<int>("nonexistent"));
+			IPiedPiper piedPiper = CreatePiedPiper();
+			FlexModel model = new FlexModel();
+			Assert.Throws<ArgumentException>(() => model.GetTrait<int>(piedPiper, "00000000-0000-0000-0000-000000000004"));
 		}
 
 		[Fact]
 		[Trait("Region", "methods")]
 		public void TryGetTrait_ShouldReturnTrueAndTraitValue_WhenTraitExists()
 		{
-			var model = new FlexModel();
-			var trait = new Trait<int>("Height", "Int32", 72);
-			model.AddTrait(trait);
-			bool result = model.TryGetTrait("Height", out int value);
+			IPiedPiper piedPiper = CreatePiedPiper();
+			FlexModel model = new FlexModel();
+			string traitId = "00000000-0000-0000-0000-000000000005";
+			Trait<int> trait = new Trait<int>(traitId, 72);
+			model.AddTrait(piedPiper, trait);
+			bool result = model.TryGetTrait<int>(piedPiper, traitId, out int value);
 			Assert.True(result);
 			Assert.Equal(72, value);
 		}
@@ -72,22 +97,25 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "methods")]
 		public void TryGetTrait_ShouldReturnFalse_WhenTraitDoesNotExist()
 		{
-			var model = new FlexModel();
-			bool result = model.TryGetTrait("nonexistent", out int value);
+			IPiedPiper piedPiper = CreatePiedPiper();
+			FlexModel model = new FlexModel();
+			bool result = model.TryGetTrait<int>(piedPiper, "00000000-0000-0000-0000-000000000006", out int value);
 			Assert.False(result);
-			Assert.Equal(default(int), value);
+			Assert.Equal(default, value);
 		}
 
 		[Fact]
 		[Trait("Region", "methods")]
 		public void RemoveTrait_ShouldReturnTrue_WhenTraitExists()
 		{
-			var model = new FlexModel();
-			var trait = new Trait<int>("Height", "Int32", 72);
-			model.AddTrait(trait);
-			bool removed = model.RemoveTrait("Height");
+			IPiedPiper piedPiper = CreatePiedPiper();
+			FlexModel model = new FlexModel();
+			string traitId = "00000000-0000-0000-0000-000000000007";
+			Trait<int> trait = new Trait<int>(traitId, 72);
+			model.AddTrait(piedPiper, trait);
+			bool removed = model.RemoveTrait(traitId);
 			Assert.True(removed);
-			bool hasTrait = model.HasTrait("Height");
+			bool hasTrait = model.HasTrait(traitId);
 			Assert.False(hasTrait);
 		}
 
@@ -95,11 +123,9 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "methods")]
 		public void RemoveTrait_ShouldReturnFalse_WhenTraitDoesNotExist()
 		{
-			var model = new FlexModel();
-			bool removed = model.RemoveTrait("nonexistent");
+			FlexModel model = new FlexModel();
+			bool removed = model.RemoveTrait("00000000-0000-0000-0000-000000000008");
 			Assert.False(removed);
 		}
-
-		#endregion
 	}
 }
