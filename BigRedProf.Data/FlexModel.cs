@@ -22,6 +22,11 @@ namespace BigRedProf.Data
 		{
 			_encodedTraits = new Dictionary<string, EncodedTrait>();
 		}
+
+		public FlexModel(int capacity)
+		{
+			_encodedTraits = new Dictionary<string, EncodedTrait>(capacity);
+		}
 		#endregion
 
 		#region properties

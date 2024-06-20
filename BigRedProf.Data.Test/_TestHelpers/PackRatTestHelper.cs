@@ -66,6 +66,25 @@ namespace BigRedProf.Data.Test._TestHelpers
 			codeTester.ReadAndVerify(expectedAlignmentMess2);
 		}
 
+		public static void TestUnpackModelCodeOnlyNoEquals<M>(PackRat<M> packRat, Code code)
+		{
+			CodeTester codeTester = new CodeTester();
+
+			// Unlike in TestPackModel, the first alignment mess must be byte aligned.
+			Code expectedAlignmentMess1 = "10101010 10101010";
+			Code expectedAlignmentMess2 = "11011011 01101101 10110";
+
+			codeTester.Write(expectedAlignmentMess1);
+			codeTester.Write(code);
+			codeTester.Write(expectedAlignmentMess2);
+
+			codeTester.StopWritingAndStartReading();
+
+			codeTester.ReadAndVerify(expectedAlignmentMess1);
+			M actualModel = packRat.UnpackModel(codeTester.Reader);
+			codeTester.ReadAndVerify(expectedAlignmentMess2);
+		}
+
 		public static CodeReader CreateCodeReader(Code code)
 		{
 			MemoryStream writerStream = new MemoryStream();
