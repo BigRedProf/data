@@ -53,8 +53,7 @@ namespace BigRedProf.Data.Test
 
 			// Placeholder value for expected code. Replace with the correct value after testing.
 			Code expectedCode =
-				"1011" // trait length (3)
-				+ "0000"    // byte-align
+				"1000" // trait length (0)
 			;
 			PackRatTestHelper.TestPackModel(packRat, model, expectedCode);
 			PackRatTestHelper.TestUnpackModelCodeOnlyNoEquals(packRat, expectedCode);
