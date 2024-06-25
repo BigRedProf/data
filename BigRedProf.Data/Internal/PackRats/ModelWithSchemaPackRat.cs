@@ -19,11 +19,7 @@ namespace BigRedProf.Data.Internal.PackRats
 			if(writer == null)
 				throw new ArgumentNullException(nameof(writer));
 
-			Guid schemaId;
-			if(!Guid.TryParse(model.SchemaId, out schemaId))
-				throw new ArgumentException("The Schema Identifier is not a valid GUID.", nameof(model));
-
-			PiedPiper.PackModel<Guid>(writer, schemaId, CoreSchema.Guid);
+			PiedPiper.PackModel<Guid>(writer, model.SchemaId, CoreSchema.Guid);
 			PiedPiper.PackModel(writer, model.Model, model.SchemaId);
 		}
 
@@ -32,8 +28,7 @@ namespace BigRedProf.Data.Internal.PackRats
 			if(reader == null)
 				throw new ArgumentNullException(nameof(reader));
 
-			Guid schemaIdAsGuid = PiedPiper.UnpackModel<Guid>(reader, CoreSchema.Guid);
-			string schemaId = schemaIdAsGuid.ToString();
+			Guid schemaId = PiedPiper.UnpackModel<Guid>(reader, CoreSchema.Guid);
 			object model = PiedPiper.UnpackModel(reader, schemaId);
 
 			return new ModelWithSchema()

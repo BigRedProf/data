@@ -49,7 +49,7 @@ namespace BigRedProf.Data.Test
             PackRat<bool> packRat = new BooleanPackRat(piedPiper);
             string schemaId = "not-a-GUID";
 
-            Assert.Throws<ArgumentException>(
+            Assert.Throws<FormatException>(
                 () =>
                 {
                     piedPiper.RegisterPackRat<bool>(packRat, schemaId);
@@ -97,7 +97,7 @@ namespace BigRedProf.Data.Test
             IPiedPiper piedPiper = new PiedPiper();
             string schemaId = "not-a-GUID";
 
-            Assert.Throws<ArgumentException>(
+            Assert.Throws<FormatException>(
                 () =>
                 {
                     piedPiper.GetPackRat<object>(schemaId);

@@ -1,4 +1,6 @@
-﻿namespace BigRedProf.Data
+﻿using System;
+
+namespace BigRedProf.Data
 {
 	/// <summary>
 	/// A trait definition defines a type of trait.
@@ -10,7 +12,7 @@
 		{
 		}
 
-		public TraitDefinition(string traitId, string schemaId)
+		public TraitDefinition(AttributeFriendlyGuid traitId, AttributeFriendlyGuid schemaId)
 		{
 			TraitId = traitId;
 			SchemaId = schemaId;
@@ -21,7 +23,7 @@
 		/// <summary>
 		/// The trait identifier.
 		/// </summary>
-		public string TraitId
+		public Guid TraitId
 		{
 			get;
 			set;
@@ -30,7 +32,7 @@
 		/// <summary>
 		/// The schema identifier.
 		/// </summary>
-		public string SchemaId
+		public Guid SchemaId
 		{
 			get;
 			set;

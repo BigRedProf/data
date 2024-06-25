@@ -59,13 +59,10 @@ namespace BigRedProf.Data
 		}
 
 		/// <inheritdoc/>
-		public PackRat<T> GetPackRat<T>(string schemaId)
+		public PackRat<T> GetPackRat<T>(AttributeFriendlyGuid schemaId)
 		{
 			if(schemaId == null)
 				throw new ArgumentNullException(nameof(schemaId));
-
-			if (!IsValidSchemaId(schemaId))
-				throw CreateInvalidSchemaIdArgumentException(nameof(schemaId));
 
 			IWeaklyTypedPackRat nonGenericPackRat = GetPackRat(schemaId);
 			PackRat<T> packRat = nonGenericPackRat as PackRat<T>;
@@ -80,16 +77,13 @@ namespace BigRedProf.Data
 		}
 
 		/// <inheritdoc/>
-		public void RegisterPackRat<T>(PackRat<T> packRat, string schemaId)
+		public void RegisterPackRat<T>(PackRat<T> packRat, AttributeFriendlyGuid schemaId)
 		{
 			if (packRat == null)
 				throw new ArgumentNullException(nameof(packRat));
 
 			if (schemaId == null)
 				throw new ArgumentNullException(nameof(schemaId));
-
-			if (!IsValidSchemaId(schemaId))
-				throw CreateInvalidSchemaIdArgumentException(nameof(schemaId));
 
 			AddPackRatToDictionary(packRat, schemaId);
 		}
@@ -100,10 +94,7 @@ namespace BigRedProf.Data
 			if(traitDefintion == null)
 				throw new ArgumentNullException(nameof(traitDefintion));
 
-			if (!IsValidSchemaId(traitDefintion.TraitId))
-				throw new ArgumentException("Invalid trait identifier.", nameof(traitDefintion));
-
-			Guid traitId = new Guid(traitDefintion.TraitId);
+			Guid traitId = traitDefintion.TraitId;
 
 			if (_traitDefinitions.ContainsKey(traitId))
 				throw new ArgumentException($"Trait '{traitId}' already defined.");
@@ -112,26 +103,23 @@ namespace BigRedProf.Data
 		}
 
 		/// <inheritdoc/>
-		public TraitDefinition GetTraitDefinition(string traitId)
+		public TraitDefinition GetTraitDefinition(AttributeFriendlyGuid traitId)
 		{
-			if (!IsValidSchemaId(traitId))
-				throw new ArgumentException("Invalid trait identifier.", nameof(traitId));
-
-			if (!_traitDefinitions.TryGetValue(new Guid(traitId), out TraitDefinition traitDefinition))
+			if (!_traitDefinitions.TryGetValue(traitId, out TraitDefinition traitDefinition))
 				throw new ArgumentException($"Trait '{traitId}' not defined.", nameof(traitId));
 
 			return traitDefinition;
 		}
 
 		/// <inheritdoc/>
-		public void PackModel<M>(CodeWriter writer, M model, string schemaId)
+		public void PackModel<M>(CodeWriter writer, M model, AttributeFriendlyGuid schemaId)
 		{
 			PackRat<M> modelPackRat = GetPackRat<M>(schemaId);
 			modelPackRat.PackModel(writer, model);
 		}
 
 		/// <inheritdoc/>
-		public M UnpackModel<M>(CodeReader reader, string schemaId)
+		public M UnpackModel<M>(CodeReader reader, AttributeFriendlyGuid schemaId)
 		{
 			PackRat<M> modelPackRat = GetPackRat<M>(schemaId);
 			M model = modelPackRat.UnpackModel(reader);
@@ -140,14 +128,14 @@ namespace BigRedProf.Data
 		}
 
 		/// <inheritdoc/>
-		public void PackModel(CodeWriter writer, object model, string schemaId)
+		public void PackModel(CodeWriter writer, object model, AttributeFriendlyGuid schemaId)
 		{
 			IWeaklyTypedPackRat modelPackRat = GetPackRat(schemaId);
 			modelPackRat.PackModel(writer, model);
 		}
 
 		/// <inheritdoc/>
-		public object UnpackModel(CodeReader reader, string schemaId)
+		public object UnpackModel(CodeReader reader, AttributeFriendlyGuid schemaId)
 		{
 			IWeaklyTypedPackRat packRat = GetPackRat(schemaId);
 			object model = packRat.UnpackModel(reader);
@@ -159,7 +147,7 @@ namespace BigRedProf.Data
 		public void PackNullableModel<M>(
 			CodeWriter writer,
 			M model,
-			string schemaId,
+			AttributeFriendlyGuid schemaId,
 			ByteAligned byteAligned
 		)
 		{
@@ -168,9 +156,6 @@ namespace BigRedProf.Data
 
 			if (schemaId == null)
 				throw new ArgumentNullException(nameof(schemaId));
-
-			if (!IsValidSchemaId(schemaId))
-				throw CreateInvalidSchemaIdArgumentException(nameof(schemaId));
 
 			writer.WriteCode(model == null ? "0" : "1");
 			if (byteAligned == ByteAligned.Yes)
@@ -184,16 +169,13 @@ namespace BigRedProf.Data
 		}
 
 		/// <inheritdoc/>
-		public M UnpackNullableModel<M>(CodeReader reader, string schemaId, ByteAligned byteAligned)
+		public M UnpackNullableModel<M>(CodeReader reader, AttributeFriendlyGuid schemaId, ByteAligned byteAligned)
 		{
 			if (reader == null)
 				throw new ArgumentNullException(nameof(reader));
 
 			if (schemaId == null)
 				throw new ArgumentNullException(nameof(schemaId));
-
-			if (!IsValidSchemaId(schemaId))
-				throw CreateInvalidSchemaIdArgumentException(nameof(schemaId));
 
 			M model = default;
 
@@ -214,7 +196,7 @@ namespace BigRedProf.Data
 		public void PackList<M>(
 			CodeWriter writer,
 			IList<M> list,
-			string elementSchemaId,
+			AttributeFriendlyGuid elementSchemaId,
 			bool allowNullLists,
 			bool allowNullElements,
 			ByteAligned byteAligned
@@ -233,9 +215,6 @@ namespace BigRedProf.Data
 
 			if (elementSchemaId == null)
 				throw new ArgumentNullException(nameof(elementSchemaId));
-
-			if (!IsValidSchemaId(elementSchemaId))
-				throw CreateInvalidSchemaIdArgumentException(nameof(elementSchemaId));
 
 			if (allowNullLists)
 				writer.WriteCode(list == null ? "0" : "1");
@@ -289,7 +268,7 @@ namespace BigRedProf.Data
 		/// <inheritdoc/>
 		public IList<M> UnpackList<M>(
 			CodeReader reader,
-			string elementSchemaId,
+			AttributeFriendlyGuid elementSchemaId,
 			bool allowNullLists,
 			bool allowNullElements,
 			ByteAligned byteAligned
@@ -300,9 +279,6 @@ namespace BigRedProf.Data
 
 			if (elementSchemaId == null)
 				throw new ArgumentNullException(nameof(elementSchemaId));
-
-			if (!IsValidSchemaId(elementSchemaId))
-				throw CreateInvalidSchemaIdArgumentException(nameof(elementSchemaId));
 
 			if (allowNullLists)
 			{
@@ -361,16 +337,13 @@ namespace BigRedProf.Data
 		}
 
 		/// <inheritdoc/>
-        public Code EncodeModel<M>(M model, string schemaId)
+        public Code EncodeModel<M>(M model, AttributeFriendlyGuid schemaId)
         {
 			if (model == null)
 				throw new ArgumentNullException(nameof(model));
 
 			if (schemaId == null)
 				throw new ArgumentNullException(nameof(schemaId));
-
-			if (!IsValidSchemaId(schemaId))
-				throw CreateInvalidSchemaIdArgumentException(nameof(schemaId));
 
 			PackRat<M> packRat = GetPackRat<M>(schemaId);
 			CodeStream codeStream = new CodeStream();
@@ -384,16 +357,13 @@ namespace BigRedProf.Data
         }
 
         /// <inheritdoc/>
-        public M DecodeModel<M>(Code code, string schemaId)
+        public M DecodeModel<M>(Code code, AttributeFriendlyGuid schemaId)
         {
             if(code == null)
 				throw new ArgumentNullException(nameof(code));
 
 			if(schemaId == null)
 				throw new ArgumentNullException(nameof(schemaId));
-
-			if (!IsValidSchemaId(schemaId))
-				throw CreateInvalidSchemaIdArgumentException(nameof(schemaId));
 
 			M model;
 			PackRat<M> packRat = GetPackRat<M>(schemaId);
@@ -440,32 +410,24 @@ namespace BigRedProf.Data
 		#endregion
 
 		#region private methods
-		private void AddPackRatToDictionary(IWeaklyTypedPackRat packRat, string schemaId)
+		private void AddPackRatToDictionary(IWeaklyTypedPackRat packRat, AttributeFriendlyGuid schemaId)
 		{
-			Guid schemaIdAsGuid;
-			if (!Guid.TryParse(schemaId, out schemaIdAsGuid))
-				throw new ArgumentException("The schema identifier must be a GUID.", nameof(schemaId));
-
-			if (_dictionary.ContainsKey(schemaIdAsGuid))
+			if (_dictionary.ContainsKey(schemaId))
 			{
 				throw new InvalidOperationException(
 					$"A PackRat has already been registered for schema identifier {schemaId}."
 				);
 			}
 
-			_dictionary.Add(schemaIdAsGuid, packRat);
+			_dictionary.Add(schemaId, packRat);
 		}
 
-		private IWeaklyTypedPackRat GetPackRat(string schemaId)
+		private IWeaklyTypedPackRat GetPackRat(AttributeFriendlyGuid schemaId)
 		{
 			Debug.Assert(schemaId != null);
 
-			Guid schemaIdAsGuid;
-			if (!Guid.TryParse(schemaId, out schemaIdAsGuid))
-				throw new ArgumentException("The schema identifier must be a GUID.", nameof(schemaId));
-
 			IWeaklyTypedPackRat packRat;
-			if (!_dictionary.TryGetValue(schemaIdAsGuid, out packRat))
+			if (!_dictionary.TryGetValue(schemaId, out packRat))
 			{
 				throw new ArgumentException(
 					$"No PackRat is registered for schema identifier {schemaId}.",
@@ -474,44 +436,6 @@ namespace BigRedProf.Data
 			}
 
 			return packRat;
-		}
-		#endregion
-
-		#region private functions
-		private static bool IsValidSchemaId(string schemaId)
-		{
-			if (schemaId == null)
-				return false;
-
-			if (schemaId.Length != 36)
-				return false;
-
-			for (int i = 0; i < 36; ++i)
-			{
-				char character = schemaId[i];
-
-				if (i == 8 || i == 13 || i == 18 || i == 23)
-				{
-					if (character != '-')
-						return false;
-				}
-				else
-				{
-					if (!((character >= '0' && character <= '9') || (character >= 'a' && character <= 'f')))
-						return false;
-				}
-			}
-
-			return true;
-		}
-
-		private static Exception CreateInvalidSchemaIdArgumentException(string argumentName)
-		{
-			return new ArgumentException(
-				"Invalid schema identifier. Please use only lowercase hexadecimal digits and hyphens. " +
-				"\"Eg: 01234567-89ab-cdef-0123-456789abcdef\"",
-				argumentName
-			);
 		}
 		#endregion
 	}

@@ -12,7 +12,7 @@ namespace BigRedProf.Data
 		/// <summary>
 		/// The schema identifier.
 		/// </summary>
-		public string SchemaId { get; set; }
+		public AttributeFriendlyGuid SchemaId { get; set; }
 
 		/// <summary>
 		/// The model.

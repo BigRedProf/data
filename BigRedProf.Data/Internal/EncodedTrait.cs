@@ -1,9 +1,11 @@
-﻿namespace BigRedProf.Data.Internal
+﻿using System;
+
+namespace BigRedProf.Data.Internal
 {
 	internal class EncodedTrait
 	{
 		#region properties
-		public string TraitId
+		public Guid TraitId
 		{
 			get;
 			set;

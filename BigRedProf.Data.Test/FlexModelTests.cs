@@ -31,7 +31,7 @@ namespace BigRedProf.Data.Test
 		public void GetTraitIds_ShouldReturnEmptyList_WhenNoTraitsAdded()
 		{
 			FlexModel model = new FlexModel();
-			IList<string> traitIds = model.GetTraitIds();
+			IList<Guid> traitIds = model.GetTraitIds();
 			Assert.Empty(traitIds);
 		}
 

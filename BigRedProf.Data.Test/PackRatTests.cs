@@ -13,13 +13,13 @@ namespace BigRedProf.Data.Test
 		#region protected methods
 		[Fact]
 		[Trait("Region", "protected methods")]
-		public void PackNullableModel_ShouldThrowWhenSchemaIdIsNull()
+		public void PackNullableModel_ShouldThrowWhenSchemaIdIsInvalid()
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
-			Assert.Throws<ArgumentNullException>(
+			Assert.Throws<FormatException>(
 				() =>
 				{
-					piedPiper.PackNullableModel<object>(null, "foo", string.Empty, ByteAligned.No);
+					piedPiper.PackNullableModel<object>(null, "foo", "not-a-guid", ByteAligned.No);
 				}
 			);
 		}

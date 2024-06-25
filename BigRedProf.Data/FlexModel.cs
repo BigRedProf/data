@@ -14,23 +14,23 @@ namespace BigRedProf.Data
 	public class FlexModel
 	{
 		#region fields
-		private readonly Dictionary<string, EncodedTrait> _encodedTraits;
+		private readonly Dictionary<Guid, EncodedTrait> _encodedTraits;
 		#endregion
 
 		#region constructors
 		public FlexModel()
 		{
-			_encodedTraits = new Dictionary<string, EncodedTrait>();
+			_encodedTraits = new Dictionary<Guid, EncodedTrait>();
 		}
 
 		public FlexModel(int capacity)
 		{
-			_encodedTraits = new Dictionary<string, EncodedTrait>(capacity);
+			_encodedTraits = new Dictionary<Guid, EncodedTrait>(capacity);
 		}
 		#endregion
 
 		#region properties
-		internal Dictionary<string, EncodedTrait> InternalEncodedTraits => _encodedTraits;
+		internal Dictionary<Guid, EncodedTrait> InternalEncodedTraits => _encodedTraits;
 		#endregion
 
 		#region methods
@@ -38,7 +38,7 @@ namespace BigRedProf.Data
 		/// Gets the list of trait identifiers.
 		/// </summary>
 		/// <returns>A list of trait identifiers.</returns>
-		public IList<string> GetTraitIds()
+		public IList<Guid> GetTraitIds()
 		{
 			return _encodedTraits.Keys.ToList();
 		}
@@ -48,7 +48,7 @@ namespace BigRedProf.Data
 		/// </summary>
 		/// <param name="traitIdentifier">The trait identifier.</param>
 		/// <returns>True if the trait exists, otherwise false.</returns>
-		public bool HasTrait(string traitIdentifier)
+		public bool HasTrait(AttributeFriendlyGuid traitIdentifier)
 		{
 			return _encodedTraits.ContainsKey(traitIdentifier);
 		}
@@ -60,7 +60,7 @@ namespace BigRedProf.Data
 		/// <param name="piedPiper">The pied piper.</param>
 		/// <param name="traitIdentifier">The trait identifier.</param>
 		/// <returns>The trait value.</returns>
-		public M GetTrait<M>(IPiedPiper piedPiper, string traitIdentifier)
+		public M GetTrait<M>(IPiedPiper piedPiper, AttributeFriendlyGuid traitIdentifier)
 		{
 			if (piedPiper == null)
 				throw new ArgumentNullException(nameof(piedPiper));
@@ -68,7 +68,7 @@ namespace BigRedProf.Data
 			if (!_encodedTraits.TryGetValue(traitIdentifier, out var encodedTrait))
 				throw new ArgumentException($"Trait '{traitIdentifier}' does not exist.");
 
-			string schemaId = piedPiper.GetTraitDefinition(traitIdentifier).SchemaId;
+			Guid schemaId = piedPiper.GetTraitDefinition(traitIdentifier).SchemaId;
 			return piedPiper.DecodeModel<M>(encodedTrait.EncodedModel, schemaId);
 		}
 
@@ -80,7 +80,7 @@ namespace BigRedProf.Data
 		/// <param name="traitIdentifier">The trait identifier.</param>
 		/// <param name="trait">The trait value.</param>
 		/// <returns>True if the trait exists, otherwise false.</returns>
-		public bool TryGetTrait<M>(IPiedPiper piedPiper, string traitIdentifier, out M trait)
+		public bool TryGetTrait<M>(IPiedPiper piedPiper, AttributeFriendlyGuid traitIdentifier, out M trait)
 		{
 			trait = default;
 			if (!_encodedTraits.TryGetValue(traitIdentifier, out var encodedTrait))
@@ -90,7 +90,7 @@ namespace BigRedProf.Data
 
 			try
 			{
-				string schemaId = piedPiper.GetTraitDefinition(traitIdentifier).SchemaId;
+				Guid schemaId = piedPiper.GetTraitDefinition(traitIdentifier).SchemaId;
 				trait = piedPiper.DecodeModel<M>(encodedTrait.EncodedModel, schemaId);
 				return true;
 			}
@@ -111,7 +111,7 @@ namespace BigRedProf.Data
 			if (trait == null)
 				throw new ArgumentNullException(nameof(trait));
 
-			string schemaId = piedPiper.GetTraitDefinition(trait.TraitId).SchemaId;
+			Guid schemaId = piedPiper.GetTraitDefinition(trait.TraitId).SchemaId;
 			var encodedTrait = new EncodedTrait
 			{
 				TraitId = trait.TraitId,
@@ -126,7 +126,7 @@ namespace BigRedProf.Data
 		/// </summary>
 		/// <param name="traitIdentifier">The trait identifier.</param>
 		/// <returns>True if the trait was removed, otherwise false.</returns>
-		public bool RemoveTrait(string traitIdentifier)
+		public bool RemoveTrait(AttributeFriendlyGuid traitIdentifier)
 		{
 			return _encodedTraits.Remove(traitIdentifier);
 		}

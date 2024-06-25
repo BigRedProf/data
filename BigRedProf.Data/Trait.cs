@@ -1,4 +1,6 @@
-﻿namespace BigRedProf.Data
+﻿using System;
+
+namespace BigRedProf.Data
 {
 	/// <summary>
 	/// A trait represents a model with a specific purpose or intent.
@@ -11,7 +13,7 @@
 		{
 		}
 
-		public Trait(string traitId, M model)
+		public Trait(AttributeFriendlyGuid traitId, M model)
 		{
 			TraitId = traitId;
 			Model = model;
@@ -22,7 +24,7 @@
 		/// <summary>
 		/// The trait identifier.
 		/// </summary>
-		public string TraitId
+		public Guid TraitId
 		{
 			get;
 			set;
