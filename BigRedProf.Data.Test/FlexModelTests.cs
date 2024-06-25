@@ -9,21 +9,21 @@ namespace BigRedProf.Data.Test
 		private IPiedPiper CreatePiedPiper()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-			piedPiper.RegisterDefaultPackRats();
+			piedPiper.RegisterCorePackRats();
 			DefineTraits(piedPiper);
 			return piedPiper;
 		}
 
 		private void DefineTraits(IPiedPiper piedPiper)
 		{
-			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000002", SchemaId.Int32));
-			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000003", SchemaId.Int32));
-			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000005", SchemaId.Int32));
-			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000001", SchemaId.Int32));
-			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000004", SchemaId.Int32));
-			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000006", SchemaId.Int32));
-			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000007", SchemaId.Int32));
-			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000008", SchemaId.Int32));
+			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000002", CoreSchema.Int32));
+			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000003", CoreSchema.Int32));
+			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000005", CoreSchema.Int32));
+			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000001", CoreSchema.Int32));
+			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000004", CoreSchema.Int32));
+			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000006", CoreSchema.Int32));
+			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000007", CoreSchema.Int32));
+			piedPiper.DefineTrait(new TraitDefinition("00000000-0000-0000-0000-000000000008", CoreSchema.Int32));
 		}
 
 		[Fact]

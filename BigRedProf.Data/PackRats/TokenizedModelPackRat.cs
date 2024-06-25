@@ -124,7 +124,7 @@ namespace BigRedProf.Data.PackRats
 			if(writer == null)
 				throw new ArgumentNullException(nameof(writer));
 
-			PackRat<Code> codePackRat = PiedPiper.GetPackRat<Code>(SchemaId.Code);
+			PackRat<Code> codePackRat = PiedPiper.GetPackRat<Code>(CoreSchema.Code);
 			codePackRat.PackModel(writer, tokenizedModel.Token);
 		}
 
@@ -134,7 +134,7 @@ namespace BigRedProf.Data.PackRats
 			if(reader == null)
 				throw new ArgumentNullException(nameof(reader));
 
-			PackRat<Code> codePackRat = PiedPiper.GetPackRat<Code>(SchemaId.Code);
+			PackRat<Code> codePackRat = PiedPiper.GetPackRat<Code>(CoreSchema.Code);
 			Code token = codePackRat.UnpackModel(reader);
 
 			TokenizedModel<TModel> tokenizedModel;

@@ -25,7 +25,7 @@ namespace BigRedProf.Data.Internal.PackRats
 			// be byte aligned, while codes of length 4 or more will naturally be byte aligned which
 			// is essentially for really long codes.
 
-			PiedPiper.GetPackRat<int>(SchemaId.EfficientWholeNumber31).PackModel(writer, model.Length);
+			PiedPiper.GetPackRat<int>(CoreSchema.EfficientWholeNumber31).PackModel(writer, model.Length);
 			writer.WriteCode(model);
 		}
 
@@ -34,7 +34,7 @@ namespace BigRedProf.Data.Internal.PackRats
 			if(reader == null)
 				throw new ArgumentNullException(nameof(reader));
 
-			int length = PiedPiper.GetPackRat<int>(SchemaId.EfficientWholeNumber31).UnpackModel(reader);
+			int length = PiedPiper.GetPackRat<int>(CoreSchema.EfficientWholeNumber31).UnpackModel(reader);
 			Code model = reader.Read(length);
 			
 			return model;

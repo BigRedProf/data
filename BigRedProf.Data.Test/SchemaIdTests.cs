@@ -14,7 +14,7 @@ namespace BigRedProf.Data.Test
 		{
 			HashSet<Guid> schemaIds = new HashSet<Guid>();
 
-			Type type = typeof(SchemaId);
+			Type type = typeof(CoreSchema);
 			IList<FieldInfo> fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
 			foreach(FieldInfo field in fields)
 			{

@@ -9,7 +9,7 @@ namespace BigRedProf.Data.Test._TestHelpers
 		public static IPiedPiper GetPiedPiper()
 		{
 			PiedPiper piedPiper = new PiedPiper();
-			piedPiper.RegisterDefaultPackRats();
+			piedPiper.RegisterCorePackRats();
 
 			return piedPiper;
 		}

@@ -33,12 +33,12 @@ namespace BigRedProf.Data.Test
 			PackRat<ModelWithSchema> packRat = new ModelWithSchemaPackRat(piedPiper);
 			ModelWithSchema model = new ModelWithSchema()
 			{
-				SchemaId = SchemaId.TextUtf8,
+				SchemaId = CoreSchema.TextUtf8,
 				Model = "43"
 			};
 
 			Code expectedCode = 
-				piedPiper.EncodeModel<Guid>(new Guid(SchemaId.TextUtf8), SchemaId.Guid)	// TextUtf8 identifier
+				piedPiper.EncodeModel<Guid>(new Guid(CoreSchema.TextUtf8), CoreSchema.Guid)	// TextUtf8 identifier
 				+ "1001" // 2 (length of "43" in EfficientWholeNumber31)
 				+ "0000" // align to byte
 				+ "00101100 11001100";  // '4' '3' (UTF8)
@@ -73,12 +73,12 @@ namespace BigRedProf.Data.Test
 			PackRat<ModelWithSchema> packRat = new ModelWithSchemaPackRat(piedPiper);
 			ModelWithSchema model = new ModelWithSchema()
 			{
-				SchemaId = SchemaId.TextUtf8,
+				SchemaId = CoreSchema.TextUtf8,
 				Model = "43"
 			};
 
 			Code expectedCode =
-				piedPiper.EncodeModel<Guid>(new Guid(SchemaId.TextUtf8), SchemaId.Guid) // TextUtf8 identifier
+				piedPiper.EncodeModel<Guid>(new Guid(CoreSchema.TextUtf8), CoreSchema.Guid) // TextUtf8 identifier
 				+ "1001" // 2 (length of "43" in EfficientWholeNumber31)
 				+ "0000" // align to byte
 				+ "00101100 11001100";  // '4' '3' (UTF8)

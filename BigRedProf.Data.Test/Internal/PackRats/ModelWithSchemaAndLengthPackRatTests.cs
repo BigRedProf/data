@@ -33,14 +33,14 @@ namespace BigRedProf.Data.Test
 			PackRat<ModelWithSchemaAndLength> packRat = new ModelWithSchemaAndLengthPackRat(piedPiper);
 			ModelWithSchemaAndLength model = new ModelWithSchemaAndLength()
 			{
-				SchemaId = SchemaId.TextUtf8,
+				SchemaId = CoreSchema.TextUtf8,
 				Length = 24,	// 4 (length) + 4 (align to byte) + 16 ('4' '3')
 				Model = "43"
 			};
 
 			Code expectedCode = 
-				piedPiper.EncodeModel<Guid>(new Guid(SchemaId.TextUtf8), SchemaId.Guid)	// TextUtf8 identifier
-				+ piedPiper.EncodeModel<int>(24, SchemaId.EfficientWholeNumber31)	// Length (of the encoded model)
+				piedPiper.EncodeModel<Guid>(new Guid(CoreSchema.TextUtf8), CoreSchema.Guid)	// TextUtf8 identifier
+				+ piedPiper.EncodeModel<int>(24, CoreSchema.EfficientWholeNumber31)	// Length (of the encoded model)
 				+ "1001" // 2 (length of "43" in EfficientWholeNumber31)
 				+ "0000" // align to byte
 				+ "00101100 11001100";  // '4' '3' (UTF8)
@@ -75,14 +75,14 @@ namespace BigRedProf.Data.Test
 			PackRat<ModelWithSchemaAndLength> packRat = new ModelWithSchemaAndLengthPackRat(piedPiper);
 			ModelWithSchemaAndLength model = new ModelWithSchemaAndLength()
 			{
-				SchemaId = SchemaId.TextUtf8,
+				SchemaId = CoreSchema.TextUtf8,
 				Length = 24,    // 4 (length) + 4 (align to byte) + 16 ('4' '3')
 				Model = "43"
 			};
 
 			Code expectedCode =
-				piedPiper.EncodeModel<Guid>(new Guid(SchemaId.TextUtf8), SchemaId.Guid) // TextUtf8 identifier
-				+ piedPiper.EncodeModel<int>(24, SchemaId.EfficientWholeNumber31)   // Length (of the encoded model)
+				piedPiper.EncodeModel<Guid>(new Guid(CoreSchema.TextUtf8), CoreSchema.Guid) // TextUtf8 identifier
+				+ piedPiper.EncodeModel<int>(24, CoreSchema.EfficientWholeNumber31)   // Length (of the encoded model)
 				+ "1001" // 2 (length of "43" in EfficientWholeNumber31)
 				+ "0000" // align to byte
 				+ "00101100 11001100";  // '4' '3' (UTF8)

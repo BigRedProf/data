@@ -46,7 +46,7 @@ namespace BigRedProf.Data.Test
 			MemoryStream writerStream = new MemoryStream();
 			CodeWriter writer = new CodeWriter(writerStream);
 
-			piedPiper.PackNullableModel<string>(writer, null, SchemaId.TextUtf8, ByteAligned.No);
+			piedPiper.PackNullableModel<string>(writer, null, CoreSchema.TextUtf8, ByteAligned.No);
 			Code expectedCode = "0";
 			// null bit -> 0
 
@@ -66,7 +66,7 @@ namespace BigRedProf.Data.Test
 			MemoryStream writerStream = new MemoryStream();
 			CodeWriter writer = new CodeWriter(writerStream);
 
-			piedPiper.PackNullableModel<string>(writer, null, SchemaId.TextUtf8, ByteAligned.Yes);
+			piedPiper.PackNullableModel<string>(writer, null, CoreSchema.TextUtf8, ByteAligned.Yes);
 			Code expectedCode = "0";
 			// null bit -> 0
 
@@ -86,7 +86,7 @@ namespace BigRedProf.Data.Test
 			MemoryStream writerStream = new MemoryStream();
 			CodeWriter writer = new CodeWriter(writerStream);
 
-			piedPiper.PackNullableModel<bool>(writer, true, SchemaId.Boolean, ByteAligned.No);
+			piedPiper.PackNullableModel<bool>(writer, true, CoreSchema.Boolean, ByteAligned.No);
 
 			writer.Dispose();
 			Stream readerStream = new MemoryStream(writerStream.ToArray());
@@ -104,7 +104,7 @@ namespace BigRedProf.Data.Test
 			MemoryStream writerStream = new MemoryStream();
 			CodeWriter writer = new CodeWriter(writerStream);
 
-			piedPiper.PackNullableModel<bool>(writer, true, SchemaId.Boolean, ByteAligned.Yes);
+			piedPiper.PackNullableModel<bool>(writer, true, CoreSchema.Boolean, ByteAligned.Yes);
 			Code expectedCode = "10000000 1";
 			// null bit -> 1
 			// byte alignment
@@ -126,7 +126,7 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					piedPiper.UnpackNullableModel<bool?>(null, SchemaId.Boolean, ByteAligned.No);
+					piedPiper.UnpackNullableModel<bool?>(null, CoreSchema.Boolean, ByteAligned.No);
 				}
 			);
 		}
@@ -152,7 +152,7 @@ namespace BigRedProf.Data.Test
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			CodeReader reader = PackRatTestHelper.CreateCodeReader("0");
 
-			bool? actualModel = piedPiper.UnpackNullableModel<bool?>(reader, SchemaId.Boolean, ByteAligned.No);
+			bool? actualModel = piedPiper.UnpackNullableModel<bool?>(reader, CoreSchema.Boolean, ByteAligned.No);
 
 			Assert.Null(actualModel);
 		}
@@ -164,7 +164,7 @@ namespace BigRedProf.Data.Test
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			CodeReader reader = PackRatTestHelper.CreateCodeReader("0");
 
-			bool? actualModel = piedPiper.UnpackNullableModel<bool?>(reader, SchemaId.Boolean, ByteAligned.Yes);
+			bool? actualModel = piedPiper.UnpackNullableModel<bool?>(reader, CoreSchema.Boolean, ByteAligned.Yes);
 
 			Assert.Null(actualModel);
 		}
@@ -176,7 +176,7 @@ namespace BigRedProf.Data.Test
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			CodeReader reader = PackRatTestHelper.CreateCodeReader("11");
 
-			bool actualModel = piedPiper.UnpackNullableModel<bool>(reader, SchemaId.Boolean, ByteAligned.No);
+			bool actualModel = piedPiper.UnpackNullableModel<bool>(reader, CoreSchema.Boolean, ByteAligned.No);
 
 			Assert.True(actualModel);
 		}
@@ -188,7 +188,7 @@ namespace BigRedProf.Data.Test
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			CodeReader reader = PackRatTestHelper.CreateCodeReader("10000000 1");
 
-			bool actualModel = piedPiper.UnpackNullableModel<bool>(reader, SchemaId.Boolean, ByteAligned.Yes);
+			bool actualModel = piedPiper.UnpackNullableModel<bool>(reader, CoreSchema.Boolean, ByteAligned.Yes);
 
 			Assert.True(actualModel);
 		}
@@ -204,7 +204,7 @@ namespace BigRedProf.Data.Test
 					piedPiper.PackList<string>(
 						null, 
 						new string[] { "foo" }, 
-						SchemaId.TextUtf8, 
+						CoreSchema.TextUtf8, 
 						false, 
 						false, 
 						ByteAligned.No
@@ -225,7 +225,7 @@ namespace BigRedProf.Data.Test
 					piedPiper.PackList<string>(
 						codeWriter,
 						null,
-						SchemaId.TextUtf8,
+						CoreSchema.TextUtf8,
 						false,
 						true,
 						ByteAligned.No
@@ -246,7 +246,7 @@ namespace BigRedProf.Data.Test
 					piedPiper.PackList<string>(
 						codeWriter,
 						new string[] { "foo", null, "bar" },
-						SchemaId.TextUtf8,
+						CoreSchema.TextUtf8,
 						true,
 						false,
 						ByteAligned.No
@@ -266,7 +266,7 @@ namespace BigRedProf.Data.Test
 			piedPiper.PackList<string>(
 				writer,
 				null,
-				SchemaId.TextUtf8,
+				CoreSchema.TextUtf8,
 				true,
 				false,
 				ByteAligned.No
@@ -293,7 +293,7 @@ namespace BigRedProf.Data.Test
 			piedPiper.PackList<string>(
 				writer,
 				new string[] { "foo", "bar" },
-				SchemaId.TextUtf8,
+				CoreSchema.TextUtf8,
 				false,
 				false,
 				ByteAligned.No
@@ -322,7 +322,7 @@ namespace BigRedProf.Data.Test
 			piedPiper.PackList<bool>(
 				writer,
 				new bool[] { true, false, true, true, false },
-				SchemaId.Boolean,
+				CoreSchema.Boolean,
 				false,
 				false,
 				ByteAligned.Yes
@@ -358,7 +358,7 @@ namespace BigRedProf.Data.Test
 			piedPiper.PackList<string>(
 				writer,
 				new string[] { "foo", null, "bar" },
-				SchemaId.TextUtf8,
+				CoreSchema.TextUtf8,
 				false,
 				true,
 				ByteAligned.No
@@ -388,7 +388,7 @@ namespace BigRedProf.Data.Test
 			piedPiper.PackList<string>(
 				writer,
 				new string[] { "foo", null, "bar" },
-				SchemaId.TextUtf8,
+				CoreSchema.TextUtf8,
 				false,
 				true,
 				ByteAligned.Yes
@@ -419,7 +419,7 @@ namespace BigRedProf.Data.Test
 			piedPiper.PackList<string>(
 				writer,
 				new string[] { "foo", null, "bar" },
-				SchemaId.TextUtf8,
+				CoreSchema.TextUtf8,
 				true,
 				true,
 				ByteAligned.No
@@ -450,7 +450,7 @@ namespace BigRedProf.Data.Test
 			piedPiper.PackList<string>(
 				writer,
 				new string[] { "foo", null, "bar" },
-				SchemaId.TextUtf8,
+				CoreSchema.TextUtf8,
 				true,
 				true,
 				ByteAligned.Yes
@@ -480,7 +480,7 @@ namespace BigRedProf.Data.Test
 				{
 					piedPiper.UnpackList<string>(
 						null,
-						SchemaId.TextUtf8,
+						CoreSchema.TextUtf8,
 						false,
 						false,
 						ByteAligned.No
@@ -498,7 +498,7 @@ namespace BigRedProf.Data.Test
 
 			IList<string> actualList = piedPiper.UnpackList<string>(
 				reader,
-				SchemaId.TextUtf8,
+				CoreSchema.TextUtf8,
 				true,
 				false,
 				ByteAligned.No
@@ -520,7 +520,7 @@ namespace BigRedProf.Data.Test
 
 			IList<string> actualList = piedPiper.UnpackList<string>(
 				reader,
-				SchemaId.TextUtf8,
+				CoreSchema.TextUtf8,
 				false,
 				false,
 				ByteAligned.No
@@ -544,7 +544,7 @@ namespace BigRedProf.Data.Test
 
 			IList<bool> actualList = piedPiper.UnpackList<bool>(
 				reader,
-				SchemaId.Boolean,
+				CoreSchema.Boolean,
 				false,
 				false,
 				ByteAligned.Yes
@@ -574,7 +574,7 @@ namespace BigRedProf.Data.Test
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			IList<string> actualList = piedPiper.UnpackList<string>(
 				reader,
-				SchemaId.TextUtf8,
+				CoreSchema.TextUtf8,
 				false,
 				true,
 				ByteAligned.No
@@ -599,7 +599,7 @@ namespace BigRedProf.Data.Test
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			IList<string> actualList = piedPiper.UnpackList<string>(
 				reader,
-				SchemaId.TextUtf8,
+				CoreSchema.TextUtf8,
 				false,
 				true,
 				ByteAligned.Yes
@@ -625,7 +625,7 @@ namespace BigRedProf.Data.Test
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			IList<string> actualList = piedPiper.UnpackList<string>(
 				reader,
-				SchemaId.TextUtf8,
+				CoreSchema.TextUtf8,
 				true,
 				true,
 				ByteAligned.No
@@ -651,7 +651,7 @@ namespace BigRedProf.Data.Test
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			IList<string> actualList = piedPiper.UnpackList<string>(
 				reader,
-				SchemaId.TextUtf8,
+				CoreSchema.TextUtf8,
 				true,
 				true,
 				ByteAligned.Yes

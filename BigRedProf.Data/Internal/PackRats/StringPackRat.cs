@@ -20,7 +20,7 @@ namespace BigRedProf.Data.Internal.PackRats
 				throw new ArgumentNullException(nameof(writer));
 
 			byte[] bytes = Encoding.UTF8.GetBytes(model);
-			PiedPiper.GetPackRat<int>(SchemaId.EfficientWholeNumber31).PackModel(writer, bytes.Length);
+			PiedPiper.GetPackRat<int>(CoreSchema.EfficientWholeNumber31).PackModel(writer, bytes.Length);
 			if(bytes.LongLength != 0)
 			{
 				Code code = new Code(bytes);
@@ -35,7 +35,7 @@ namespace BigRedProf.Data.Internal.PackRats
 				throw new ArgumentNullException(nameof(reader));
 
 			string model;
-			int byteCount = PiedPiper.GetPackRat<int>(SchemaId.EfficientWholeNumber31).UnpackModel(reader);
+			int byteCount = PiedPiper.GetPackRat<int>(CoreSchema.EfficientWholeNumber31).UnpackModel(reader);
 			if (byteCount == 0)
 			{
 				model = string.Empty;

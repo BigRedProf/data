@@ -22,15 +22,15 @@ namespace BigRedProf.Data.Internal.PackRats
 			int traitCount = encodedTraits.Count;
 
 			// first pack the trait count
-			PiedPiper.PackModel<int>(writer, traitCount, SchemaId.EfficientWholeNumber31);
+			PiedPiper.PackModel<int>(writer, traitCount, CoreSchema.EfficientWholeNumber31);
 
 			// then pack all n trait identifiers and encoded model lengths
 			writer.AlignToNextByteBoundary();
 			foreach(KeyValuePair<string, EncodedTrait> pair in encodedTraits)
 			{
 				EncodedTrait encodedTrait = pair.Value;
-				PiedPiper.PackModel<Guid>(writer, new Guid(encodedTrait.TraitId), SchemaId.Guid);
-				PiedPiper.PackModel<int>(writer, encodedTrait.EncodedModel.Length, SchemaId.Int32);
+				PiedPiper.PackModel<Guid>(writer, new Guid(encodedTrait.TraitId), CoreSchema.Guid);
+				PiedPiper.PackModel<int>(writer, encodedTrait.EncodedModel.Length, CoreSchema.Int32);
 			}
 
 			// and finally pack all n trait models
@@ -48,7 +48,7 @@ namespace BigRedProf.Data.Internal.PackRats
 				throw new ArgumentNullException(nameof(reader));
 
 			// first unpack the trait count
-			int traitCount = PiedPiper.UnpackModel<int>(reader, SchemaId.EfficientWholeNumber31);
+			int traitCount = PiedPiper.UnpackModel<int>(reader, CoreSchema.EfficientWholeNumber31);
 
 			// then unpack all n trait identifiers and encoded model lengths
 			reader.AlignToNextByteBoundary();
@@ -56,8 +56,8 @@ namespace BigRedProf.Data.Internal.PackRats
 			IList<int> encodedModelLengths = new List<int>(traitCount);
 			for(int i = 0; i < traitCount; ++i)
 			{
-				Guid traitId = PiedPiper.UnpackModel<Guid>(reader, SchemaId.Guid);
-				int encodedModelLength = PiedPiper.UnpackModel<int>(reader, SchemaId.Int32);
+				Guid traitId = PiedPiper.UnpackModel<Guid>(reader, CoreSchema.Guid);
+				int encodedModelLength = PiedPiper.UnpackModel<int>(reader, CoreSchema.Int32);
 
 				traitIds.Add(traitId);
 				encodedModelLengths.Add(encodedModelLength);

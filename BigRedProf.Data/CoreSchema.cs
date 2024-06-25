@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace BigRedProf.Data
+﻿namespace BigRedProf.Data
 {
 	/// <summary>
-	/// Contains a list of default schema identifiers. Additional schema identifiers can be added via
-	/// extension properties.
+	/// Contains the list of core schema identifiers.
 	/// </summary>
-	public static class SchemaId
+	/// <remarks>
+	/// To use the core pack rats, call <see cref="IPiedPiper.RegisterCorePackRats"/> after
+	/// creating your main pied piper instance.
+	/// </remarks>
+	public static class CoreSchema
 	{
 		#region static fields
 		/// <summary>

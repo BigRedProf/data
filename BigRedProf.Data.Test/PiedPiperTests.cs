@@ -155,12 +155,12 @@ namespace BigRedProf.Data.Test
         public void EncodeModel_ShouldThrowWhenModelIsNull()
         {
             IPiedPiper piedPiper = new PiedPiper();
-            piedPiper.RegisterDefaultPackRats();
+            piedPiper.RegisterCorePackRats();
 
             Assert.Throws<ArgumentNullException>(
                 () =>
                 {
-                    piedPiper.EncodeModel<string>(null, SchemaId.TextUtf8);
+                    piedPiper.EncodeModel<string>(null, CoreSchema.TextUtf8);
                 }
             );
         }
@@ -170,7 +170,7 @@ namespace BigRedProf.Data.Test
 		public void EncodeModel_ShouldThrowWhenSchemaIdIsNull()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-			piedPiper.RegisterDefaultPackRats();
+			piedPiper.RegisterCorePackRats();
 
 			Assert.Throws<ArgumentNullException>(
 				() =>
@@ -185,12 +185,12 @@ namespace BigRedProf.Data.Test
         public void EncodeModel_And_DecodeModel_ShouldWork()
         {
             IPiedPiper piedPiper = new PiedPiper();
-            piedPiper.RegisterDefaultPackRats();
+            piedPiper.RegisterCorePackRats();
 
-			TestModelEncodeAndDecode<bool>(piedPiper, true, SchemaId.Boolean);
-			TestModelEncodeAndDecode<int>(piedPiper, 43, SchemaId.Int32);
-			TestModelEncodeAndDecode<int>(piedPiper, 70719495, SchemaId.EfficientWholeNumber31);
-			TestModelEncodeAndDecode<string>(piedPiper, "Go Big Red!", SchemaId.TextUtf8);
+			TestModelEncodeAndDecode<bool>(piedPiper, true, CoreSchema.Boolean);
+			TestModelEncodeAndDecode<int>(piedPiper, 43, CoreSchema.Int32);
+			TestModelEncodeAndDecode<int>(piedPiper, 70719495, CoreSchema.EfficientWholeNumber31);
+			TestModelEncodeAndDecode<string>(piedPiper, "Go Big Red!", CoreSchema.TextUtf8);
         }
 
 		[Fact]
@@ -198,12 +198,12 @@ namespace BigRedProf.Data.Test
 		public void DecodeModel_ShouldThrowWhenCodeIsNull()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-			piedPiper.RegisterDefaultPackRats();
+			piedPiper.RegisterCorePackRats();
 
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					piedPiper.DecodeModel<string>(null, SchemaId.TextUtf8);
+					piedPiper.DecodeModel<string>(null, CoreSchema.TextUtf8);
 				}
 			);
 		}
@@ -213,7 +213,7 @@ namespace BigRedProf.Data.Test
         public void DecodeModel_ShouldThrowWhenSchemaIdIsNull()
         {
             IPiedPiper piedPiper = new PiedPiper();
-            piedPiper.RegisterDefaultPackRats();
+            piedPiper.RegisterCorePackRats();
 
             Assert.Throws<ArgumentNullException>(
                 () =>
@@ -228,12 +228,12 @@ namespace BigRedProf.Data.Test
 		public void PackNullableModel_ShouldThrowWhenCodeWriterIsNull()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-            piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
+            piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), CoreSchema.Int32);
 
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					piedPiper.PackNullableModel<int>(null, 43, SchemaId.Int32, ByteAligned.No);
+					piedPiper.PackNullableModel<int>(null, 43, CoreSchema.Int32, ByteAligned.No);
 				}
 			);
 		}
@@ -243,7 +243,7 @@ namespace BigRedProf.Data.Test
 		public void PackNullableModel_ShouldWorkWhenByteAligned()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
+			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), CoreSchema.Int32);
 			CodeTester codeTester = new CodeTester();
 			Code expectedAlignmentMess1 = "10101010 10101010 10101010 10101";
 			Code expectedAlignmentMess2 = "11011011 01101101 01101101 1";
@@ -251,7 +251,7 @@ namespace BigRedProf.Data.Test
 			Code expectedCode = "1" + "00" + fortyThreeCode;	// 00 for byte alignment
 
 			codeTester.Write(expectedAlignmentMess1);
-			piedPiper.PackNullableModel<int>(codeTester.Writer, 43, SchemaId.Int32, ByteAligned.Yes);
+			piedPiper.PackNullableModel<int>(codeTester.Writer, 43, CoreSchema.Int32, ByteAligned.Yes);
 			codeTester.Write(expectedAlignmentMess2);
 
 			codeTester.StopWritingAndStartReading();
@@ -266,7 +266,7 @@ namespace BigRedProf.Data.Test
 		public void PackNullableModel_ShouldWorkWhenNotByteAligned()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
+			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), CoreSchema.Int32);
 			CodeTester codeTester = new CodeTester();
 			Code expectedAlignmentMess1 = "10101010 10101010 10101010 10101";
 			Code expectedAlignmentMess2 = "11011011 01101101 01101101 1";
@@ -274,7 +274,7 @@ namespace BigRedProf.Data.Test
 			Code expectedCode = "1" + fortyThreeCode;
 
 			codeTester.Write(expectedAlignmentMess1);
-			piedPiper.PackNullableModel<int>(codeTester.Writer, 43, SchemaId.Int32, ByteAligned.No);
+			piedPiper.PackNullableModel<int>(codeTester.Writer, 43, CoreSchema.Int32, ByteAligned.No);
 			codeTester.Write(expectedAlignmentMess2);
 
 			codeTester.StopWritingAndStartReading();
@@ -289,14 +289,14 @@ namespace BigRedProf.Data.Test
 		public void PackNullableModel_ShouldWorkWhenNullAndByteAligned()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
+			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), CoreSchema.Int32);
 			CodeTester codeTester = new CodeTester();
 			Code expectedAlignmentMess1 = "10101010 10101010 10101010 10101";
 			Code expectedAlignmentMess2 = "11011011 01101101 01101101 1";
 			Code expectedCode = "0" + "00";	// 00 for byte alignment
 
 			codeTester.Write(expectedAlignmentMess1);
-			piedPiper.PackNullableModel<int?>(codeTester.Writer, null, SchemaId.Int32, ByteAligned.Yes);
+			piedPiper.PackNullableModel<int?>(codeTester.Writer, null, CoreSchema.Int32, ByteAligned.Yes);
 			codeTester.Write(expectedAlignmentMess2);
 
 			codeTester.StopWritingAndStartReading();
@@ -311,14 +311,14 @@ namespace BigRedProf.Data.Test
 		public void PackNullableModel_ShouldWorkWhenNullAndNotByteAligned()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
+			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), CoreSchema.Int32);
 			CodeTester codeTester = new CodeTester();
 			Code expectedAlignmentMess1 = "10101010 10101010 10101010 10101";
 			Code expectedAlignmentMess2 = "11011011 01101101 01101101 1";
 			Code expectedCode = "0";
 
 			codeTester.Write(expectedAlignmentMess1);
-			piedPiper.PackNullableModel<int?>(codeTester.Writer, null, SchemaId.Int32, ByteAligned.No);
+			piedPiper.PackNullableModel<int?>(codeTester.Writer, null, CoreSchema.Int32, ByteAligned.No);
 			codeTester.Write(expectedAlignmentMess2);
 
 			codeTester.StopWritingAndStartReading();
@@ -333,12 +333,12 @@ namespace BigRedProf.Data.Test
 		public void UnpackNullableModel_ShouldThrowWhenCodeReaderIsNull()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
+			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), CoreSchema.Int32);
 
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					piedPiper.UnpackNullableModel<int>(null, SchemaId.Int32, ByteAligned.No);
+					piedPiper.UnpackNullableModel<int>(null, CoreSchema.Int32, ByteAligned.No);
 				}
 			);
 		}
@@ -348,7 +348,7 @@ namespace BigRedProf.Data.Test
 		public void UnpackNullableModel_ShouldWorkWhenByteAligned()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
+			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), CoreSchema.Int32);
 			CodeTester codeTester = new CodeTester();
 			Code expectedAlignmentMess1 = "10101010 10101010 10101010 10101";
 			Code expectedAlignmentMess2 = "11011011 01101101 01101101 1";
@@ -357,13 +357,13 @@ namespace BigRedProf.Data.Test
 			int expectedValue = 43;
 
 			codeTester.Write(expectedAlignmentMess1);
-			piedPiper.PackNullableModel<int>(codeTester.Writer, 43, SchemaId.Int32, ByteAligned.Yes);
+			piedPiper.PackNullableModel<int>(codeTester.Writer, 43, CoreSchema.Int32, ByteAligned.Yes);
 			codeTester.Write(expectedAlignmentMess2);
 
 			codeTester.StopWritingAndStartReading();
 
 			codeTester.ReadAndVerify(expectedAlignmentMess1);
-			int actualValue = piedPiper.UnpackNullableModel<int>(codeTester.Reader, SchemaId.Int32, ByteAligned.Yes);
+			int actualValue = piedPiper.UnpackNullableModel<int>(codeTester.Reader, CoreSchema.Int32, ByteAligned.Yes);
 			Assert.Equal<int>(expectedValue, actualValue);
 			codeTester.ReadAndVerify(expectedAlignmentMess2);
 		}
@@ -373,7 +373,7 @@ namespace BigRedProf.Data.Test
 		public void UnpackNullableModel_ShouldWorkWhenNotByteAligned()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
+			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), CoreSchema.Int32);
 			CodeTester codeTester = new CodeTester();
 			Code expectedAlignmentMess1 = "10101010 10101010 10101010 10101";
 			Code expectedAlignmentMess2 = "11011011 01101101 01101101 1";
@@ -382,13 +382,13 @@ namespace BigRedProf.Data.Test
 			int expectedValue = 43;
 
 			codeTester.Write(expectedAlignmentMess1);
-			piedPiper.PackNullableModel<int>(codeTester.Writer, 43, SchemaId.Int32, ByteAligned.No);
+			piedPiper.PackNullableModel<int>(codeTester.Writer, 43, CoreSchema.Int32, ByteAligned.No);
 			codeTester.Write(expectedAlignmentMess2);
 
 			codeTester.StopWritingAndStartReading();
 
 			codeTester.ReadAndVerify(expectedAlignmentMess1);
-			int actualValue = piedPiper.UnpackNullableModel<int>(codeTester.Reader, SchemaId.Int32, ByteAligned.No);
+			int actualValue = piedPiper.UnpackNullableModel<int>(codeTester.Reader, CoreSchema.Int32, ByteAligned.No);
 			Assert.Equal<int>(expectedValue, actualValue);
 			codeTester.ReadAndVerify(expectedAlignmentMess2);
 		}
@@ -398,7 +398,7 @@ namespace BigRedProf.Data.Test
 		public void UnpackNullableModel_ShouldWorkWhenNullAndByteAligned()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
+			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), CoreSchema.Int32);
 			CodeTester codeTester = new CodeTester();
 			Code expectedAlignmentMess1 = "10101010 10101010 10101010 10101";
 			Code expectedAlignmentMess2 = "11011011 01101101 01101101 1";
@@ -406,13 +406,13 @@ namespace BigRedProf.Data.Test
 			int? expectedValue = null;
 
 			codeTester.Write(expectedAlignmentMess1);
-			piedPiper.PackNullableModel<int?>(codeTester.Writer, null, SchemaId.Int32, ByteAligned.Yes);
+			piedPiper.PackNullableModel<int?>(codeTester.Writer, null, CoreSchema.Int32, ByteAligned.Yes);
 			codeTester.Write(expectedAlignmentMess2);
 
 			codeTester.StopWritingAndStartReading();
 
 			codeTester.ReadAndVerify(expectedAlignmentMess1);
-			int? actualValue = piedPiper.UnpackNullableModel<int?>(codeTester.Reader, SchemaId.Int32, ByteAligned.Yes);
+			int? actualValue = piedPiper.UnpackNullableModel<int?>(codeTester.Reader, CoreSchema.Int32, ByteAligned.Yes);
 			Assert.Equal<int?>(expectedValue, actualValue);
 			codeTester.ReadAndVerify(expectedAlignmentMess2);
 		}
@@ -422,7 +422,7 @@ namespace BigRedProf.Data.Test
 		public void UnpackNullableModel_ShouldWorkWhenNullAndNotByteAligned()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), SchemaId.Int32);
+			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), CoreSchema.Int32);
 			CodeTester codeTester = new CodeTester();
 			Code expectedAlignmentMess1 = "10101010 10101010 10101010 10101";
 			Code expectedAlignmentMess2 = "11011011 01101101 01101101 1";
@@ -430,13 +430,13 @@ namespace BigRedProf.Data.Test
 			int? expectedValue = null;
 
 			codeTester.Write(expectedAlignmentMess1);
-			piedPiper.PackNullableModel<int?>(codeTester.Writer, null, SchemaId.Int32, ByteAligned.Yes);
+			piedPiper.PackNullableModel<int?>(codeTester.Writer, null, CoreSchema.Int32, ByteAligned.Yes);
 			codeTester.Write(expectedAlignmentMess2);
 
 			codeTester.StopWritingAndStartReading();
 
 			codeTester.ReadAndVerify(expectedAlignmentMess1);
-			int? actualValue = piedPiper.UnpackNullableModel<int?>(codeTester.Reader, SchemaId.Int32, ByteAligned.Yes);
+			int? actualValue = piedPiper.UnpackNullableModel<int?>(codeTester.Reader, CoreSchema.Int32, ByteAligned.Yes);
 			Assert.Equal<int?>(expectedValue, actualValue);
 			codeTester.ReadAndVerify(expectedAlignmentMess2);
 		}
@@ -446,7 +446,7 @@ namespace BigRedProf.Data.Test
 		public void SaveCodeToByteArray_ShouldThrowWhenCodeIsNull()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-			piedPiper.RegisterDefaultPackRats();
+			piedPiper.RegisterCorePackRats();
 
 			Assert.Throws<ArgumentNullException>(
 				() =>
@@ -461,7 +461,7 @@ namespace BigRedProf.Data.Test
 		public void SaveCodeTo_And_LoadCodeFrom_ByteArray_ShouldWork()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-			piedPiper.RegisterDefaultPackRats();
+			piedPiper.RegisterCorePackRats();
 
             TestSaveCodeToAndLoadCodeFromByteArray(piedPiper, "0");
 			TestSaveCodeToAndLoadCodeFromByteArray(piedPiper, "1");
@@ -476,7 +476,7 @@ namespace BigRedProf.Data.Test
 		public void LoadCodeFromByteArray_ShouldThrowWhenByteArrayIsNull()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
-			piedPiper.RegisterDefaultPackRats();
+			piedPiper.RegisterCorePackRats();
 
 			Assert.Throws<ArgumentNullException>(
 				() =>

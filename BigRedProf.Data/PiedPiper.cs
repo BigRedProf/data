@@ -28,17 +28,17 @@ namespace BigRedProf.Data
 
 		#region IPiedPiper methods
 		/// <inheritdoc/>
-		public void RegisterDefaultPackRats()
+		public void RegisterCorePackRats()
 		{
-			RegisterPackRat<bool>(new BooleanPackRat(this), SchemaId.Boolean);
-			RegisterPackRat<Code>(new CodePackRat(this), SchemaId.Code);
-			RegisterPackRat<int>(new EfficientWholeNumber31PackRat(this), SchemaId.EfficientWholeNumber31);
-			RegisterPackRat<int>(new Int32PackRat(this), SchemaId.Int32);
-			RegisterPackRat<long>(new Int64PackRat(this), SchemaId.Int64);
-			RegisterPackRat<Guid>(new GuidPackRat(this), SchemaId.Guid);
-			RegisterPackRat<ModelWithSchema>(new ModelWithSchemaPackRat(this), SchemaId.ModelWithSchema);
-			RegisterPackRat<float>(new SinglePackRat(this), SchemaId.Single);
-			RegisterPackRat<string>(new StringPackRat(this), SchemaId.TextUtf8);
+			RegisterPackRat<bool>(new BooleanPackRat(this), CoreSchema.Boolean);
+			RegisterPackRat<Code>(new CodePackRat(this), CoreSchema.Code);
+			RegisterPackRat<int>(new EfficientWholeNumber31PackRat(this), CoreSchema.EfficientWholeNumber31);
+			RegisterPackRat<int>(new Int32PackRat(this), CoreSchema.Int32);
+			RegisterPackRat<long>(new Int64PackRat(this), CoreSchema.Int64);
+			RegisterPackRat<Guid>(new GuidPackRat(this), CoreSchema.Guid);
+			RegisterPackRat<ModelWithSchema>(new ModelWithSchemaPackRat(this), CoreSchema.ModelWithSchema);
+			RegisterPackRat<float>(new SinglePackRat(this), CoreSchema.Single);
+			RegisterPackRat<string>(new StringPackRat(this), CoreSchema.TextUtf8);
 		}
 
 		/// <inheritdoc/>
@@ -242,7 +242,7 @@ namespace BigRedProf.Data
 
 			if (list != null)
 			{
-				PackRat<int> efficientWholeNumber31PackRat = GetPackRat<int>(SchemaId.EfficientWholeNumber31);
+				PackRat<int> efficientWholeNumber31PackRat = GetPackRat<int>(CoreSchema.EfficientWholeNumber31);
 				efficientWholeNumber31PackRat.PackModel(writer, list.Count);
 
 				PackRat<M> elementPackRat = GetPackRat<M>(elementSchemaId);
@@ -311,7 +311,7 @@ namespace BigRedProf.Data
 					return null;
 			}
 
-			PackRat<int> efficientWholeNumber31PackRat = GetPackRat<int>(SchemaId.EfficientWholeNumber31);
+			PackRat<int> efficientWholeNumber31PackRat = GetPackRat<int>(CoreSchema.EfficientWholeNumber31);
 			int elementCount = efficientWholeNumber31PackRat.UnpackModel(reader);
 
 			PackRat<M> elementPackRat = GetPackRat<M>(elementSchemaId);
@@ -413,7 +413,7 @@ namespace BigRedProf.Data
 				throw new ArgumentNullException(nameof(code));
 
 			MemoryStream memoryStream = new MemoryStream((code.Length + 7) / 8);
-			PackRat<Code> packRat = GetPackRat<Code>(SchemaId.Code);
+			PackRat<Code> packRat = GetPackRat<Code>(CoreSchema.Code);
 			using (CodeWriter writer = new CodeWriter(memoryStream))
 			{
 				packRat.PackModel(writer, code);
@@ -429,7 +429,7 @@ namespace BigRedProf.Data
 
 			Code code;
 			MemoryStream memoryStream = new MemoryStream(byteArray);
-			PackRat<Code> packRat = GetPackRat<Code>(SchemaId.Code);
+			PackRat<Code> packRat = GetPackRat<Code>(CoreSchema.Code);
 			using (CodeReader reader = new CodeReader(memoryStream))
 			{
 				code = packRat.UnpackModel(reader);

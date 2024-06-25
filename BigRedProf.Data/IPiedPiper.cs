@@ -30,10 +30,10 @@ namespace BigRedProf.Data
 		PackRat<T> GetPackRat<T>(string schemaId);
 
 		/// <summary>
-		/// Registers all the default pack rats such as <see cref="BooleanPackRat"/>, <see cref="StringPackRat"/>,
+		/// Registers all the core pack rats such as <see cref="BooleanPackRat"/>, <see cref="StringPackRat"/>,
 		/// and <see cref="Int32PackRat"/>.
 		/// </summary>
-		void RegisterDefaultPackRats();
+		void RegisterCorePackRats();
 
 		/// <summary>
 		/// Registers pack rats for all the models in a given assembly decorated with
