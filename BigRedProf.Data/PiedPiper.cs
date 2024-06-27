@@ -1,9 +1,11 @@
 ﻿using BigRedProf.Data.Internal;
 using BigRedProf.Data.Internal.PackRats;
+using BigRedProf.Data.PackRats;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace BigRedProf.Data
@@ -11,7 +13,8 @@ namespace BigRedProf.Data
 	public class PiedPiper : IPiedPiper
 	{
 		#region fields
-		private IDictionary<Guid, IWeaklyTypedPackRat> _dictionary;
+		private IDictionary<Guid, IWeaklyTypedPackRat> _packRats;
+		private IDictionary<Guid, object> _tokenizers;
 		private IDictionary<Guid, TraitDefinition> _traitDefinitions;
 		#endregion
 
@@ -21,7 +24,8 @@ namespace BigRedProf.Data
 		/// </summary>
 		public PiedPiper()
 		{
-			_dictionary = new Dictionary<Guid, IWeaklyTypedPackRat>();
+			_packRats = new Dictionary<Guid, IWeaklyTypedPackRat>();
+			_tokenizers = new Dictionary<Guid, object>();
 			_traitDefinitions = new Dictionary<Guid, TraitDefinition>();
 		}
 		#endregion
@@ -86,6 +90,77 @@ namespace BigRedProf.Data
 				throw new ArgumentNullException(nameof(schemaId));
 
 			AddPackRatToDictionary(packRat, schemaId);
+		}
+
+		/// <inheritdoc/>
+		public void RegisterTokenizer<TModel>(Tokenizer<TModel> tokenizer, AttributeFriendlyGuid tokenizerId)
+		{
+			if(tokenizer == null)
+				throw new ArgumentNullException(nameof(tokenizer));
+
+			if (_tokenizers.ContainsKey(tokenizerId))
+			{
+				throw new InvalidOperationException(
+					$"A tokenizer with identifier '{tokenizerId}' has already been registered."
+				);
+			}
+
+			_tokenizers.Add(tokenizerId, tokenizer);
+		}
+
+		/// <inheritdoc/>
+		public Tokenizer<TModel> GetTokenizer<TModel>(AttributeFriendlyGuid tokenizerId)
+		{
+			if (!_tokenizers.TryGetValue(tokenizerId, out object tokenizerAsObject))
+				throw new InvalidOperationException($"Tokenizer '{tokenizerId}' is not registered.");
+
+			Tokenizer<TModel> tokenizer = tokenizerAsObject as Tokenizer<TModel>;
+			if (tokenizer == null)
+			{
+				throw new InvalidOperationException(
+					$"Invalid model type. Tokenizer '{tokenizerId}' is registered as type '{typeof(TModel).FullName}'."
+				);
+			}
+
+			return tokenizer;
+		}
+
+		/// <inheritdoc/>
+		public void RegisterTokenizers(Assembly assembly)
+		{
+			if (assembly == null)
+				throw new ArgumentNullException(nameof(assembly));
+
+			Type[] types = assembly.GetTypes();
+			foreach (Type type in types)
+			{
+				object[] attributes = type.GetCustomAttributes(typeof(AssemblyTokenizerAttribute), false);
+				if (attributes.Length > 0)
+				{
+					AssemblyTokenizerAttribute attribute = (AssemblyTokenizerAttribute)attributes[0];
+
+					object tokenizerInstance = Activator.CreateInstance(type);
+					if (tokenizerInstance == null)
+					{
+						throw new InvalidOperationException($"Cannot create instance of tokenizer '{type.FullName}'.");
+					}
+
+					AttributeFriendlyGuid tokenizerId = new AttributeFriendlyGuid(attribute.TokenizerId);
+					Type tokenizerModelType = type.BaseType.GetGenericArguments()[0];
+
+					// register the tokenizer
+					MethodInfo registerTokenizerMethod = typeof(PiedPiper).GetMethod(nameof(RegisterTokenizer)).MakeGenericMethod(tokenizerModelType);
+					registerTokenizerMethod.Invoke(this, new object[] { tokenizerInstance, tokenizerId });
+
+					// create the pack rat
+					Type packRatType = typeof(TokenizedModelPackRat<>).MakeGenericType(tokenizerModelType);
+					object packRatInstance = Activator.CreateInstance(packRatType, new object[] { this, tokenizerInstance });
+
+					// register the pack rat
+					MethodInfo registerPackRatMethod = typeof(PiedPiper).GetMethod(nameof(RegisterPackRat)).MakeGenericMethod(typeof(TokenizedModel<>).MakeGenericType(tokenizerModelType));
+					registerPackRatMethod.Invoke(this, new object[] { packRatInstance, tokenizerId });
+				}
+			}
 		}
 
 		/// <inheritdoc/>
@@ -412,14 +487,14 @@ namespace BigRedProf.Data
 		#region private methods
 		private void AddPackRatToDictionary(IWeaklyTypedPackRat packRat, AttributeFriendlyGuid schemaId)
 		{
-			if (_dictionary.ContainsKey(schemaId))
+			if (_packRats.ContainsKey(schemaId))
 			{
 				throw new InvalidOperationException(
 					$"A PackRat has already been registered for schema identifier {schemaId}."
 				);
 			}
 
-			_dictionary.Add(schemaId, packRat);
+			_packRats.Add(schemaId, packRat);
 		}
 
 		private IWeaklyTypedPackRat GetPackRat(AttributeFriendlyGuid schemaId)
@@ -427,7 +502,7 @@ namespace BigRedProf.Data
 			Debug.Assert(schemaId != null);
 
 			IWeaklyTypedPackRat packRat;
-			if (!_dictionary.TryGetValue(schemaId, out packRat))
+			if (!_packRats.TryGetValue(schemaId, out packRat))
 			{
 				throw new ArgumentException(
 					$"No PackRat is registered for schema identifier {schemaId}.",

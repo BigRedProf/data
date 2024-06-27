@@ -1,8 +1,6 @@
-﻿using System;
+﻿using BigRedProf.Data.PackRats;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
-using System.Xml.Schema;
 
 namespace BigRedProf.Data
 {
@@ -25,7 +23,7 @@ namespace BigRedProf.Data
 		/// </summary>
 		/// <typeparam name="T">The type of model.</typeparam>
 		/// <param name="schemaId">The schema identifier.</param>
-		/// <returns></returns>
+		/// <returns>The pack rat.</returns>
 
 		PackRat<T> GetPackRat<T>(AttributeFriendlyGuid schemaId);
 
@@ -48,6 +46,31 @@ namespace BigRedProf.Data
 		/// to register the pack rats.
 		/// </remarks>
 		void RegisterPackRats(Assembly assembly);
+
+		/// <summary>
+		/// Registers a <see cref="Tokenizer{TModel}"/> for use with a specified tokenizer identifier.
+		/// </summary>
+		/// <typeparam name="TModel">The type of model.</typeparam>
+		/// <param name="tokenizer">The tokenizer.</param>
+		/// <param name="tokenizerId">The tokenizer identifier.</param>
+		void RegisterTokenizer<TModel>(Tokenizer<TModel> tokenizer, AttributeFriendlyGuid tokenizerId);
+
+		/// <summary>
+		/// Returns the <see cref="Tokenizer{TModel}"/> registered for use with a specific tokenizer
+		/// identifier.
+		/// </summary>
+		/// <typeparam name="TModel">The type of model.</typeparam>
+		/// <param name="tokenizerId">The tokenizer identifier.</param>
+		/// <returns>The tokenizer.</returns>
+		Tokenizer<TModel> GetTokenizer<TModel>(AttributeFriendlyGuid tokenizerId);
+
+		/// <summary>
+		/// Registers all the tokenizers in a given assembly decorated with
+		/// <see cref="AssemblyTokenizerAttribute"/> and creates their corresponding
+		/// pack rats.
+		/// </summary>
+		/// <param name="assembly">The assembly to reflect.</param>
+		void RegisterTokenizers(Assembly assembly);
 
 		/// <summary>
 		/// Defines a trait by associating a <see cref="TraitDefinition"/> with a given trait 
