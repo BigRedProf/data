@@ -53,7 +53,7 @@
 
 		public void AddPackRat(string type, string @class, string schemaId)
 		{
-			_writer.WriteLine($"piedPiper.RegisterPackRat<{type}>(new {@class}(piedPiper), \"{schemaId}\");");
+			_writer.WriteLine($"piedPiper.RegisterPackRat<{type}>(new {@class}(piedPiper), new AttributeFriendlyGuid(\"{schemaId}\"));");
 		}
 
 		public void StartGeneratedPackRatsSection()
