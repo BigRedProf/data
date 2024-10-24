@@ -61,6 +61,11 @@
 		public const string EfficientWholeNumber63 = "6a29f5c6-fb2b-4e5c-8d77-89371cd4a1f0";
 
 		/// <summary>
+		/// The schema identifier for the <see cref="FlexModel"/> type.
+		/// </summary>
+		public const string FlexModel = "94059e98-41f8-4adc-b29e-1c0630645809";
+		
+		/// <summary>
 		/// The schema identifier for the <see cref="Guid"/> type.
 		/// </summary>
 		public const string Guid = "5e0d9656-ea94-4664-8803-408edc337a28";
@@ -89,6 +94,11 @@
 		/// The schema identifier for the <see cref="ModelWithSchema"/> type.
 		/// </summary>
 		public const string ModelWithSchema = "adce8290-2438-420d-9658-49296cf456f3";
+
+		/// <summary>
+		/// The schema identifier for the <see cref="ModelWithSchemaAndLength"/> type.
+		/// </summary>
+		public const string ModelWithSchemaAndLength = "c02015c9-fe26-4c65-93bc-2c67da6fb3c3";
 
 		/// <summary>
 		/// The schema identifier for packs.
