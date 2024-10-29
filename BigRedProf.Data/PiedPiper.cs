@@ -36,6 +36,7 @@ namespace BigRedProf.Data
 		{
 			RegisterPackRat<bool>(new BooleanPackRat(this), CoreSchema.Boolean);
 			RegisterPackRat<Code>(new CodePackRat(this), CoreSchema.Code);
+			RegisterPackRat<double>(new DoublePackRat(this), CoreSchema.Double);
 			RegisterPackRat<int>(new EfficientWholeNumber31PackRat(this), CoreSchema.EfficientWholeNumber31);
 			RegisterPackRat<FlexModel>(new FlexModelPackRat(this), CoreSchema.FlexModel);
 			RegisterPackRat<Guid>(new GuidPackRat(this), CoreSchema.Guid);
