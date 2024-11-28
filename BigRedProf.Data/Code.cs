@@ -88,8 +88,8 @@ namespace BigRedProf.Data
 				);
 			}
 
-			Debug.Assert(byteArray.Length <= _byteArray.Length);
-			Array.Copy(byteArray, 0, _byteArray, 0, byteArray.Length);
+			Debug.Assert(_byteArray.Length <= byteArray.Length);
+			Array.Copy(byteArray, 0, _byteArray, 0, _byteArray.Length);
 		}
 
 		/// <summary>

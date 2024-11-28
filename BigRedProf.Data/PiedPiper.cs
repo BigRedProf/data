@@ -47,6 +47,37 @@ namespace BigRedProf.Data
 			RegisterPackRat<ModelWithSchema>(new ModelWithSchemaPackRat(this), CoreSchema.ModelWithSchema);
 			RegisterPackRat<float>(new SinglePackRat(this), CoreSchema.Single);
 			RegisterPackRat<string>(new StringPackRat(this), CoreSchema.TextUtf8);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 1), CoreSchema.WholeNumber1);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 2), CoreSchema.WholeNumber2);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 3), CoreSchema.WholeNumber3);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 4), CoreSchema.WholeNumber4);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 5), CoreSchema.WholeNumber5);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 6), CoreSchema.WholeNumber6);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 7), CoreSchema.WholeNumber7);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 8), CoreSchema.WholeNumber8);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 9), CoreSchema.WholeNumber9);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 10), CoreSchema.WholeNumber10);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 11), CoreSchema.WholeNumber11);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 12), CoreSchema.WholeNumber12);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 13), CoreSchema.WholeNumber13);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 14), CoreSchema.WholeNumber14);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 15), CoreSchema.WholeNumber15);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 16), CoreSchema.WholeNumber16);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 17), CoreSchema.WholeNumber17);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 18), CoreSchema.WholeNumber18);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 19), CoreSchema.WholeNumber19);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 20), CoreSchema.WholeNumber20);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 21), CoreSchema.WholeNumber21);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 22), CoreSchema.WholeNumber22);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 23), CoreSchema.WholeNumber23);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 24), CoreSchema.WholeNumber24);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 25), CoreSchema.WholeNumber25);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 26), CoreSchema.WholeNumber26);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 27), CoreSchema.WholeNumber27);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 28), CoreSchema.WholeNumber28);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 29), CoreSchema.WholeNumber29);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 30), CoreSchema.WholeNumber30);
+			RegisterPackRat<int>(new WholeNumberPackRat(this, 31), CoreSchema.WholeNumber31);
 		}
 
 		/// <inheritdoc/>
