@@ -36,9 +36,25 @@
 		public const string Code = "124c3883-2b87-4df2-b28d-70fd5c96d178";
 
 		/// <summary>
-		/// The schema identifier for the <see cref="DateTime"/> type.
+		/// The schema identifier for the <see cref="DateTimeWithKind"/> type including the kind.
 		/// </summary>
-		public const string DateTime = "e231824c-affe-4369-8db8-d46242af5e97";
+		/// <remarks>
+		/// Note this schema packs values using 66 bits (64 for ticks and 2 for the kind).
+		/// If you don't care about the kind, you can use the <see cref="DateTimeWithoutKind"/> schema
+		/// instead and save 2 bits.
+		/// </remarks>
+		public const string DateTimeWithKind = "e231824c-affe-4369-8db8-d46242af5e97";
+
+		/// <summary>
+		/// The schema identifier for the <see cref="DateTimeWithKind"/> type without a kind.
+		/// </summary>
+		/// <remarks>
+		/// By not including <see cref="DateTime.Kind"></see> in the schema, the kind is assumed to be
+		/// <see cref="DateTime.Kind.Unspecified"/>. This is useful when you don't care about the
+		/// kind property and want to save space. It saves 2 bits by reducing the packed size from 66
+		/// bits to 64 bits
+		/// </remarks>
+		public const string DateTimeWithoutKind = "fd712fc5-d24b-44dc-820f-ee7bdbc683b7";
 
 		/// <summary>
 		/// The schema identifier for the <see cref="Decimal"/> type.
