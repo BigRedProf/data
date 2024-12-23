@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace BigRedProf.Data.Internal.PackRats
 {
@@ -18,8 +19,19 @@ namespace BigRedProf.Data.Internal.PackRats
 			if (writer == null)
 				throw new ArgumentNullException(nameof(writer));
 
-			Dictionary<Guid, EncodedTrait> encodedTraits = model.InternalEncodedTraits;
-			int traitCount = encodedTraits.Count;
+			//Dictionary<Guid, UntypedTrait> untypedTraits = model.InternalUntypedTraits;
+			IList<UntypedTrait> untypedTraits = model.InternalUntypedTraits.Values.ToList();
+			int traitCount = untypedTraits.Count;
+
+			// encode each trait
+			Code[] encodedTraits = new Code[traitCount];
+			for (int i = 0; i < traitCount; ++i)
+			{
+				UntypedTrait untypedTrait = untypedTraits[i];
+				Guid schema = PiedPiper.GetTraitDefinition(untypedTrait.TraitId).SchemaId;
+				Code code = ((PiedPiper)PiedPiper).EncodeModel(untypedTrait.Model, schema);
+				encodedTraits[i] = code;
+			}
 
 			// first pack the trait count
 			PiedPiper.PackModel<int>(writer, traitCount, CoreSchema.EfficientWholeNumber31);
@@ -28,20 +40,16 @@ namespace BigRedProf.Data.Internal.PackRats
 			{
 				// then pack all n trait identifiers and encoded model lengths
 				writer.AlignToNextByteBoundary();
-				foreach (KeyValuePair<Guid, EncodedTrait> pair in encodedTraits)
+				for(int i = 0; i < traitCount; ++i)
 				{
-					EncodedTrait encodedTrait = pair.Value;
-					PiedPiper.PackModel<Guid>(writer, encodedTrait.TraitId, CoreSchema.Guid);
-					PiedPiper.PackModel<int>(writer, encodedTrait.EncodedModel.Length, CoreSchema.Int32);
+					PiedPiper.PackModel<Guid>(writer, untypedTraits[i].TraitId, CoreSchema.Guid);
+					PiedPiper.PackModel<int>(writer, encodedTraits[i].Length, CoreSchema.Int32);
 				}
 
 				// and finally pack all n trait models
 				writer.AlignToNextByteBoundary();
-				foreach (KeyValuePair<Guid, EncodedTrait> pair in encodedTraits)
-				{
-					EncodedTrait encodedTrait = pair.Value;
-					writer.WriteCode(encodedTrait.EncodedModel);
-				}
+				for (int i = 0; i < traitCount; ++i)
+					writer.WriteCode(encodedTraits[i]);
 			}
 		}
 
@@ -77,11 +85,11 @@ namespace BigRedProf.Data.Internal.PackRats
 					int encodedModelLength = encodedModelLengths[i];
 
 					Code encodedModel = reader.Read(encodedModelLength);
-					EncodedTrait encodedTrait = new EncodedTrait();
+					UntypedTrait encodedTrait = new UntypedTrait();
 					encodedTrait.TraitId = traitId;
-					encodedTrait.EncodedModel = encodedModel;
+					encodedTrait.Model = encodedModel;
 
-					model.InternalEncodedTraits.Add(traitId, encodedTrait);
+					model.InternalUntypedTraits.Add(traitId, encodedTrait);
 				}
 			}
 

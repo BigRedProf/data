@@ -52,7 +52,7 @@ namespace BigRedProf.Data.Test
 			FlexModel model = new FlexModel();
 			string traitId = "00000000-0000-0000-0000-000000000002";
 			Trait<int> trait = new Trait<int>(traitId, 72);
-			model.AddTrait(piedPiper, trait);
+			model.AddTrait(trait);
 			bool hasTrait = model.HasTrait(traitId);
 			Assert.True(hasTrait);
 		}
@@ -65,8 +65,8 @@ namespace BigRedProf.Data.Test
 			FlexModel model = new FlexModel();
 			string traitId = "00000000-0000-0000-0000-000000000003";
 			Trait<int> trait = new Trait<int>(traitId, 72);
-			model.AddTrait(piedPiper, trait);
-			int value = model.GetTrait<int>(piedPiper, traitId);
+			model.AddTrait(trait);
+			int value = model.GetTrait<int>(traitId);
 			Assert.Equal(72, value);
 		}
 
@@ -76,7 +76,7 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = CreatePiedPiper();
 			FlexModel model = new FlexModel();
-			Assert.Throws<ArgumentException>(() => model.GetTrait<int>(piedPiper, "00000000-0000-0000-0000-000000000004"));
+			Assert.Throws<ArgumentException>(() => model.GetTrait<int>("00000000-0000-0000-0000-000000000004"));
 		}
 
 		[Fact]
@@ -87,8 +87,8 @@ namespace BigRedProf.Data.Test
 			FlexModel model = new FlexModel();
 			string traitId = "00000000-0000-0000-0000-000000000005";
 			Trait<int> trait = new Trait<int>(traitId, 72);
-			model.AddTrait(piedPiper, trait);
-			bool result = model.TryGetTrait<int>(piedPiper, traitId, out int value);
+			model.AddTrait(trait);
+			bool result = model.TryGetTrait<int>(traitId, out int value);
 			Assert.True(result);
 			Assert.Equal(72, value);
 		}
@@ -99,7 +99,7 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = CreatePiedPiper();
 			FlexModel model = new FlexModel();
-			bool result = model.TryGetTrait<int>(piedPiper, "00000000-0000-0000-0000-000000000006", out int value);
+			bool result = model.TryGetTrait<int>("00000000-0000-0000-0000-000000000006", out int value);
 			Assert.False(result);
 			Assert.Equal(default, value);
 		}
@@ -112,7 +112,7 @@ namespace BigRedProf.Data.Test
 			FlexModel model = new FlexModel();
 			string traitId = "00000000-0000-0000-0000-000000000007";
 			Trait<int> trait = new Trait<int>(traitId, 72);
-			model.AddTrait(piedPiper, trait);
+			model.AddTrait(trait);
 			bool removed = model.RemoveTrait(traitId);
 			Assert.True(removed);
 			bool hasTrait = model.HasTrait(traitId);

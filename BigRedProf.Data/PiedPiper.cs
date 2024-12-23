@@ -520,6 +520,27 @@ namespace BigRedProf.Data
 		}
 		#endregion
 
+		#region internal methods
+		internal Code EncodeModel(object model, AttributeFriendlyGuid schemaId)
+		{
+			if (model == null)
+				throw new ArgumentNullException(nameof(model));
+
+			if (schemaId == null)
+				throw new ArgumentNullException(nameof(schemaId));
+
+			IWeaklyTypedPackRat packRat = GetPackRat(schemaId);
+			CodeStream codeStream = new CodeStream();
+			using (CodeWriter codeWriter = new CodeWriter(codeStream))
+			{
+				packRat.PackModel(codeWriter, model);
+			}
+			Code code = codeStream.ToCode();
+
+			return code;
+		}
+		#endregion
+
 		#region private methods
 		private void AddPackRatToDictionary(IWeaklyTypedPackRat packRat, AttributeFriendlyGuid schemaId)
 		{

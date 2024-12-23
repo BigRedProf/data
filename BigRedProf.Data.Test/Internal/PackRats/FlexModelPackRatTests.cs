@@ -74,9 +74,9 @@ namespace BigRedProf.Data.Test
 			Trait<int> trait2 = new Trait<int>(traitId2, 20);
 			Trait<int> trait3 = new Trait<int>(traitId3, 30);
 
-			model.AddTrait(piedPiper, trait1);
-			model.AddTrait(piedPiper, trait2);
-			model.AddTrait(piedPiper, trait3);
+			model.AddTrait(trait1);
+			model.AddTrait(trait2);
+			model.AddTrait(trait3);
 
 			// Placeholder value for expected code. Replace with the correct value after testing.
 			Code expectedCode = 
