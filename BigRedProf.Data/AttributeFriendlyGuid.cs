@@ -32,6 +32,33 @@ namespace BigRedProf.Data
 		}
 		#endregion
 
+		#region functions
+		/// <summary>
+		/// Converts an object to an <see cref="AttributeFriendlyGuid"/> if possible.
+		/// </summary>
+		/// <param name="value">The object to convert.</param>
+		/// <returns>An <see cref="AttributeFriendlyGuid"/>.</returns>
+		/// <exception cref="ArgumentException">Thrown if the object cannot be converted.</exception>
+		public static AttributeFriendlyGuid FromObject(object value)
+		{
+			if (value is null)
+				throw new ArgumentException("Value cannot be null.");
+
+			if (value is string stringId)
+				return new AttributeFriendlyGuid(stringId);
+
+			if (value is Guid guidId)
+				return new AttributeFriendlyGuid(guidId);
+
+			if (value is AttributeFriendlyGuid afGuid)
+				return afGuid;
+
+			throw new ArgumentException(
+				$"Unsupported type: {value.GetType().Name}. Value must be of type string, Guid, or AttributeFriendlyGuid."
+			);
+		}
+		#endregion
+
 		#region operator overloads
 		/// <summary>
 		/// Converts an <see cref="AttributeFriendlyGuid"/> to a <see cref="Guid"/>.

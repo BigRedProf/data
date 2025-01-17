@@ -30,13 +30,27 @@ namespace BigRedProf.Data
 
 		public FlexModel(params object[] identifierModelPairs)
 		{
-			if(identifierModelPairs.Length % 2 != 0)
+			System.Diagnostics.Debug.WriteLine("*** Entering FlexModel ctor w/ id/model pairs **");
+
+			if (identifierModelPairs.Length % 2 != 0)
 				throw new ArgumentException("The number of arguments must be even.");
 
 			_untypedTraits = new Dictionary<Guid, UntypedTrait>(identifierModelPairs.Length / 2);
-			for(int i = 0; i < identifierModelPairs.Length; i += 2)
+			for (int i = 0; i < identifierModelPairs.Length; i += 2)
 			{
-				Guid traitIdentifier = (Guid)identifierModelPairs[i];
+				object identifier = identifierModelPairs[i];
+				AttributeFriendlyGuid attributeFriendlyGuid;
+
+				try
+				{
+					attributeFriendlyGuid = AttributeFriendlyGuid.FromObject(identifier);
+				}
+				catch (Exception ex)
+				{
+					throw new ArgumentException($"Failed to process trait identifier at index {i}: {ex.Message}", ex);
+				}
+
+				Guid traitIdentifier = attributeFriendlyGuid;
 				object model = identifierModelPairs[i + 1];
 				_untypedTraits[traitIdentifier] = new UntypedTrait
 				{
@@ -81,6 +95,12 @@ namespace BigRedProf.Data
 		{
 			if (!_untypedTraits.TryGetValue(traitIdentifier, out UntypedTrait untypedTrait))
 				throw new ArgumentException($"Trait '{traitIdentifier}' does not exist.");
+
+			if (!(untypedTrait.Model is M))
+				throw new InvalidOperationException(
+					$"Trait '{traitIdentifier}' exists but cannot be cast to type '{typeof(M).Name}'. " +
+					$"Actual type: '{(untypedTrait.Model != null ? untypedTrait.Model.GetType().Name : "null")}'."
+				);
 
 			return (M)untypedTrait.Model;
 		}
