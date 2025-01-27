@@ -19,19 +19,27 @@ jobs:
         dotnet-version: 7.0.x
     - name: Restore
       run: dotnet restore
+      working-directory: src
     - name: Build Debug
       run: dotnet build --no-restore
+      working-directory: src
     - name: Test Debug
       run: dotnet test --no-build --verbosity normal
+      working-directory: src
     - name: Build Release
       run: dotnet build --no-restore -c Release
+      working-directory: src
     - name: Test Release
       run: dotnet test --no-build --verbosity normal -c Release
+      working-directory: src
     - name: Pack
       run: dotnet pack -c Release
+      working-directory: src
     - name: Add NuGet Source
       run: dotnet nuget add source --username BigRedProf --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/BigRedProf/index.json"
     - name: Push BigRedProf.Data package
-      run: dotnet nuget push ./src/BigRedProf.Data/bin/Release/BigRedProf.Data.*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }}  --source "github" --skip-duplicate
+      run: dotnet nuget push ./BigRedProf.Data/bin/Release/BigRedProf.Data.*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }}  --source "github" --skip-duplicate
+      working-directory: src
     - name: Push BigRedProf.Data.PackRatCompiler package
-      run: dotnet nuget push ./src/BigRedProf.Data.PackRatCompiler/bin/Release/*.*nupkg --api-key ${{ secrets.GITHUB_TOKEN }}  --source "github" --skip-duplicate
+      run: dotnet nuget push ./BigRedProf.Data.PackRatCompiler/bin/Release/*.*nupkg --api-key ${{ secrets.GITHUB_TOKEN }}  --source "github" --skip-duplicate
+      working-directory: src
