@@ -49,7 +49,7 @@ namespace BigRedProf.Data.Test._TestHelpers
 			stdoutStreamWriter.AutoFlush = true;
 			using (CompilationContext compilationContext = new CompilationContext(stdoutStreamWriter, stdoutStreamWriter))
 			{
-				string hackHackProjectPath = @"../../../../src/Core/BigRedProf.Data.Core.csproj";
+				string hackHackProjectPath = @"../../../../Core/BigRedProf.Data.Core.csproj";
 				compilationContext.AddProject(new FileInfo(hackHackProjectPath));
 
 				PackRatGenerator packRatGenerator = new PackRatGenerator(compilationContext);
