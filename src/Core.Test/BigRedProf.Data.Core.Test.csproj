@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BigRedProf.Data\BigRedProf.Data.csproj" />
+    <ProjectReference Include="..\Core\BigRedProf.Data.Core.csproj" />
   </ItemGroup>
 
 </Project>

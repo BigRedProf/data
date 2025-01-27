@@ -45,7 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BigRedProf.Data.PackRatCompiler\BigRedProf.Data.PackRatCompiler.csproj" />
+    <ProjectReference Include="..\PackRatCompiler\BigRedProf.Data.PackRatCompiler.csproj" />
   </ItemGroup>
 
 </Project>
