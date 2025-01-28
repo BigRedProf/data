@@ -37,9 +37,12 @@ jobs:
       working-directory: src
     - name: Add NuGet Source
       run: dotnet nuget add source --username BigRedProf --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/BigRedProf/index.json"
-    - name: Push BigRedProf.Data package
+    - name: Push BigRedProf.Data.Core package
       run: dotnet nuget push ./Core/bin/Release/BigRedProf.Data.Core.*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }}  --source "github" --skip-duplicate
       working-directory: src
     - name: Push BigRedProf.Data.PackRatCompiler package
       run: dotnet nuget push ./PackRatCompiler/bin/Release/*.*nupkg --api-key ${{ secrets.GITHUB_TOKEN }}  --source "github" --skip-duplicate
+      working-directory: src
+    - name: Push BigRedProf.Data.Tape package
+      run: dotnet nuget push ./Core/bin/Release/BigRedProf.Data.Tape.*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }}  --source "github" --skip-duplicate
       working-directory: src
