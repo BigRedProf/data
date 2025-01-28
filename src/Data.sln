@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BigRedProf.Data.PackRatComp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BigRedProf.Data.Tape", "Tape\BigRedProf.Data.Tape.csproj", "{028D8547-F268-4CE3-BE2A-A3CBC65CCBC3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BigRedProf.Data.Tape.Test", "Tape.Test\BigRedProf.Data.Tape.Test.csproj", "{B0DE2C53-0453-4558-BDE2-0CB22B69703C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{028D8547-F268-4CE3-BE2A-A3CBC65CCBC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{028D8547-F268-4CE3-BE2A-A3CBC65CCBC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{028D8547-F268-4CE3-BE2A-A3CBC65CCBC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0DE2C53-0453-4558-BDE2-0CB22B69703C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0DE2C53-0453-4558-BDE2-0CB22B69703C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0DE2C53-0453-4558-BDE2-0CB22B69703C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0DE2C53-0453-4558-BDE2-0CB22B69703C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
