@@ -9,16 +9,16 @@ namespace BigRedProf.Data.Tape
 		/// The maximum length, in bits, for a tape's content.
 		/// </summary>
 		public const int MaxContentLength = 1_000_000_000; // 1 billion bits
-		#endregion 
+		#endregion
 
 		#region public methods
 		/// <summary>
 		/// Reads a portion of the tape starting at the specified offset.
 		/// </summary>
-		/// <param name="length">The number of bits to read.</param>
 		/// <param name="offset">The starting position in bits.</param>
+		/// <param name="length">The number of bits to read.</param>
 		/// <returns>The <see cref="Code"/> read from the tape.</returns>
-		public Code Read(int length, int offset)
+		public Code Read(int offset, int length)
 		{
 			if (offset < 0 || offset > MaxContentLength)
 			{
@@ -139,5 +139,3 @@ namespace BigRedProf.Data.Tape
 		#endregion
 	}
 }
-
-
