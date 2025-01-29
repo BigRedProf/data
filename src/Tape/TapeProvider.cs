@@ -118,8 +118,15 @@ namespace BigRedProf.Data.Tape
 				bytesToWrite[0] = firstByte;
 
 				// subsequent bytes are created by shifting bytes from our content bytes
-				for (int i = 0; i < byteLength - 1; ++i)
-					bytesToWrite[i] = (byte)((contentBytes[i] >> bitOffset) | (contentBytes[i + 1] << bitOffset));
+				int bytesToWriteIndex;
+				if (byteLength > 1)
+				{
+					for (bytesToWriteIndex = 1; bytesToWriteIndex < byteLength - 1; ++bytesToWriteIndex)
+						bytesToWrite[bytesToWriteIndex] = (byte)((contentBytes[bytesToWriteIndex - 1] >> 8 - bitOffset) | (contentBytes[bytesToWriteIndex] << bitOffset));
+
+					// except for the last byte which doesn't have an upper part to merge in
+					bytesToWrite[bytesToWriteIndex] = (byte)(contentBytes[bytesToWriteIndex - 1] >> 8 - bitOffset);
+				}
 			}
 
 			WriteInternal(bytesToWrite, byteStart, byteLength);
