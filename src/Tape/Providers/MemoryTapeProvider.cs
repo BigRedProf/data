@@ -17,40 +17,19 @@ namespace BigRedProf.Data.Tape.Providers
 		#endregion
 
 		#region TapeProvider methods
-		protected override Code ReadInternal(int length, int offset)
+		protected override byte[] ReadInternal(int byteOffset, int byteLength)
 		{
-			// Validate boundaries (already done in TapeProvider.ValidateRange)
-			var byteStart = offset / 8;
-			var bitOffset = offset % 8;
-			var byteEnd = (offset + length - 1) / 8;
-
-			// Allocate only the required portion of bytes
-			var resultBytes = new byte[byteEnd - byteStart + 1];
-			Array.Copy(_data, byteStart, resultBytes, 0, resultBytes.Length);
-
-			// Create a Code object from the relevant portion
-			return new Code(resultBytes, length, resultBytes[^1]); // Pass last byte to handle partial bits
+			var resultBytes = new byte[byteLength];
+			Array.Copy(_data, byteOffset, resultBytes, 0, byteLength);
+			return resultBytes;
 		}
 
-		protected override void WriteInternal(Code content, int offset)
+		protected override void WriteInternal(byte[] data, int byteOffset, int byteLength)
 		{
-			// Validate boundaries (already done in TapeProvider.ValidateRange)
-			var byteStart = offset / 8;
-			var bitOffset = offset % 8;
-			var dataBytes = content.ToByteArray();
-
-			for (int i = 0; i < dataBytes.Length; i++)
-			{
-				// Merge content into the target byte array
-				_data[byteStart + i] |= (byte)(dataBytes[i] >> bitOffset);
-
-				// Handle any carry-over bits
-				if (bitOffset > 0 && byteStart + i + 1 < _data.Length)
-				{
-					_data[byteStart + i + 1] |= (byte)(dataBytes[i] << (8 - bitOffset));
-				}
-			}
+			Array.Copy(data, 0, _data, byteOffset, byteLength);
 		}
 		#endregion
 	}
 }
+
+
