@@ -20,22 +20,49 @@ namespace BigRedProf.Data.Tape
 		/// <returns>The <see cref="Code"/> read from the tape.</returns>
 		public Code Read(int length, int offset)
 		{
-			ValidateRange(offset, length);
+			if (offset < 0 || offset > MaxContentLength)
+			{
+				throw new ArgumentOutOfRangeException(
+					nameof(offset), 
+					$"Offset must be in the range [0, {MaxContentLength}]"
+				);
+			}
+
+			if (length < 1 || offset + length > MaxContentLength)
+			{
+				throw new ArgumentOutOfRangeException(
+					nameof(length),
+					$"Length must be at least 1 and when added to the 'offset' parameter " +
+					$"cannot exceed {MaxContentLength}."
+				);
+			}
 
 			int byteStart = offset / 8;
 			int bitOffset = offset % 8;
 			int byteLength = ((offset + length - 1) / 8) - byteStart + 1;
 
-			byte[] rawBytes = ReadInternal(byteStart, byteLength);
+			byte[] contentBytes = ReadInternal(byteStart, byteLength);
 
 			// Fast path: Byte-aligned read
 			if (bitOffset == 0 && length % 8 == 0)
 			{
-				return new Code(rawBytes, length);
+				Code code = new Code(contentBytes);
+				return code;
 			}
 
 			// Slow path: Unaligned read, use bitwise shifting
-			return ExtractBits(rawBytes, bitOffset, length);
+			byte[] bytesToEncode = new byte[(length + 7) / 8];
+
+			for (int i = 0; i < bytesToEncode.Length; i++)
+			{
+				bytesToEncode[i] = (byte)(contentBytes[i] >> bitOffset);
+				if (i + 1 < contentBytes.Length)
+				{
+					bytesToEncode[i] |= (byte)(contentBytes[i + 1] << (8 - bitOffset));
+				}
+			}
+
+			return new Code(bytesToEncode, length);
 		}
 
 		/// <summary>
@@ -45,48 +72,57 @@ namespace BigRedProf.Data.Tape
 		/// <param name="offset">The starting position in bits.</param>
 		public void Write(Code content, int offset)
 		{
-			ValidateRange(offset, content.Length);
+			if (offset < 0 || offset > MaxContentLength)
+			{
+				throw new ArgumentOutOfRangeException(
+					nameof(offset),
+					$"Offset must be in the range [0, {MaxContentLength}]"
+				);
+			}
+
+			if (offset + content.Length > MaxContentLength)
+			{
+				throw new ArgumentOutOfRangeException(
+					nameof(content),
+					$"Content length when added to the 'offset' parameter " +
+					$"cannot exceed {MaxContentLength}."
+				);
+			}
 
 			int byteStart = offset / 8;
 			int bitOffset = offset % 8;
 			int byteLength = ((offset + content.Length - 1) / 8) - byteStart + 1;
 
-			byte[] rawBytes = new byte[byteLength];
-
-			// Read existing data in case we need to merge partial bytes
-			if (bitOffset != 0 || content.Length % 8 != 0)
-			{
-				rawBytes = ReadInternal(byteStart, byteLength);
-			}
+			byte[] contentBytes = content.ToByteArray();
 
 			// Fast path: Byte-aligned write
 			if (bitOffset == 0 && content.Length % 8 == 0)
 			{
-				Array.Copy(content.ToByteArray(), 0, rawBytes, 0, rawBytes.Length);
+				WriteInternal(contentBytes, byteStart, byteLength);
+				return;
+			}
+
+			// Slow path: Create the byte array shifting each byte as needed
+			byte[] bytesToWrite = new byte[byteLength];
+			if (bitOffset == 0)
+			{
+				// we start aligned, so just shift each byte
+				for (int i = 0; i < byteLength - 1; ++i)
+					bytesToWrite[i] = (byte)((contentBytes[i] >> bitOffset) | (contentBytes[i + 1] << bitOffset));
 			}
 			else
 			{
-				// Slow path: Use bitwise merging to handle unaligned writes
-				MergeBits(rawBytes, content.ToByteArray(), bitOffset, content.Length);
+				// we need to read one existing byte on tape to help calculate are first byte
+				byte firstByte = ReadInternal(byteStart, 1)[0];
+				firstByte |= (byte)(contentBytes[0] << bitOffset);
+				bytesToWrite[0] = firstByte;
+
+				// subsequent bytes are created by shifting bytes from our content bytes
+				for (int i = 0; i < byteLength - 1; ++i)
+					bytesToWrite[i] = (byte)((contentBytes[i] >> bitOffset) | (contentBytes[i + 1] << bitOffset));
 			}
 
-			WriteInternal(rawBytes, byteStart, byteLength);
-		}
-		#endregion
-
-		#region protected methods
-		/// <summary>
-		/// Validates the requested offset and length.
-		/// </summary>
-		/// <param name="offset">The starting position in bits.</param>
-		/// <param name="length">The number of bits to process.</param>
-		protected void ValidateRange(int offset, int length)
-		{
-			if (offset < 0 || offset >= MaxContentLength)
-				throw new ArgumentOutOfRangeException(nameof(offset), "Offset is out of bounds.");
-
-			if (length <= 0 || offset + length > MaxContentLength)
-				throw new ArgumentOutOfRangeException(nameof(length), "Length exceeds tape bounds.");
+			WriteInternal(bytesToWrite, byteStart, byteLength);
 		}
 		#endregion
 
@@ -100,42 +136,6 @@ namespace BigRedProf.Data.Tape
 		/// Writes content to the tape. Must be implemented by subclasses.
 		/// </summary>
 		protected abstract void WriteInternal(byte[] data, int byteOffset, int byteLength);
-		#endregion
-
-		#region private methods
-		/// <summary>
-		/// Extracts bits from a byte array when the offset is not byte-aligned.
-		/// </summary>
-		private Code ExtractBits(byte[] rawBytes, int bitOffset, int length)
-		{
-			byte[] alignedBytes = new byte[(length + 7) / 8];
-
-			for (int i = 0; i < alignedBytes.Length; i++)
-			{
-				alignedBytes[i] = (byte)(rawBytes[i] << bitOffset);
-				if (i + 1 < rawBytes.Length)
-				{
-					alignedBytes[i] |= (byte)(rawBytes[i + 1] >> (8 - bitOffset));
-				}
-			}
-
-			return new Code(alignedBytes, length);
-		}
-
-		/// <summary>
-		/// Merges bitwise unaligned writes into an existing byte array.
-		/// </summary>
-		private void MergeBits(byte[] target, byte[] source, int bitOffset, int length)
-		{
-			for (int i = 0; i < source.Length; i++)
-			{
-				target[i] |= (byte)(source[i] >> bitOffset);
-				if (bitOffset > 0 && i + 1 < target.Length)
-				{
-					target[i + 1] |= (byte)(source[i] << (8 - bitOffset));
-				}
-			}
-		}
 		#endregion
 	}
 }
