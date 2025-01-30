@@ -1,9 +1,7 @@
-﻿using BigRedProf.Data.Tape.Providers;
-using BigRedProf.Data.Tape._TestHelpers;
-using System;
-using Xunit;
+﻿using BigRedProf.Data.Tape._TestHelpers;
+using BigRedProf.Data.Tape.Providers.Memory;
 
-namespace BigRedProf.Data.Tape.Test.TapeProviders
+namespace BigRedProf.Data.Tape.Test.Providers.Memory
 {
 	public class MemoryTapeProviderTests
 	{
@@ -117,7 +115,7 @@ namespace BigRedProf.Data.Tape.Test.TapeProviders
 			TapeProviderHelper.TestWriteAndReadRoundTrip(provider, content, offset);
 		}
 
- 		[Trait("Region", "MemoryTapeProvider methods")]
+		[Trait("Region", "MemoryTapeProvider methods")]
 		[Fact]
 		public void WriteAndReadRoundTrip_AtEnd_ShouldWork()
 		{

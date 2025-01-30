@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BigRedProf.Data.Tape.Providers
+namespace BigRedProf.Data.Tape.Providers.Memory
 {
 	public class MemoryTapeProvider : TapeProvider
 	{
@@ -31,5 +31,3 @@ namespace BigRedProf.Data.Tape.Providers
 		#endregion
 	}
 }
-
-
