@@ -2,7 +2,7 @@
 
 The **BigRedProf.Data.Tape** library provides a structured way to store and manage large datasets across multiple tapes. Each **tape** consists of data (called **content**) and metadata (called a  **label**). The content of each tape is capped at one billion bits. Large data sets, like backups, can be spread accross multiple tapes using labels to help manage the tape relationships and ensure data integrity.
 
-## Glossary
+## **📌 Glossary**
 
 **tape** - a storage container consisting of a header, label, and content
 
@@ -18,7 +18,7 @@ The **BigRedProf.Data.Tape** library provides a structured way to store and mana
 
 ---
 
-## **\ud83d\udccc Tape Structure**
+## **📌 Tape Structure**
 Each **tape** consists of **three parts**:
 
 | **Section**  | **Size**          | **Description** |
@@ -29,14 +29,14 @@ Each **tape** consists of **three parts**:
 
 ---
 
-## ** Header **
+## **📌 Header**
 The header begins with a **100-byte ASCII string** that can be read easily via `cat` or `head -c 100` from disk tapes.
 
 The remaining 25 bytes contain things like the length of the packed label.
 
 
 
-## **\ud83d\udccc Well-Known Traits**
+## **📌 Well-Known Traits**
 Tapes support **arbitrary metadata traits**, but the following **well-known traits** help with **managing multi-tape archives**:
 
 | **Trait**               | **Description** |
@@ -49,26 +49,26 @@ Tapes support **arbitrary metadata traits**, but the following **well-known trai
 
 ---
 
-## **\ud83d\udccc Fun Stuff**
+## **📌 Fun Stuff**
 Since the **header is human-readable**, you can inspect tapes with standard UNIX commands:
 
-#### **\ud83d\udcdd See the Header of All Tapes in a Directory**
+#### **📝 See the Header of All Tapes in a Directory**
 ```bash
 head -c 125 *
 ```
-#### **\ud83d\udcdd See the First 125 Characters of Each File**
+#### **📝 See the First 125 Characters of Each File**
 ```bash
 for file in *; do [ -f "$file" ] && head -c 125 "$file" && echo ""; done
 ```
-#### **\ud83d\udcdd See Series Names and Numbers**
+#### **📝 See Series Names and Numbers**
 ```bash
 for file in *; do [ -f "$file" ] && head -c 125 "$file" | grep "Series"; done
 ```
 
 ---
 
-## **\ud83d\udccc License**
+## **📌 License**
 BigRedProf.Data is licensed under the **MIT License**. See `LICENSE` for details.
 
-## **\ud83d\udccc Contact**
+## **📌 Contact**
 For questions, suggestions, or issues, contact **Professor** at [BigRedProf@outlook.com](mailto:BigRedProf@outlook.com).
