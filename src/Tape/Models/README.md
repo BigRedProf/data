@@ -1,0 +1,2 @@
+# BigRedProf.Data.Tape.Models
+Normally, we would define models in their own dedicated project. But, since we only plan to have one model, `TapeModel`, and won't be using the Pack Rat Compiler to generate its pack rats, we'll just define the models in the main `BigRedProf.Data.Tape` project for now.
