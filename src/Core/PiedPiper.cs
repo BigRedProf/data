@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace BigRedProf.Data
 {
@@ -47,7 +48,10 @@ namespace BigRedProf.Data
 			RegisterPackRat<ModelWithSchemaAndLength>(new ModelWithSchemaAndLengthPackRat(this), CoreSchema.ModelWithSchemaAndLength);
 			RegisterPackRat<ModelWithSchema>(new ModelWithSchemaPackRat(this), CoreSchema.ModelWithSchema);
 			RegisterPackRat<float>(new SinglePackRat(this), CoreSchema.Single);
-			RegisterPackRat<string>(new TextPackRat(this), CoreSchema.TextUtf8);
+			RegisterPackRat<string>(new TextPackRat(this, Encoding.ASCII), CoreSchema.TextAscii);
+			RegisterPackRat<string>(new TextPackRat(this, Encoding.UTF8), CoreSchema.TextUtf8);
+			RegisterPackRat<string>(new TextPackRat(this, Encoding.Unicode), CoreSchema.TextUtf16);
+			RegisterPackRat<string>(new TextPackRat(this, Encoding.UTF32), CoreSchema.TextUtf32);
 			RegisterPackRat<int>(new WholeNumberPackRat(this, 1), CoreSchema.WholeNumber1);
 			RegisterPackRat<int>(new WholeNumberPackRat(this, 2), CoreSchema.WholeNumber2);
 			RegisterPackRat<int>(new WholeNumberPackRat(this, 3), CoreSchema.WholeNumber3);

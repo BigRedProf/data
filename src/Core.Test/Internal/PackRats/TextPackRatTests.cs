@@ -1,20 +1,39 @@
 using BigRedProf.Data.Internal.PackRats;
 using BigRedProf.Data.Test._TestHelpers;
 using System;
-using System.IO;
+using System.Text;
 using Xunit;
 
 namespace BigRedProf.Data.Test
 {
 	public class TextPackRatTests
 	{
+		#region test data
+		public static readonly Encoding[] SupportedEncodings = new Encoding[]
+		{
+			Encoding.ASCII,
+			Encoding.UTF8,
+			Encoding.Unicode, // UTF-16
+			Encoding.UTF32
+		};
+
+		public static TheoryData<Encoding> GetEncodings()
+		{
+			var data = new TheoryData<Encoding>();
+			foreach (var encoding in SupportedEncodings)
+				data.Add(encoding);
+			return data;
+		}
+		#endregion
+
 		#region PackRat methods
-		[Fact]
+		[Theory]
 		[Trait("Region", "PackRat methods")]
-		public void PackModel_ShouldThrowWhenWriterIsNull()
+		[MemberData(nameof(GetEncodings))]
+		public void PackModel_ShouldThrowWhenWriterIsNull(Encoding encoding)
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
-			TextPackRat packRat = new TextPackRat(piedPiper);
+			TextPackRat packRat = new TextPackRat(piedPiper, encoding);
 			string model = string.Empty;
 
 			Assert.Throws<ArgumentNullException>(
@@ -25,21 +44,23 @@ namespace BigRedProf.Data.Test
 			);
 		}
 
-		[Fact]
+		[Theory]
 		[Trait("Region", "PackRat methods")]
-		public void PackModel_ShouldWork()
+		[MemberData(nameof(GetEncodings))]
+		public void PackModel_ShouldWork(Encoding encoding)
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
-			PackRat<string> packRat = new TextPackRat(piedPiper);
+			PackRat<string> packRat = new TextPackRat(piedPiper, encoding);
 			PackRatTestHelper.TestPackModel<string>(packRat, string.Empty, "1000");
 		}
 
-		[Fact]
+		[Theory]
 		[Trait("Region", "PackRat methods")]
-		public void UnpackModel_ShouldThrowWhenReaderIsNull()
+		[MemberData(nameof(GetEncodings))]
+		public void UnpackModel_ShouldThrowWhenReaderIsNull(Encoding encoding)
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
-			TextPackRat packRat = new TextPackRat(piedPiper);
+			TextPackRat packRat = new TextPackRat(piedPiper, encoding);
 
 			Assert.Throws<ArgumentNullException>(
 				() =>
@@ -49,14 +70,16 @@ namespace BigRedProf.Data.Test
 			);
 		}
 
-		[Fact]
+		[Theory]
 		[Trait("Region", "PackRat methods")]
-		public void UnpackModel_ShouldWorkForTrue()
+		[MemberData(nameof(GetEncodings))]
+		public void UnpackModel_ShouldWorkForTrue(Encoding encoding)
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
-			PackRat<string> packRat = new TextPackRat(piedPiper);
+			PackRat<string> packRat = new TextPackRat(piedPiper, encoding);
 			PackRatTestHelper.TestUnpackModel<string>(packRat, "1000", string.Empty);
 		}
+
 		#endregion
 	}
 }

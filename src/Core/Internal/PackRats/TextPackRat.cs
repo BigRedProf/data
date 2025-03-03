@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace BigRedProf.Data.Internal.PackRats
@@ -7,9 +6,32 @@ namespace BigRedProf.Data.Internal.PackRats
 	internal class TextPackRat : PackRat<string>
 	{
 		#region constructors
-		public TextPackRat(IPiedPiper piedPiper)
+		public TextPackRat(IPiedPiper piedPiper, Encoding encoding)
 			: base(piedPiper)
 		{
+			Encoding = encoding;
+		}
+		#endregion
+
+		#region properties
+		public Encoding Encoding
+		{
+			get;
+			private set;
+		}
+		#endregion
+
+		#region methods
+		public void PackModelWithoutLength(CodeWriter writer, string model)
+		{
+			byte[] bytes = Encoding.GetBytes(model);
+			PackTextBytes(writer, bytes);
+		}
+
+		public string UnpackModelWithoutLength(CodeReader reader, int lengthOfEncodedBytes)
+		{
+			byte[] bytes = UnpackTextBytes(reader, lengthOfEncodedBytes);
+			return Encoding.GetString(bytes);
 		}
 		#endregion
 
@@ -19,14 +41,9 @@ namespace BigRedProf.Data.Internal.PackRats
 			if(writer == null)
 				throw new ArgumentNullException(nameof(writer));
 
-			byte[] bytes = Encoding.UTF8.GetBytes(model);
-			PiedPiper.GetPackRat<int>(CoreSchema.EfficientWholeNumber31).PackModel(writer, bytes.Length);
-			if(bytes.LongLength != 0)
-			{
-				Code code = new Code(bytes);
-				writer.AlignToNextByteBoundary();
-				writer.WriteCode(code);
-			}	
+			byte[] bytes = Encoding.GetBytes(model);
+			PiedPiper.PackModel(writer, bytes.Length, CoreSchema.EfficientWholeNumber31);
+			PackTextBytes(writer, bytes);
 		}
 
 		public override string UnpackModel(CodeReader reader)
@@ -42,12 +59,30 @@ namespace BigRedProf.Data.Internal.PackRats
 			}
 			else
 			{
-				reader.AlignToNextByteBoundary();
-				Code code = reader.Read(byteCount * 8);
-				model = Encoding.UTF8.GetString(code.ByteArray);
+				byte[] textBytes = UnpackTextBytes(reader, byteCount);
+				model = Encoding.GetString(textBytes);
 			}
 
 			return model;
+		}
+		#endregion
+
+		#region private methods
+		private void PackTextBytes(CodeWriter writer, byte[] bytes)
+		{
+			if (bytes.LongLength != 0)
+			{
+				Code code = new Code(bytes);
+				writer.AlignToNextByteBoundary();
+				writer.WriteCode(code);
+			}
+		}
+
+		private byte[] UnpackTextBytes(CodeReader reader, int length)
+		{
+			reader.AlignToNextByteBoundary();
+			Code code = reader.Read(length * 8);
+			return code.ByteArray;
 		}
 		#endregion
 	}

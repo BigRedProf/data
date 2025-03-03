@@ -142,11 +142,6 @@
 		public const string TextAscii = "af494088-5e94-44bf-81d9-e0bcd62df092";
 
 		/// <summary>
-		/// The schema identifier for UTF-7-encoded text.
-		/// </summary>
-		public const string TextUtf7 = "4a7d3fe3-5945-4d25-ae6a-ce19f24e038c";
-
-		/// <summary>
 		/// The schema identifier for UTF-8-encoded text.
 		/// </summary>
 		public const string TextUtf8 = "9cdf52b4-4c47-4b6d-bc17-34f33312b7a7";
