@@ -4,10 +4,10 @@ using System.Text;
 
 namespace BigRedProf.Data.Internal.PackRats
 {
-	internal class StringPackRat : PackRat<string>
+	internal class TextPackRat : PackRat<string>
 	{
 		#region constructors
-		public StringPackRat(IPiedPiper piedPiper)
+		public TextPackRat(IPiedPiper piedPiper)
 			: base(piedPiper)
 		{
 		}

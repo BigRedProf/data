@@ -28,7 +28,7 @@ namespace BigRedProf.Data
 		PackRat<T> GetPackRat<T>(AttributeFriendlyGuid schemaId);
 
 		/// <summary>
-		/// Registers all the core pack rats such as <see cref="BooleanPackRat"/>, <see cref="StringPackRat"/>,
+		/// Registers all the core pack rats such as <see cref="BooleanPackRat"/>, <see cref="TextPackRat"/>,
 		/// and <see cref="Int32PackRat"/>.
 		/// </summary>
 		void RegisterCorePackRats();
@@ -143,7 +143,7 @@ namespace BigRedProf.Data
 		/// <param name="schemaId">The schema identifier.</param>
 		/// <param name="byteAligned">Controls the packing size of the null marker.</param>
 		/// <returns>The model.</returns>
-		M UnpackNullableModel<M>(CodeReader reader, AttributeFriendlyGuid schemaId, ByteAligned byteAligned);			
+		M UnpackNullableModel<M>(CodeReader reader, AttributeFriendlyGuid schemaId, ByteAligned byteAligned);
 
 		/// <summary>
 		/// Packs a list using the specified list element pack rat.
@@ -191,14 +191,14 @@ namespace BigRedProf.Data
 		/// <returns>The code.</returns>
 		Code EncodeModel<M>(M model, AttributeFriendlyGuid schemaId);
 
-        /// <summary>
-        /// Decodes a model using the <see cref="PackRat{M}"/> registered for the provided schema.
-        /// </summary>
-        /// <typeparam name="M"></typeparam>
-        /// <param name="code">The encoded model.</param>
-        /// <param name="schemaId">The schema identifier.</param>
-        /// <returns>The model.</returns>
-        M DecodeModel<M>(Code code, AttributeFriendlyGuid schemaId);
+		/// <summary>
+		/// Decodes a model using the <see cref="PackRat{M}"/> registered for the provided schema.
+		/// </summary>
+		/// <typeparam name="M"></typeparam>
+		/// <param name="code">The encoded model.</param>
+		/// <param name="schemaId">The schema identifier.</param>
+		/// <returns>The model.</returns>
+		M DecodeModel<M>(Code code, AttributeFriendlyGuid schemaId);
 
 		/// <summary>
 		/// Stores a <see cref="Code"/> to an array of bytes. The resulting byte array will include

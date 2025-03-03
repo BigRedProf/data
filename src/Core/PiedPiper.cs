@@ -47,7 +47,7 @@ namespace BigRedProf.Data
 			RegisterPackRat<ModelWithSchemaAndLength>(new ModelWithSchemaAndLengthPackRat(this), CoreSchema.ModelWithSchemaAndLength);
 			RegisterPackRat<ModelWithSchema>(new ModelWithSchemaPackRat(this), CoreSchema.ModelWithSchema);
 			RegisterPackRat<float>(new SinglePackRat(this), CoreSchema.Single);
-			RegisterPackRat<string>(new StringPackRat(this), CoreSchema.TextUtf8);
+			RegisterPackRat<string>(new TextPackRat(this), CoreSchema.TextUtf8);
 			RegisterPackRat<int>(new WholeNumberPackRat(this, 1), CoreSchema.WholeNumber1);
 			RegisterPackRat<int>(new WholeNumberPackRat(this, 2), CoreSchema.WholeNumber2);
 			RegisterPackRat<int>(new WholeNumberPackRat(this, 3), CoreSchema.WholeNumber3);

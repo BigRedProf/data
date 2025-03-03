@@ -6,7 +6,7 @@ using Xunit;
 
 namespace BigRedProf.Data.Test
 {
-	public class StringPackRatTests
+	public class TextPackRatTests
 	{
 		#region PackRat methods
 		[Fact]
@@ -14,7 +14,7 @@ namespace BigRedProf.Data.Test
 		public void PackModel_ShouldThrowWhenWriterIsNull()
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
-			StringPackRat packRat = new StringPackRat(piedPiper);
+			TextPackRat packRat = new TextPackRat(piedPiper);
 			string model = string.Empty;
 
 			Assert.Throws<ArgumentNullException>(
@@ -30,7 +30,7 @@ namespace BigRedProf.Data.Test
 		public void PackModel_ShouldWork()
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
-			PackRat<string> packRat = new StringPackRat(piedPiper);
+			PackRat<string> packRat = new TextPackRat(piedPiper);
 			PackRatTestHelper.TestPackModel<string>(packRat, string.Empty, "1000");
 		}
 
@@ -39,7 +39,7 @@ namespace BigRedProf.Data.Test
 		public void UnpackModel_ShouldThrowWhenReaderIsNull()
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
-			StringPackRat packRat = new StringPackRat(piedPiper);
+			TextPackRat packRat = new TextPackRat(piedPiper);
 
 			Assert.Throws<ArgumentNullException>(
 				() =>
@@ -54,7 +54,7 @@ namespace BigRedProf.Data.Test
 		public void UnpackModel_ShouldWorkForTrue()
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
-			PackRat<string> packRat = new StringPackRat(piedPiper);
+			PackRat<string> packRat = new TextPackRat(piedPiper);
 			PackRatTestHelper.TestUnpackModel<string>(packRat, "1000", string.Empty);
 		}
 		#endregion
