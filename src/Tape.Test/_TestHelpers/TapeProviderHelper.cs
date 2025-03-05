@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using BigRedProf.Data.Core;
+using Xunit;
 
 namespace BigRedProf.Data.Tape._TestHelpers
 {

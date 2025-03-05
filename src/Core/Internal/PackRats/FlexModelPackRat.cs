@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace BigRedProf.Data.Internal.PackRats
+namespace BigRedProf.Data.Core.Internal.PackRats
 {
 	internal class FlexModelPackRat : PackRat<FlexModel>
 	{

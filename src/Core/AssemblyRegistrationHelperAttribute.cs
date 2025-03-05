@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BigRedProf.Data
+namespace BigRedProf.Data.Core
 {
 	/// <summary>
 	/// Identifies an assembly registration helper as the official one for pack rats to use

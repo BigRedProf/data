@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BigRedProf.Data
+namespace BigRedProf.Data.Core
 {
 	/// <summary>
 	/// Allows the pack rat compiler to generate code to help with assembly registration.

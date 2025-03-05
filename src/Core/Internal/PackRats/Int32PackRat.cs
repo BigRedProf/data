@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BigRedProf.Data.Internal.PackRats
+namespace BigRedProf.Data.Core.Internal.PackRats
 {
 	internal class Int32PackRat : PackRat<int>
 	{

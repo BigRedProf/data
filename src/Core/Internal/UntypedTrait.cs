@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BigRedProf.Data.Internal
+namespace BigRedProf.Data.Core.Internal
 {
 	/// <summary>
 	/// This class is useful because it allows FlexModel's internal dictionary to store

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BigRedProf.Data
+namespace BigRedProf.Data.Core
 {
 	/// <summary>
 	/// Instructs the pack rat compiler to generate a <see cref="PackRat"/> for this

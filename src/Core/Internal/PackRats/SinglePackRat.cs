@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BigRedProf.Data.Internal.PackRats
+namespace BigRedProf.Data.Core.Internal.PackRats
 {
 	internal class SinglePackRat : PackRat<float>
 	{

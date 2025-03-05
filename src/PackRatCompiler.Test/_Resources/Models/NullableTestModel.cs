@@ -1,4 +1,4 @@
-﻿using BigRedProf.Data;
+﻿using BigRedProf.Data.Core;
 
 namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 {

@@ -1,8 +1,8 @@
-﻿using BigRedProf.Data.PackRats;
+﻿using BigRedProf.Data.Core.PackRats;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace BigRedProf.Data
+namespace BigRedProf.Data.Core
 {
 	/// <summary>
 	/// A service for work withing models and <see cref="PackRat"/>s.

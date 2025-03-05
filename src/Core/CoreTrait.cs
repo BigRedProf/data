@@ -1,4 +1,4 @@
-﻿namespace BigRedProf.Data
+﻿namespace BigRedProf.Data.Core
 {
 	/// <summary>
 	/// Contains the list of core trait identifiers.

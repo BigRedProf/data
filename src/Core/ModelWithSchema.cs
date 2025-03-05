@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BigRedProf.Data
+namespace BigRedProf.Data.Core
 {
 	/// <summary>
 	/// Represents a model with its schema. This can be useful when you store multiple models

@@ -1,9 +1,8 @@
-﻿using BigRedProf.Data.Core.PackRats;
+﻿using BigRedProf.Data.Core;
+using BigRedProf.Data.Core.PackRats;
 using BigRedProf.Data.Tape.Models;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
 using System.Text;
 
 namespace BigRedProf.Data.Tape.PackRats

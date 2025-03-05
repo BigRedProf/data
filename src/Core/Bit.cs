@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace BigRedProf.Data
+namespace BigRedProf.Data.Core
 {
 	public struct Bit
 	{

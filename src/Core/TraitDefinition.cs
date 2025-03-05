@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BigRedProf.Data
+namespace BigRedProf.Data.Core
 {
 	/// <summary>
 	/// A trait definition defines a type of trait.

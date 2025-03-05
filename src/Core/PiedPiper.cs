@@ -1,14 +1,13 @@
 ﻿using BigRedProf.Data.Core.Internal.PackRats;
-using BigRedProf.Data.Internal;
-using BigRedProf.Data.Internal.PackRats;
-using BigRedProf.Data.PackRats;
+using BigRedProf.Data.Core.Internal;
+using BigRedProf.Data.Core.PackRats;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
+using BigRedProf.Data.Core;
 
 namespace BigRedProf.Data
 {

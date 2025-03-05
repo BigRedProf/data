@@ -1,11 +1,8 @@
-﻿using BigRedProf.Data.Internal;
+﻿using BigRedProf.Data.Core.Internal;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 
-namespace BigRedProf.Data
+namespace BigRedProf.Data.Core
 {
 	/// <summary>
 	/// Allows custom code to be executed when the host calls 

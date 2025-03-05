@@ -1,5 +1,5 @@
-﻿using System.IO;
-using System.Reflection;
+﻿using BigRedProf.Data.Core;
+using System.IO;
 using Xunit;
 
 namespace BigRedProf.Data.Test._TestHelpers

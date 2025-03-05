@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BigRedProf.Data
+namespace BigRedProf.Data.Core
 {
 	/// <summary>
 	/// A wrapper class that effectively allows <see cref="Guid"/> objects to be used

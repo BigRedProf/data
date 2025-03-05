@@ -1,19 +1,10 @@
-﻿using BigRedProf.Data.Internal.PackRats;
+﻿using BigRedProf.Data.Core;
 using BigRedProf.Data.PackRatCompiler;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.MSBuild;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace BigRedProf.Data.Test._TestHelpers
 {

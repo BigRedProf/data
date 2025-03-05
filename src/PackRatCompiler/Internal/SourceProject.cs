@@ -29,7 +29,7 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 		public IEnumerable<INamedTypeSymbol> GetGeneratePackRatClasses()
 		{
 			return SymbolHelper.GetTypes(_compilationContext.Compilation.GlobalNamespace)
-				.Where(t => SymbolHelper.HasAttribute(t, "BigRedProf.Data.GeneratePackRat"));
+				.Where(t => SymbolHelper.HasAttribute(t, "BigRedProf.Data.Core.GeneratePackRat"));
 		}
 
 		/// <summary>
@@ -39,7 +39,7 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 		public IEnumerable<INamedTypeSymbol> GetAssemblyPackRatClasses()
 		{
 			return SymbolHelper.GetTypes(_compilationContext.Compilation.GlobalNamespace)
-				.Where(t => SymbolHelper.HasAttribute(t, "BigRedProf.Data.AssemblyPackRat"));
+				.Where(t => SymbolHelper.HasAttribute(t, "BigRedProf.Data.Core.AssemblyPackRat"));
 		}
 
 		public void PrintMembers(ISymbol symbol)

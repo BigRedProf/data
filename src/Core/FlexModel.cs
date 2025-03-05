@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using BigRedProf.Data.Internal;
+using BigRedProf.Data.Core;
+using BigRedProf.Data.Core.Internal;
 
 namespace BigRedProf.Data
 {

@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-namespace BigRedProf.Data
+namespace BigRedProf.Data.Core
 {
 	public class CodeReader : IDisposable
 	{

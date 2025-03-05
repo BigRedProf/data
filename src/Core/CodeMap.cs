@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace BigRedProf.Data
+namespace BigRedProf.Data.Core
 {
 	public class CodeMap
 	{

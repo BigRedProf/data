@@ -1,6 +1,6 @@
 ﻿using BigRedProf.Data.Tape;
-using BigRedProf.Data;
 using System;
+using BigRedProf.Data.Core;
 
 public class TapeRecorder : TapeMover
 {

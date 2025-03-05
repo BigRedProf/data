@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BigRedProf.Data.Internal
+namespace BigRedProf.Data.Core.Internal
 {
 	internal interface IBitAwareStream
 	{

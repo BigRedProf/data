@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace BigRedProf.Data.PackRats
+namespace BigRedProf.Data.Core.PackRats
 {
 	/// <summary>
 	/// The <see cref="TokenizedModelPackRat{TValue}"/> encodes potentially large models that are repeated

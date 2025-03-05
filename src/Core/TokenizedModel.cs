@@ -1,4 +1,4 @@
-﻿namespace BigRedProf.Data
+﻿namespace BigRedProf.Data.Core
 {
 	public struct TokenizedModel<TModel>
 	{

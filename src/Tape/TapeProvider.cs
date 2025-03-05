@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BigRedProf.Data.Core;
+using System;
 
 namespace BigRedProf.Data.Tape
 {

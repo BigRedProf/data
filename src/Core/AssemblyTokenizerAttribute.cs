@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BigRedProf.Data
+namespace BigRedProf.Data.Core
 {
 	/// <summary>
 	/// Identifies a <see cref="Tokenizer{TModel}"/> as needing to be registered when 

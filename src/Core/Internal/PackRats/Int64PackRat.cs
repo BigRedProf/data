@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BigRedProf.Data.Internal.PackRats
+namespace BigRedProf.Data.Core.Internal.PackRats
 {
 	internal class Int64PackRat : PackRat<long>
 	{

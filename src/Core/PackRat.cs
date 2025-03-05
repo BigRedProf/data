@@ -1,7 +1,5 @@
-﻿using BigRedProf.Data.Internal.PackRats;
+﻿using BigRedProf.Data.Core;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace BigRedProf.Data
 {

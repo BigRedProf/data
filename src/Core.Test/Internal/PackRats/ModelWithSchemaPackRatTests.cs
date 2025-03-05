@@ -1,7 +1,7 @@
-using BigRedProf.Data.Internal.PackRats;
+using BigRedProf.Data.Core;
+using BigRedProf.Data.Core.Internal.PackRats;
 using BigRedProf.Data.Test._TestHelpers;
 using System;
-using System.Diagnostics;
 using Xunit;
 
 namespace BigRedProf.Data.Test

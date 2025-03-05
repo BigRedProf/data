@@ -1,9 +1,8 @@
-﻿using BigRedProf.Data.Internal;
+﻿using BigRedProf.Data.Core;
+using BigRedProf.Data.Core.Internal;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 
 namespace BigRedProf.Data
 {

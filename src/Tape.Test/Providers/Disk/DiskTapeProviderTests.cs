@@ -1,4 +1,5 @@
-﻿using BigRedProf.Data.Tape._TestHelpers;
+﻿using BigRedProf.Data.Core;
+using BigRedProf.Data.Tape._TestHelpers;
 using BigRedProf.Data.Tape.Providers.Disk;
 
 namespace BigRedProf.Data.Tape.Test.Providers.Disk

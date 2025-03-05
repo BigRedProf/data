@@ -1,12 +1,6 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using BigRedProf.Data.Core;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
-using System;
-using System.Collections.Generic;
-using System.Data.SqlTypes;
-using System.Diagnostics.Tracing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 {
@@ -93,8 +87,8 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 			return GetFieldsAndProperties(modelClass).
 				Where(
 					f => 
-						HasAttribute(f, "BigRedProf.Data.PackField")
-						|| HasAttribute(f, "BigRedProf.Data.PackListField")
+						HasAttribute(f, "BigRedProf.Data.Core.PackField")
+						|| HasAttribute(f, "BigRedProf.Data.Core.PackListField")
 					)
 				.Select(m =>
 					{
@@ -113,11 +107,11 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 
 		public static PackFieldInfo CreatePackFieldInfo(IFieldSymbol field)
 		{
-			AttributeData? packListFieldAttribute = GetAttributes(field, "BigRedProf.Data.PackListField").FirstOrDefault();
+			AttributeData? packListFieldAttribute = GetAttributes(field, "BigRedProf.Data.Core.PackListField").FirstOrDefault();
 			if (packListFieldAttribute != null)
 				return CreatePackListFieldInfo(field);
 
-			AttributeData packFieldAttribute = GetAttributes(field, "BigRedProf.Data.PackField").First();
+			AttributeData packFieldAttribute = GetAttributes(field, "BigRedProf.Data.Core.PackField").First();
 
 			string type = field.Type.ToDisplayString();
 			LinePosition startLinePosition = field.Locations[0].GetLineSpan().StartLinePosition;
@@ -148,11 +142,11 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 
 		public static PackFieldInfo CreatePackFieldInfo(IPropertySymbol property)
 		{
-			AttributeData? packListFieldAttribute = GetAttributes(property, "BigRedProf.Data.PackListField").FirstOrDefault();
+			AttributeData? packListFieldAttribute = GetAttributes(property, "BigRedProf.Data.Core.PackListField").FirstOrDefault();
 			if (packListFieldAttribute != null)
 				return CreatePackListFieldInfo(property);
 
-			AttributeData packFieldAttribute = GetAttributes(property, "BigRedProf.Data.PackField").First();
+			AttributeData packFieldAttribute = GetAttributes(property, "BigRedProf.Data.Core.PackField").First();
 
 			string type = property.Type.ToDisplayString();
 			LinePosition startLinePosition = property.Locations[0].GetLineSpan().StartLinePosition;
@@ -183,7 +177,7 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 
 		public static PackListFieldInfo CreatePackListFieldInfo(IFieldSymbol field)
 		{
-			AttributeData packListFieldAttribute = GetAttributes(field, "BigRedProf.Data.PackListField").First();
+			AttributeData packListFieldAttribute = GetAttributes(field, "BigRedProf.Data.Core.PackListField").First();
 
 			string type = field.Type.ToDisplayString();
 			LinePosition startLinePosition = field.Locations[0].GetLineSpan().StartLinePosition;
@@ -243,7 +237,7 @@ namespace BigRedProf.Data.PackRatCompiler.Internal.Symbols
 
 		public static PackListFieldInfo CreatePackListFieldInfo(IPropertySymbol property)
 		{
-			AttributeData packListFieldAttribute = GetAttributes(property, "BigRedProf.Data.PackListField").First();
+			AttributeData packListFieldAttribute = GetAttributes(property, "BigRedProf.Data.Core.PackListField").First();
 
 			string type = property.Type.ToDisplayString();
 			LinePosition startLinePosition = property.Locations[0].GetLineSpan().StartLinePosition;
