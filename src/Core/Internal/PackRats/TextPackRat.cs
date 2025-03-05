@@ -1,7 +1,8 @@
-﻿using System;
+﻿using BigRedProf.Data.Core.PackRats;
+using System;
 using System.Text;
 
-namespace BigRedProf.Data.Internal.PackRats
+namespace BigRedProf.Data.Core.Internal.PackRats
 {
 	internal class TextPackRat : PackRat<string>
 	{
@@ -25,12 +26,12 @@ namespace BigRedProf.Data.Internal.PackRats
 		public void PackModelWithoutLength(CodeWriter writer, string model)
 		{
 			byte[] bytes = Encoding.GetBytes(model);
-			PackTextBytes(writer, bytes);
+			TextPackRatHelper.PackTextBytes(writer, bytes);
 		}
 
 		public string UnpackModelWithoutLength(CodeReader reader, int lengthOfEncodedBytes)
 		{
-			byte[] bytes = UnpackTextBytes(reader, lengthOfEncodedBytes);
+			byte[] bytes = TextPackRatHelper.UnpackTextBytes(reader, lengthOfEncodedBytes);
 			return Encoding.GetString(bytes);
 		}
 		#endregion
@@ -43,7 +44,7 @@ namespace BigRedProf.Data.Internal.PackRats
 
 			byte[] bytes = Encoding.GetBytes(model);
 			PiedPiper.PackModel(writer, bytes.Length, CoreSchema.EfficientWholeNumber31);
-			PackTextBytes(writer, bytes);
+			TextPackRatHelper.PackTextBytes(writer, bytes);
 		}
 
 		public override string UnpackModel(CodeReader reader)
@@ -59,30 +60,11 @@ namespace BigRedProf.Data.Internal.PackRats
 			}
 			else
 			{
-				byte[] textBytes = UnpackTextBytes(reader, byteCount);
+				byte[] textBytes = TextPackRatHelper.UnpackTextBytes(reader, byteCount);
 				model = Encoding.GetString(textBytes);
 			}
 
 			return model;
-		}
-		#endregion
-
-		#region private methods
-		private void PackTextBytes(CodeWriter writer, byte[] bytes)
-		{
-			if (bytes.LongLength != 0)
-			{
-				Code code = new Code(bytes);
-				writer.AlignToNextByteBoundary();
-				writer.WriteCode(code);
-			}
-		}
-
-		private byte[] UnpackTextBytes(CodeReader reader, int length)
-		{
-			reader.AlignToNextByteBoundary();
-			Code code = reader.Read(length * 8);
-			return code.ByteArray;
 		}
 		#endregion
 	}

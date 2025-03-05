@@ -1,4 +1,5 @@
-﻿using BigRedProf.Data.Internal;
+﻿using BigRedProf.Data.Core.Internal.PackRats;
+using BigRedProf.Data.Internal;
 using BigRedProf.Data.Internal.PackRats;
 using BigRedProf.Data.PackRats;
 using System;

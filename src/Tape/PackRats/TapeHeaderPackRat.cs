@@ -1,4 +1,5 @@
-﻿using BigRedProf.Data.Tape.Models;
+﻿using BigRedProf.Data.Core.PackRats;
+using BigRedProf.Data.Tape.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -27,43 +28,50 @@ namespace BigRedProf.Data.Tape.PackRats
 			// let the first 100 bytes be human-readable for cat/head CLI commands
 			// Format: TAPE|v1|Series-Name|Series-Number|Guid
 			// Max Bytes: 4|2|50|4|16
-			// Total Bytes: 4 + 2 + 70 + 4 + 16 + 4 (pipes) = 100
+			// Total Bytes: 4 + 2 + 50 + 4 + 36 + 4 (pipes) = 100
 			// Then do 0x1A so Windows will automatically stop printing (Linux can
 			// use "head -c 100 *"); 101 total
 			// Then use 4 bytes for Version; 105 total
 			// And 4 bytes for BytesAllocatedForLabel; 109 total
 			// And then skip the final 16 bytes (we like the number 125 in this library :)
 
+			StringBuilder stringBuilder = new StringBuilder(101);
+
 			// "TAPE" (for correctness)
-			Code packedTape = PiedPiper.EncodeModel<string>("TAPE|", CoreSchema.TextAscii);
-			writer.WriteCode(packedTape);
+			stringBuilder.Append("TAPE|");
 
 			// "v1" (for show)
 			string versionText = model.Version.ToString();
 			if (!(model.Version >= 1 && model.Version <= 9))
 				versionText = "X";
-			Code packedVersion = PiedPiper.EncodeModel<string>($"v{versionText}|", CoreSchema.TextAscii);
-			writer.WriteCode(packedVersion);
+			stringBuilder.Append($"v{versionText}|");
 
 			// series name (for show)
 			string? seriesName = null;
 			model.Label.TryGetTrait(CoreTrait.SeriesName, out seriesName);
-			string terminalFriendlySeriesName = MakeFixedSizeAscii(seriesName, 70);
-			PiedPiper.PackModel<string>(writer, terminalFriendlySeriesName + "|", CoreSchema.TextAscii);
+			string terminalFriendlySeriesName = MakeFixedSizeAscii(seriesName, 50);
+			stringBuilder.Append(terminalFriendlySeriesName);
+			stringBuilder.Append('|');
 
 			// series number (for show)
 			int seriesNumber = 0;
 			model.Label.TryGetTrait<int>(CoreTrait.SeriesNumber, out seriesNumber);
 			string terminalFriendlySeriesNumber = Make5DigitNumber(seriesNumber);
-			PiedPiper.PackModel<string>(writer, terminalFriendlySeriesNumber + "|", CoreSchema.TextAscii);
+			stringBuilder.Append(terminalFriendlySeriesNumber);
+			stringBuilder.Append('|');
 
-			// GUID (for show)
+			// GUID, as 36-character string (for show)
 			Guid guid = Guid.Empty;
-			if (!model.Label.TryGetTrait<Guid>(CoreTrait.Guid, out guid))
-			PiedPiper.PackModel<Guid>(writer, guid, CoreSchema.Guid);
+			model.Label.TryGetTrait<Guid>(CoreTrait.Guid, out guid);
+			stringBuilder.Append(guid.ToString());
 
 			// End-of-file (for show)
-			PiedPiper.PackModel<string>(writer, new string((char) 0x1A, 1), CoreSchema.TextAscii);
+			stringBuilder.Append((char)0x1A);
+
+			string x = stringBuilder.ToString();
+			if (x.Length != 101)
+				throw new InvalidOperationException($"Bad length. {x.Length} instead of 101. Indicated bug in code.");
+			TextPackRatHelper.PackTextWithoutLength(writer, x, Encoding.ASCII);
 
 			// Version (actual)
 			PiedPiper.PackModel<int>(writer, model.Version, CoreSchema.Int32);
@@ -113,15 +121,15 @@ namespace BigRedProf.Data.Tape.PackRats
 			++bytesToSkip;  // "|"
 
 			// series name (for show)
-			bytesToSkip += 70;
+			bytesToSkip += 50;
 			++bytesToSkip;  // "|"
 
 			// series number (for show)
 			bytesToSkip += 5;
 			++bytesToSkip;  // "|"
 
-			// GUID (for show)
-			bytesToSkip += 16;
+			// GUID, as 36-character string (for show)
+			bytesToSkip += 36;
 
 			// End-of-file (for show)
 			++bytesToSkip;
