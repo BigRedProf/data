@@ -29,7 +29,7 @@ namespace BigRedProf.Data.Core
 
 		#region methods
 		/// <summary>
-		/// Defines a new token.
+		/// Defines, or redefines, a token.
 		/// </summary>
 		/// <param name="token">The token.</param>
 		/// <param name="model">The model, or token definition.</param>
@@ -37,9 +37,6 @@ namespace BigRedProf.Data.Core
 		{
 			if (token == null)
 				throw new ArgumentNullException(nameof(token));
-
-			if (_tokenToModelMap.ContainsKey(token))
-				throw new ArgumentException("Cannot define the same token twice.", nameof(token));
 
 			_tokenToModelMap[token] = model;
 			_modelToTokenMap[model] = token;
@@ -50,19 +47,29 @@ namespace BigRedProf.Data.Core
 		/// </summary>
 		/// <param name="token">The token to check.</param>
 		/// <returns>True if the token has been defined, otherwise false.</returns>
-		public bool HasTokenDefinition(Code token)
+		public bool IsTokenDefined(Code token)
 		{
 			return _tokenToModelMap.ContainsKey(token);
 		}
 
 		/// <summary>
-		/// Gets the tokenized model for a given token.
+		/// Checks if a model has been definied.
+		/// </summary>
+		/// <param name="model"></param>
+		/// <returns></returns>
+		public bool IsModelTokenized(TModel model)
+		{
+			return _modelToTokenMap.ContainsKey(model);
+		}
+
+		/// <summary>
+		/// Gets the model for a given token.
 		/// </summary>
 		/// <param name="token">The token.</param>
 		/// <returns>The tokenized model.</returns>
 		/// <exception cref="ArgumentNullException"></exception>
 		/// <exception cref="ArgumentException"></exception>
-		public TokenizedModel<TModel> GetTokenizedModel(Code token)
+		public TModel GetModel(Code token)
 		{
 			if (token == null)
 				throw new ArgumentNullException(nameof(token));
@@ -71,11 +78,7 @@ namespace BigRedProf.Data.Core
 			if (!_tokenToModelMap.TryGetValue(token, out model))
 				throw new ArgumentException("Token not defined.", nameof(token));
 
-			TokenizedModel<TModel> tokenizedModel = new TokenizedModel<TModel>();
-			tokenizedModel.Token = token;
-			tokenizedModel.Model = model;
-
-			return tokenizedModel;
+			return model;
 		}
 
 		/// <summary>
@@ -88,22 +91,55 @@ namespace BigRedProf.Data.Core
 		/// </param>
 		/// <returns>True if the token has been defined, otherwise false.</returns>
 		/// <exception cref="ArgumentNullException"></exception>
-		public bool TryGetModel(Code token, out TokenizedModel<TModel> model)
+		public bool TryGetModel(Code token, out TModel model)
 		{
 			if (token == null)
 				throw new ArgumentNullException(nameof(token));
 
-			TModel tokenDefinition;
-			bool hasTokenDefinition = _tokenToModelMap.TryGetValue(token, out tokenDefinition);
-
-			model = new TokenizedModel<TModel>();
-			if (hasTokenDefinition)
-			{
-				model.Token = token;
-				model.Model = tokenDefinition;
-			}
+			bool hasTokenDefinition = _tokenToModelMap.TryGetValue(token, out model);
 
 			return hasTokenDefinition;
+		}
+
+		/// <summary>
+		/// Gets the token for a given model.
+		/// </summary>
+		/// <param name="model">The model.</param>
+		/// <returns>The token corresponding to the model.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if the model is null.</exception>
+		/// <exception cref="ArgumentException">Thrown if the model has not been tokenized.</exception>
+		public Code GetToken(TModel model)
+		{
+			if(model == null)
+				throw new ArgumentNullException(nameof(model));
+
+			Code token;
+			if(!_modelToTokenMap.TryGetValue(model, out token))
+				throw new ArgumentException("Model not tokenized.", nameof(model));
+
+			return token;
+		}
+
+		/// <summary>
+		/// Checks to see if a model has been tokenized and, provided it has been, returns
+		/// the token.
+		/// </summary>
+		/// <param name="model">The model.</param>
+		/// <param name="token">
+		/// The out parameter in which to return the token, if the model has been
+		/// tokenized.
+		/// </param>
+		/// <returns>The token.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if the model is null.</exception>
+		public bool TryGetToken(TModel model, out Code token)
+		{
+			if (model == null)
+				throw new ArgumentNullException(nameof(model));
+
+			if (!_modelToTokenMap.TryGetValue(model, out token))
+				return false;
+
+			return true;
 		}
 		#endregion
 	}

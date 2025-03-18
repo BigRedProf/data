@@ -17,7 +17,7 @@ namespace BigRedProf.Data.Core.PackRats
 	/// each token pack rat has defined a model before it encounters that model's token.
 	/// </remarks>
 	/// <typeparam name="TModel">The model, or token definition, to be tokenized.</typeparam>
-	public class TokenizedModelPackRat<TModel> : PackRat<TokenizedModel<TModel>>
+	public class TokenizedModelPackRat<TModel> : PackRat<TModel>
 	{
 		#region fields
 		private readonly Tokenizer<TModel> _tokenizer;
@@ -40,17 +40,18 @@ namespace BigRedProf.Data.Core.PackRats
 
 		#region PackRat methods
 		/// <inheritdoc/>
-		public override void PackModel(CodeWriter writer, TokenizedModel<TModel> tokenizedModel)
+		public override void PackModel(CodeWriter writer, TModel model)
 		{
 			if(writer == null)
 				throw new ArgumentNullException(nameof(writer));
 
+			Code token = _tokenizer.GetToken(model);
 			PackRat<Code> codePackRat = PiedPiper.GetPackRat<Code>(CoreSchema.Code);
-			codePackRat.PackModel(writer, tokenizedModel.Token);
+			codePackRat.PackModel(writer, token);
 		}
 
 		/// <inheritdoc/>
-		public override TokenizedModel<TModel> UnpackModel(CodeReader reader)
+		public override TModel UnpackModel(CodeReader reader)
 		{
 			if(reader == null)
 				throw new ArgumentNullException(nameof(reader));
@@ -58,11 +59,11 @@ namespace BigRedProf.Data.Core.PackRats
 			PackRat<Code> codePackRat = PiedPiper.GetPackRat<Code>(CoreSchema.Code);
 			Code token = codePackRat.UnpackModel(reader);
 
-			TokenizedModel<TModel> tokenizedModel;
-			if (!_tokenizer.TryGetModel(token, out tokenizedModel))
+			TModel model;
+			if (!_tokenizer.TryGetModel(token, out model))
 				throw new InvalidOperationException($"Token '{token}' not defined.");
 
-			return tokenizedModel;
+			return model;
 		}
 		#endregion
 	}
