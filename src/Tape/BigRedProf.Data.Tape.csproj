@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.1</TargetFramework>
-		<Version>0.7.1</Version>
+		<Version>0.7.2</Version>
 		<RepositoryUrl>https://github.com/BigRedProf/data</RepositoryUrl>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>enable</Nullable>
