@@ -7,9 +7,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
-using BigRedProf.Data.Core;
 
-namespace BigRedProf.Data
+namespace BigRedProf.Data.Core
 {
 	public class PiedPiper : IPiedPiper
 	{

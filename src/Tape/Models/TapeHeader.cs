@@ -1,4 +1,6 @@
-﻿namespace BigRedProf.Data.Tape.Models
+﻿using BigRedProf.Data.Core;
+
+namespace BigRedProf.Data.Tape.Models
 {
 	public class TapeHeader
 	{

@@ -1,7 +1,6 @@
-﻿using BigRedProf.Data.Core;
-using System;
+﻿using System;
 
-namespace BigRedProf.Data
+namespace BigRedProf.Data.Core
 {
 	/// <summary>
 	/// This class allows models of a given type to be packed and unpacked

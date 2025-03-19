@@ -1,10 +1,9 @@
-﻿using BigRedProf.Data.Core;
-using BigRedProf.Data.Core.Internal;
+﻿using BigRedProf.Data.Core.Internal;
 using System;
 using System.Diagnostics;
 using System.IO;
 
-namespace BigRedProf.Data
+namespace BigRedProf.Data.Core
 {
 	public class CodeWriter : IDisposable
 	{

@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using BigRedProf.Data.Core;
 using BigRedProf.Data.Core.Internal;
 
-namespace BigRedProf.Data
+namespace BigRedProf.Data.Core
 {
 	/// <summary>
 	/// A flexible model that allows for a strong decoupling between producers of models
