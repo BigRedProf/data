@@ -23,9 +23,9 @@ jobs:
     - name: Build Debug
       run: dotnet build --no-restore
       working-directory: src
-    # - name: Test Debug
-    #   run: dotnet test --no-build --verbosity normal
-    #   working-directory: src
+    - name: HACKHACK SKIPPING Test Debug
+      run: echo HACKHACK SKIPPING dotnet test --no-build --verbosity normal
+      working-directory: src
     - name: Build Release
       run: dotnet build --no-restore -c Release
       working-directory: src
