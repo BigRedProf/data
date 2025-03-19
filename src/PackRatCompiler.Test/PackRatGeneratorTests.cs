@@ -44,6 +44,16 @@ namespace BigRedProf.Data.PackRatCompiler.Test
 				"_Resources/ExpectedPackRats/ModelWithEnumPackRat.cs"
 			);
 		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void GeneratePackRat_ShouldWorkForTokenTestModelModel()
+		{
+			PackRatCompilerTestHelper.TestGeneratePackRat(
+				"_Resources/Models/TokenTestModel.cs",
+				"_Resources/ExpectedPackRats/TokenTestModelPackRat.cs"
+			);
+		}
 		#endregion
 	}
 }

@@ -1,5 +1,6 @@
 using BigRedProf.Data.Core;
 using BigRedProf.Data.Core.Internal.PackRats;
+using BigRedProf.Data.Core.PackRats;
 using BigRedProf.Data.Test._TestHelpers;
 using System;
 using Xunit;
@@ -74,7 +75,53 @@ namespace BigRedProf.Data.Test
             );
         }
 
-        [Fact]
+		[Fact]
+		[Trait("Region", "methods")]
+		public void RegisterTokenizer_ShouldThrowIfTokenizerIsNull()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			string tokenizerId = Guid.Empty.ToString();
+			Tokenizer<string> tokenizer = new Tokenizer<string>();
+
+			Assert.Throws<ArgumentNullException>(
+				() =>
+				{
+					piedPiper.RegisterTokenizer<string>(null, tokenizerId);
+				}
+			);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void RegisterTokenizer_ShouldRegisterTokenizer()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			string tokenizerId = Guid.Empty.ToString();
+			Tokenizer<string> tokenizer = new Tokenizer<string>();
+
+			piedPiper.RegisterTokenizer<string>(tokenizer, tokenizerId);
+
+			Tokenizer<string> tokenizer2 = piedPiper.GetTokenizer<string>(tokenizerId);
+			Assert.NotNull(tokenizer2);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void RegisterTokenizer_ShouldRegisterCorrespondingPackRat()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			string tokenizerId = Guid.Empty.ToString();
+			Tokenizer<string> tokenizer = new Tokenizer<string>();
+
+			piedPiper.RegisterTokenizer<string>(tokenizer, tokenizerId);
+
+			PackRat<string> packRat = piedPiper.GetPackRat<string>(tokenizerId);
+			TokenizedModelPackRat<string> tokenizedModelPackRat = packRat as TokenizedModelPackRat<string>;
+			Assert.NotNull(packRat);
+			Assert.NotNull(tokenizedModelPackRat);
+		}
+
+		[Fact]
         [Trait("Region", "methods")]
         public void GetPackRat_ShouldThrowWhenSchemaIdIsNull()
         {

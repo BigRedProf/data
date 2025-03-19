@@ -146,6 +146,10 @@ namespace BigRedProf.Data
 			}
 
 			_tokenizers.Add(tokenizerId, tokenizer);
+
+			// also register a PackRat using the same tokenizer identifier (to allow fields to be packed as tokens)
+			TokenizedModelPackRat<TModel> packRat = new TokenizedModelPackRat<TModel>(this, tokenizer);
+			RegisterPackRat<TModel>(packRat, tokenizerId);
 		}
 
 		/// <inheritdoc/>
