@@ -44,5 +44,5 @@ jobs:
       run: dotnet nuget push ./PackRatCompiler/bin/Release/*.*nupkg --api-key ${{ secrets.GITHUB_TOKEN }}  --source "github" --skip-duplicate
       working-directory: src
     - name: Push BigRedProf.Data.Tape package
-      run: dotnet nuget push ./Core/bin/Release/BigRedProf.Data.Tape.*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }}  --source "github" --skip-duplicate
+      run: dotnet nuget push ./Tape/bin/Release/BigRedProf.Data.Tape.*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }}  --source "github" --skip-duplicate
       working-directory: src
