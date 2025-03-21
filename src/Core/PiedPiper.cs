@@ -194,13 +194,6 @@ namespace BigRedProf.Data.Core
 					// register the tokenizer
 					MethodInfo registerTokenizerMethod = typeof(PiedPiper).GetMethod(nameof(RegisterTokenizer)).MakeGenericMethod(tokenizerModelType);
 					registerTokenizerMethod.Invoke(this, new object[] { tokenizerInstance, tokenizerId });
-
-					// create the pack rat
-					object packRatInstance = Activator.CreateInstance(tokenizerModelType, new object[] { this, tokenizerInstance });
-
-					// register the pack rat
-					MethodInfo registerPackRatMethod = typeof(PiedPiper).GetMethod(nameof(RegisterPackRat)).MakeGenericMethod(tokenizerModelType);
-					registerPackRatMethod.Invoke(this, new object[] { packRatInstance, tokenizerId });
 				}
 			}
 		}
