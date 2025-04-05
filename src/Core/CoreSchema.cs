@@ -177,6 +177,11 @@
 		public const string UInt64 = "40374605-edeb-4da2-ae04-b768c913aa9a";
 
 		/// <summary>
+		/// The schema identifier for unsigned LEB128 variable-length integers.
+		/// </summary>
+		public const string VarInt = "502e414e-6228-4b32-b3a2-6d48d6836d97";
+
+		/// <summary>
 		/// The schema identifier for 1-bit whole numbers.
 		/// </summary>
 		public const string WholeNumber1 = "2dc55385-2de4-4396-9366-ac230b4d029e";
