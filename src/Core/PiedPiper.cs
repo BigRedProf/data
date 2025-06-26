@@ -47,11 +47,13 @@ namespace BigRedProf.Data.Core
 			RegisterPackRat<long>(new Int64PackRat(this), CoreSchema.Int64);
 			RegisterPackRat<ModelWithSchemaAndLength>(new ModelWithSchemaAndLengthPackRat(this), CoreSchema.ModelWithSchemaAndLength);
 			RegisterPackRat<ModelWithSchema>(new ModelWithSchemaPackRat(this), CoreSchema.ModelWithSchema);
+			RegisterPackRat<Multihash>(new MultihashPackRat(this), CoreSchema.MultihashSchema);
 			RegisterPackRat<float>(new SinglePackRat(this), CoreSchema.Single);
 			RegisterPackRat<string>(new TextPackRat(this, Encoding.ASCII), CoreSchema.TextAscii);
 			RegisterPackRat<string>(new TextPackRat(this, Encoding.UTF8), CoreSchema.TextUtf8);
 			RegisterPackRat<string>(new TextPackRat(this, Encoding.Unicode), CoreSchema.TextUtf16);
 			RegisterPackRat<string>(new TextPackRat(this, Encoding.UTF32), CoreSchema.TextUtf32);
+			RegisterPackRat<int>(new UnsignedVarIntPackRat(this), CoreSchema.UnsignedVarInt);
 			RegisterPackRat<int>(new VarIntPackRat(this), CoreSchema.VarInt);
 			RegisterPackRat<int>(new WholeNumberPackRat(this, 1), CoreSchema.WholeNumber1);
 			RegisterPackRat<int>(new WholeNumberPackRat(this, 2), CoreSchema.WholeNumber2);
