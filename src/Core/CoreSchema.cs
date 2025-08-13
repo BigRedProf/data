@@ -117,14 +117,9 @@
 		public const string ModelWithSchemaAndLength = "c02015c9-fe26-4c65-93bc-2c67da6fb3c3";
 
 		/// <summary>
-		/// The schema identifier for packs.
+		/// The schema identifier for the <see cref="Multihash"/> type.
 		/// </summary>
-		public const string Pack = "98bdc72c-e554-4ec8-bd45-dafe012da009";
-
-		/// <summary>
-		/// The schema identifier for packages.
-		/// </summary>
-		public const string Package = "4778505c-65d9-4fec-8556-e1babc1e26de";
+		public const string MultihashSchema = "cb0738cd-d459-4ec9-bd50-2a8a55a65a1d";
 
 		/// <summary>
 		/// The schema identifier for the <see cref="SByte"/> type.
@@ -175,6 +170,17 @@
 		/// The schema identifier for the <see cref="UInt64"/> type.
 		/// </summary>
 		public const string UInt64 = "40374605-edeb-4da2-ae04-b768c913aa9a";
+
+		/// <summary>
+		/// The schema identified for unsigned variable-length integers.
+		/// </summary>
+		public const string UnsignedVarInt = "8d581c98-985c-4c0f-b15f-f1a70f4998ff";
+
+		// TODO: Is this the same as the VarInt above???
+		/// <summary>
+		/// The schema identifier for unsigned LEB128 variable-length integers.
+		/// </summary>
+		public const string VarInt = "502e414e-6228-4b32-b3a2-6d48d6836d97";
 
 		/// <summary>
 		/// The schema identifier for 1-bit whole numbers.

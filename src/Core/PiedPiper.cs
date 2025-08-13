@@ -35,6 +35,7 @@ namespace BigRedProf.Data.Core
 		public void RegisterCorePackRats()
 		{
 			RegisterPackRat<bool>(new BooleanPackRat(this), CoreSchema.Boolean);
+			RegisterPackRat<byte>(new BytePackRat(this), CoreSchema.Byte);
 			RegisterPackRat<Code>(new CodePackRat(this), CoreSchema.Code);
 			RegisterPackRat<DateTime>(new DateTimePackRat(this), CoreSchema.DateTimeWithKind);
 			RegisterPackRat<DateTime>(new DateTimePackRat(this), CoreSchema.DateTimeWithoutKind);
@@ -46,11 +47,14 @@ namespace BigRedProf.Data.Core
 			RegisterPackRat<long>(new Int64PackRat(this), CoreSchema.Int64);
 			RegisterPackRat<ModelWithSchemaAndLength>(new ModelWithSchemaAndLengthPackRat(this), CoreSchema.ModelWithSchemaAndLength);
 			RegisterPackRat<ModelWithSchema>(new ModelWithSchemaPackRat(this), CoreSchema.ModelWithSchema);
+			RegisterPackRat<Multihash>(new MultihashPackRat(this), CoreSchema.MultihashSchema);
 			RegisterPackRat<float>(new SinglePackRat(this), CoreSchema.Single);
 			RegisterPackRat<string>(new TextPackRat(this, Encoding.ASCII), CoreSchema.TextAscii);
 			RegisterPackRat<string>(new TextPackRat(this, Encoding.UTF8), CoreSchema.TextUtf8);
 			RegisterPackRat<string>(new TextPackRat(this, Encoding.Unicode), CoreSchema.TextUtf16);
 			RegisterPackRat<string>(new TextPackRat(this, Encoding.UTF32), CoreSchema.TextUtf32);
+			RegisterPackRat<int>(new UnsignedVarIntPackRat(this), CoreSchema.UnsignedVarInt);
+			RegisterPackRat<int>(new VarIntPackRat(this), CoreSchema.VarInt);
 			RegisterPackRat<int>(new WholeNumberPackRat(this, 1), CoreSchema.WholeNumber1);
 			RegisterPackRat<int>(new WholeNumberPackRat(this, 2), CoreSchema.WholeNumber2);
 			RegisterPackRat<int>(new WholeNumberPackRat(this, 3), CoreSchema.WholeNumber3);
@@ -104,7 +108,7 @@ namespace BigRedProf.Data.Core
 		/// <inheritdoc/>
 		public PackRat<T> GetPackRat<T>(AttributeFriendlyGuid schemaId)
 		{
-			if(schemaId == null)
+			if (schemaId == null)
 				throw new ArgumentNullException(nameof(schemaId));
 
 			IWeaklyTypedPackRat nonGenericPackRat = GetPackRat(schemaId);
@@ -134,7 +138,7 @@ namespace BigRedProf.Data.Core
 		/// <inheritdoc/>
 		public void RegisterTokenizer<TModel>(Tokenizer<TModel> tokenizer, AttributeFriendlyGuid tokenizerId)
 		{
-			if(tokenizer == null)
+			if (tokenizer == null)
 				throw new ArgumentNullException(nameof(tokenizer));
 
 			if (_tokenizers.ContainsKey(tokenizerId))
@@ -201,7 +205,7 @@ namespace BigRedProf.Data.Core
 		/// <inheritdoc/>
 		public void DefineTrait(TraitDefinition traitDefintion)
 		{
-			if(traitDefintion == null)
+			if (traitDefintion == null)
 				throw new ArgumentNullException(nameof(traitDefintion));
 
 			Guid traitId = traitDefintion.TraitId;
@@ -249,7 +253,7 @@ namespace BigRedProf.Data.Core
 		{
 			IWeaklyTypedPackRat packRat = GetPackRat(schemaId);
 			object model = packRat.UnpackModel(reader);
-			
+
 			return model;
 		}
 
@@ -447,8 +451,8 @@ namespace BigRedProf.Data.Core
 		}
 
 		/// <inheritdoc/>
-        public Code EncodeModel<M>(M model, AttributeFriendlyGuid schemaId)
-        {
+		public Code EncodeModel<M>(M model, AttributeFriendlyGuid schemaId)
+		{
 			if (model == null)
 				throw new ArgumentNullException(nameof(model));
 
@@ -457,22 +461,22 @@ namespace BigRedProf.Data.Core
 
 			PackRat<M> packRat = GetPackRat<M>(schemaId);
 			CodeStream codeStream = new CodeStream();
-			using(CodeWriter codeWriter = new CodeWriter(codeStream))
+			using (CodeWriter codeWriter = new CodeWriter(codeStream))
 			{
 				packRat.PackModel(codeWriter, model);
 			}
 			Code code = codeStream.ToCode();
-									
-			return code;
-        }
 
-        /// <inheritdoc/>
-        public M DecodeModel<M>(Code code, AttributeFriendlyGuid schemaId)
-        {
-            if(code == null)
+			return code;
+		}
+
+		/// <inheritdoc/>
+		public M DecodeModel<M>(Code code, AttributeFriendlyGuid schemaId)
+		{
+			if (code == null)
 				throw new ArgumentNullException(nameof(code));
 
-			if(schemaId == null)
+			if (schemaId == null)
 				throw new ArgumentNullException(nameof(schemaId));
 
 			M model;
