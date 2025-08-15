@@ -16,7 +16,7 @@ namespace BigRedProf.Data.Core
 		/// <summary>
 		/// The maximum length of a code, 1 gigabit.
 		/// </summary>
-		public const int MaxLength = 1024 * 1024 * 1024;
+		public const int MaxLength = 1000 * 1000 * 1000;
 		#endregion
 
 		#region fields
