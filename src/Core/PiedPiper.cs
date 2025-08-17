@@ -32,6 +32,20 @@ namespace BigRedProf.Data.Core
 
 		#region IPiedPiper methods
 		/// <inheritdoc/>
+		public void DefineCoreTraits()
+		{
+			DefineTrait(new TraitDefinition(CoreTrait.Id, CoreSchema.Guid));
+			DefineTrait(new TraitDefinition(CoreTrait.Name, CoreSchema.TextUtf8));
+			DefineTrait(new TraitDefinition(CoreTrait.Content, CoreSchema.Code));
+			DefineTrait(new TraitDefinition(CoreTrait.ContentDigest, CoreSchema.MultihashSchema));
+			DefineTrait(new TraitDefinition(CoreTrait.SeriesId, CoreSchema.Guid));
+			DefineTrait(new TraitDefinition(CoreTrait.SeriesName, CoreSchema.TextUtf8));
+			DefineTrait(new TraitDefinition(CoreTrait.SeriesNumber, CoreSchema.EfficientWholeNumber31));
+			DefineTrait(new TraitDefinition(CoreTrait.SeriesHeadDigest, CoreSchema.MultihashSchema));
+			DefineTrait(new TraitDefinition(CoreTrait.SeriesParentDigest, CoreSchema.MultihashSchema));
+		}
+
+		/// <inheritdoc/>
 		public void RegisterCorePackRats()
 		{
 			RegisterPackRat<bool>(new BooleanPackRat(this), CoreSchema.Boolean);

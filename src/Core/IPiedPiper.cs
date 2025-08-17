@@ -28,6 +28,12 @@ namespace BigRedProf.Data.Core
 		PackRat<T> GetPackRat<T>(AttributeFriendlyGuid schemaId);
 
 		/// <summary>
+		/// Defines all the core traits such as <see cref="CoreTrait.Id"/>, <see cref="CoreTrait.Name"/>,
+		/// and <see cref="CoreTrait.Content"/>.
+		/// </summary>
+		void DefineCoreTraits();
+
+		/// <summary>
 		/// Registers all the core pack rats such as <see cref="BooleanPackRat"/>, <see cref="TextPackRat"/>,
 		/// and <see cref="Int32PackRat"/>.
 		/// </summary>
