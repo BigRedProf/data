@@ -27,6 +27,11 @@
 		public const string ContentDigest = "93a2dbed-065e-4f64-8ab0-8448a82a30ea";
 
 		/// <summary>
+		/// Used to determine the length of the content in bits.
+		/// </summary>
+		public const string ContentLength = "6f182156-5ac4-4670-a1da-0d5339f64509";
+
+		/// <summary>
 		/// Uniquely identifies the series to which this model belongs.
 		/// </summary>
 		public const string SeriesId = "9080538a-aafc-4ab9-a90f-e1c0d2d3f814";

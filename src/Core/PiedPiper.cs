@@ -38,6 +38,7 @@ namespace BigRedProf.Data.Core
 			DefineTrait(new TraitDefinition(CoreTrait.Name, CoreSchema.TextUtf8));
 			DefineTrait(new TraitDefinition(CoreTrait.Content, CoreSchema.Code));
 			DefineTrait(new TraitDefinition(CoreTrait.ContentDigest, CoreSchema.MultihashSchema));
+			DefineTrait(new TraitDefinition(CoreTrait.ContentLength, CoreSchema.EfficientWholeNumber31));
 			DefineTrait(new TraitDefinition(CoreTrait.SeriesId, CoreSchema.Guid));
 			DefineTrait(new TraitDefinition(CoreTrait.SeriesName, CoreSchema.TextUtf8));
 			DefineTrait(new TraitDefinition(CoreTrait.SeriesNumber, CoreSchema.EfficientWholeNumber31));
