@@ -1,20 +1,22 @@
 ﻿using BigRedProf.Data.Core;
 using Xunit;
+using System;
 
 namespace BigRedProf.Data.Tape._TestHelpers
 {
 	internal class TapeProviderHelper
 	{
 		#region functions
-		public static void TestWriteAndReadRoundTrip(TapeProvider tapeProvider, Code content, int offset)
+		public static void TestWriteAndReadRoundTrip(
+			TapeProvider tapeProvider,
+			Guid tapeId,
+			byte[] content,
+			int offset)
 		{
-			// Act
-			tapeProvider.Write(content, offset);
-			var result = tapeProvider.Read(offset, content.Length);
-
-			// Assert
+			tapeProvider.WriteInternal(tapeId, content, offset, content.Length);
+			var result = tapeProvider.ReadInternal(tapeId, offset, content.Length);
 			Assert.Equal(content, result);
-			#endregion
 		}
+		#endregion
 	}
 }

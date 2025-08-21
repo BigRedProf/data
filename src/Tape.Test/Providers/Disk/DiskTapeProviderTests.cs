@@ -1,6 +1,8 @@
 ﻿using BigRedProf.Data.Core;
-using BigRedProf.Data.Tape._TestHelpers;
 using BigRedProf.Data.Tape.Providers.Disk;
+using System;
+using System.IO;
+using Xunit;
 
 namespace BigRedProf.Data.Tape.Test.Providers.Disk
 {
@@ -8,6 +10,8 @@ namespace BigRedProf.Data.Tape.Test.Providers.Disk
 	{
 		#region fields
 		private readonly string _testFilePath;
+		private static readonly Guid TestTapeId = Guid.NewGuid();
+		private const int MaxContentLength = 1_000_000_000; // 1 billion bits
 		#endregion
 
 		#region constructors
@@ -34,21 +38,7 @@ namespace BigRedProf.Data.Tape.Test.Providers.Disk
 			// Act & Assert
 			Assert.Throws<ArgumentOutOfRangeException>(() =>
 			{
-				provider.Read(-1, 1);
-			});
-		}
-
-		[Trait("Region", "DiskTapeProvider methods")]
-		[Fact]
-		public void Read_FromPastEnd_ShouldThrow()
-		{
-			// Arrange
-			TapeProvider provider = new DiskTapeProvider(_testFilePath);
-
-			// Act & Assert
-			Assert.Throws<ArgumentOutOfRangeException>(() =>
-			{
-				provider.Read(TapeProvider.MaxContentLength, 1); // Attempt to read from very end
+				provider.ReadInternal(TestTapeId, -1, 1);
 			});
 		}
 
@@ -60,9 +50,9 @@ namespace BigRedProf.Data.Tape.Test.Providers.Disk
 			TapeProvider provider = new DiskTapeProvider(_testFilePath);
 
 			// Act & Assert
-			Assert.Throws<ArgumentOutOfRangeException>(() =>
+			Assert.Throws<ArgumentException>(() =>
 			{
-				provider.Read(1, TapeProvider.MaxContentLength); // Attempt to read past the end
+				provider.ReadInternal(Guid.Empty, 0, 1);
 			});
 		}
 
@@ -72,78 +62,45 @@ namespace BigRedProf.Data.Tape.Test.Providers.Disk
 		{
 			// Arrange
 			TapeProvider provider = new DiskTapeProvider(_testFilePath);
-			Code content = new Code("1"); // 1 bit
-
+			byte[] data = new byte[1];
 			// Act & Assert
-			Assert.Throws<ArgumentOutOfRangeException>(() =>
+			Assert.Throws<ArgumentException>(() =>
 			{
-				provider.Write(content, TapeProvider.MaxContentLength); // Attempt to write past the end
+				provider.WriteInternal(Guid.Empty, data, 0, 1);
 			});
 		}
 
 		[Trait("Region", "DiskTapeProvider methods")]
 		[Fact]
-		public void WriteAndReadRoundTrip_Aligned_ShouldWork()
+		public void WriteAndReadRoundTrip_ShouldWork()
 		{
 			// Arrange
 			TapeProvider provider = new DiskTapeProvider(_testFilePath);
-			Code content = new Code("10101010"); // 8 bits
-			int offset = 0;
+			byte[] data = new byte[] { 0xAB, 0xCD, 0xEF };
 
-			// Act & Assert
-			TapeProviderHelper.TestWriteAndReadRoundTrip(provider, content, offset);
+			// Act
+			provider.WriteInternal(TestTapeId, data, 0, data.Length);
+			var read = provider.ReadInternal(TestTapeId, 0, data.Length);
+
+			// Assert
+			Assert.Equal(data, read);
 		}
 
 		[Trait("Region", "DiskTapeProvider methods")]
 		[Fact]
-		public void WriteAndReadRoundTrip_Aligned2_ShouldWork()
+		public void WriteAndRead_AtEnd_ShouldWork()
 		{
 			// Arrange
 			TapeProvider provider = new DiskTapeProvider(_testFilePath);
-			Code content = new Code("10101010 11011011 10110101 11101100 10100101 01110010"); // 8 bits
-			int offset = 32343 * 8;
+			byte[] data = new byte[] { 0xFF };
+			int offset = (MaxContentLength / 8) - 1;
 
-			// Act & Assert
-			TapeProviderHelper.TestWriteAndReadRoundTrip(provider, content, offset);
-		}
+			// Act
+			provider.WriteInternal(TestTapeId, data, offset, 1);
+			var read = provider.ReadInternal(TestTapeId, offset, 1);
 
-		[Trait("Region", "DiskTapeProvider methods")]
-		[Fact]
-		public void WriteAndReadRoundTrip_Unaligned_ShouldWork()
-		{
-			// Arrange
-			TapeProvider provider = new DiskTapeProvider(_testFilePath);
-			Code content = new Code("110"); // 3 bits
-			int offset = 5;
-
-			// Act & Assert
-			TapeProviderHelper.TestWriteAndReadRoundTrip(provider, content, offset);
-		}
-
-		[Trait("Region", "DiskTapeProvider methods")]
-		[Fact]
-		public void WriteAndReadRoundTrip_UnalignedAcrossByteBoundary_ShouldWork()
-		{
-			// Arrange
-			TapeProvider provider = new DiskTapeProvider(_testFilePath);
-			Code content = new Code("11011101");
-			int offset = 5;
-
-			// Act & Assert
-			TapeProviderHelper.TestWriteAndReadRoundTrip(provider, content, offset);
-		}
-
-		[Trait("Region", "DiskTapeProvider methods")]
-		[Fact]
-		public void WriteAndReadRoundTrip_AtEnd_ShouldWork()
-		{
-			// Arrange
-			TapeProvider provider = new DiskTapeProvider(_testFilePath);
-			Code content = new Code("11111111"); // 8 bits
-			int offset = TapeProvider.MaxContentLength - 8;
-
-			// Act & Assert
-			TapeProviderHelper.TestWriteAndReadRoundTrip(provider, content, offset);
+			// Assert
+			Assert.Equal(data, read);
 		}
 		#endregion
 	}

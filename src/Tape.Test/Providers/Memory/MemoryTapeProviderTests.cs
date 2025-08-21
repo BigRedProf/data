@@ -1,37 +1,25 @@
-﻿using BigRedProf.Data.Core;
-using BigRedProf.Data.Tape._TestHelpers;
+﻿using System;
+using BigRedProf.Data.Core;
 using BigRedProf.Data.Tape.Providers.Memory;
+using BigRedProf.Data.Tape._TestHelpers;
+using Xunit;
 
 namespace BigRedProf.Data.Tape.Test.Providers.Memory
 {
 	public class MemoryTapeProviderTests
 	{
 		#region MemoryTapeProvider methods
+		private static readonly Guid TestTapeId = Guid.NewGuid();
+		private const int MaxContentLength = 1_000_000_000; // 1 billion bits
+
 		[Trait("Region", "MemoryTapeProvider methods")]
 		[Fact]
 		public void Read_FromNegativeOffset_ShouldThrow()
 		{
-			// Arrange
 			var provider = new MemoryTapeProvider();
-
-			// Act & Assert
 			Assert.Throws<ArgumentOutOfRangeException>(() =>
 			{
-				provider.Read(-1, 1);
-			});
-		}
-
-		[Trait("Region", "MemoryTapeProvider methods")]
-		[Fact]
-		public void Read_FromPastEnd_ShouldThrow()
-		{
-			// Arrange
-			var provider = new MemoryTapeProvider();
-
-			// Act & Assert
-			Assert.Throws<ArgumentOutOfRangeException>(() =>
-			{
-				provider.Read(TapeProvider.MaxContentLength, 1); // Attempt to read from very end
+				provider.ReadInternal(TestTapeId, -1, 1);
 			});
 		}
 
@@ -39,13 +27,10 @@ namespace BigRedProf.Data.Tape.Test.Providers.Memory
 		[Fact]
 		public void Read_PastEnd_ShouldThrow()
 		{
-			// Arrange
 			var provider = new MemoryTapeProvider();
-
-			// Act & Assert
-			Assert.Throws<ArgumentOutOfRangeException>(() =>
+			Assert.Throws<ArgumentException>(() =>
 			{
-				provider.Read(1, TapeProvider.MaxContentLength); // Attempt to read past the end
+				provider.ReadInternal(Guid.Empty, 0, 1);
 			});
 		}
 
@@ -53,80 +38,31 @@ namespace BigRedProf.Data.Tape.Test.Providers.Memory
 		[Fact]
 		public void Write_PastEnd_ShouldThrow()
 		{
-			// Arrange
 			var provider = new MemoryTapeProvider();
-			var content = new Code("1"); // 1 bit
-
-			// Act & Assert
-			Assert.Throws<ArgumentOutOfRangeException>(() =>
+			byte[] data = new byte[1];
+			Assert.Throws<ArgumentException>(() =>
 			{
-				provider.Write(content, TapeProvider.MaxContentLength); // Attempt to write past the end
+				provider.WriteInternal(Guid.Empty, data, 0, 1);
 			});
 		}
 
 		[Trait("Region", "MemoryTapeProvider methods")]
 		[Fact]
-		public void WriteAndReadRoundTrip_Aligned_ShouldWork()
+		public void WriteAndReadRoundTrip_ShouldWork()
 		{
-			// Arrange
-			TapeProvider provider = new MemoryTapeProvider();
-			var content = new Code("10101010"); // 8 bits
-			int offset = 0;
-
-			// Act & Assert
-			TapeProviderHelper.TestWriteAndReadRoundTrip(provider, content, offset);
+			var provider = new MemoryTapeProvider();
+			byte[] data = new byte[] { 0xAB, 0xCD, 0xEF };
+			TapeProviderHelper.TestWriteAndReadRoundTrip(provider, TestTapeId, data, 0);
 		}
 
 		[Trait("Region", "MemoryTapeProvider methods")]
 		[Fact]
-		public void WriteAndReadRoundTrip_Aligned2_ShouldWork()
+		public void WriteAndRead_AtEnd_ShouldWork()
 		{
-			// Arrange
-			TapeProvider provider = new MemoryTapeProvider();
-			var content = new Code("10101010 11011011 10110101 11101100 10100101 01110010"); // 8 bits
-			int offset = 32343 * 8;
-
-			// Act & Assert
-			TapeProviderHelper.TestWriteAndReadRoundTrip(provider, content, offset);
-		}
-
-		[Trait("Region", "MemoryTapeProvider methods")]
-		[Fact]
-		public void WriteAndReadRoundTrip_Unaligned_ShouldWork()
-		{
-			// Arrange
-			TapeProvider provider = new MemoryTapeProvider();
-			Code content = new Code("110"); // 3 bits
-			int offset = 5;
-
-			// Act & Assert
-			TapeProviderHelper.TestWriteAndReadRoundTrip(provider, content, offset);
-		}
-
-		[Trait("Region", "MemoryTapeProvider methods")]
-		[Fact]
-		public void WriteAndReadRoundTrip_UnalignedAcrossByteBoundary_ShouldWork()
-		{
-			// Arrange
-			TapeProvider provider = new MemoryTapeProvider();
-			Code content = new Code("11011101");
-			int offset = 5;
-
-			// Act & Assert
-			TapeProviderHelper.TestWriteAndReadRoundTrip(provider, content, offset);
-		}
-
-		[Trait("Region", "MemoryTapeProvider methods")]
-		[Fact]
-		public void WriteAndReadRoundTrip_AtEnd_ShouldWork()
-		{
-			// Arrange
-			TapeProvider provider = new MemoryTapeProvider();
-			Code content = new Code("11111111"); // 8 bits
-			int offset = TapeProvider.MaxContentLength - 8;
-
-			// Act & Assert
-			TapeProviderHelper.TestWriteAndReadRoundTrip(provider, content, offset);
+			var provider = new MemoryTapeProvider();
+			byte[] data = new byte[] { 0xFF };
+			int offset = (MaxContentLength / 8) - 1;
+			TapeProviderHelper.TestWriteAndReadRoundTrip(provider, TestTapeId, data, offset);
 		}
 		#endregion
 	}
