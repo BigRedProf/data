@@ -1,6 +1,7 @@
 ﻿using BigRedProf.Data.Core;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace BigRedProf.Data.Tape
 {
@@ -8,12 +9,14 @@ namespace BigRedProf.Data.Tape
 	{
 		#region fields
 		private IPiedPiper _piedPiper;
+		private TapeProvider _tapeProvider;
 		#endregion
 
 		#region protected constructors
-		protected Librarian(IPiedPiper piedPiper)
+		protected Librarian(IPiedPiper piedPiper, TapeProvider tapeProvider)
 		{
 			_piedPiper = piedPiper ?? throw new ArgumentNullException(nameof(piedPiper));
+			_tapeProvider = tapeProvider ?? throw new ArgumentNullException(nameof(tapeProvider));
 			DefineCoreTraits();
 		}
 		#endregion
@@ -24,17 +27,25 @@ namespace BigRedProf.Data.Tape
 			if (tapeId == Guid.Empty)
 				throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
 			
-			if (!TryFetchTape(tapeId, out Tape tape))
+			if (!_tapeProvider.TryFetchTapeInternal(tapeId, out Tape tape))
 				throw new KeyNotFoundException($"Tape with ID '{tapeId}' not found.");
 			
 			return tape;
 		}
-		#endregion
 
-		#region abstract methods
-		abstract public IEnumerable<Tape> FetchAllTapes();
-		abstract public IEnumerable<Tape> FetchTapesInSeries(Guid seriesId);
-		abstract public bool TryFetchTape(Guid tapeId, out Tape tape);
+		public IEnumerable<Tape> FetchAllTapes()
+		{
+			return _tapeProvider.FetchAllTapesInternal();
+		}
+
+		public IEnumerable<Tape> FetchTapesInSeries(Guid seriesId)
+		{
+			if (seriesId == Guid.Empty)
+				throw new ArgumentException("Series ID cannot be empty.", nameof(seriesId));
+			
+			return _tapeProvider.FetchAllTapesInternal()
+				.Where(tape => tape.ReadLabel().TryGetTrait<Guid>(CoreTrait.SeriesId, out Guid tapeSeriesId) && tapeSeriesId == seriesId);
+		}
 		#endregion
 
 		#region private methods

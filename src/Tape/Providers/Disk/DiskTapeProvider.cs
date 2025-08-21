@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace BigRedProf.Data.Tape.Providers.Disk
@@ -6,34 +7,49 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 	public class DiskTapeProvider : TapeProvider
 	{
 		#region fields
-		private readonly string _filePath;
+		private readonly string _directoryPath;
 		#endregion
 
 		#region constructors
-		public DiskTapeProvider(string filePath)
+		public DiskTapeProvider(string directoryPath)
 		{
-			if (string.IsNullOrWhiteSpace(filePath))
-				throw new ArgumentNullException(nameof(filePath));
+			if (string.IsNullOrWhiteSpace(directoryPath))
+				throw new ArgumentNullException(nameof(directoryPath));
 
-			_filePath = filePath;
+			_directoryPath = directoryPath;
 
-			// Ensure the file exists and is the correct size
-			if (!File.Exists(_filePath))
+			// Ensure the directory exists
+			if (!Directory.Exists(_directoryPath))
 			{
-				using (FileStream fs = File.Create(_filePath))
+				try
 				{
-					fs.SetLength(MaxContentLength / 8); // Allocate full tape size (125MB)
+					Directory.CreateDirectory(_directoryPath);
+				}
+				catch (Exception ex)
+				{
+					throw new IOException($"Failed to create directory '{_directoryPath}'.", ex);
 				}
 			}
 		}
 		#endregion
 
 		#region TapeProvider methods
-		protected override byte[] ReadInternal(int byteOffset, int byteLength)
+		public override bool TryFetchTapeInternal(Guid tapeId, out Tape tape)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override IEnumerable<Tape> FetchAllTapesInternal()
+		{
+			throw new NotImplementedException();
+		}
+
+		public override byte[] ReadInternal(Guid tapeId, int byteOffset, int byteLength)
 		{
 			byte[] resultBytes = new byte[byteLength];
 
-			using (FileStream fs = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+			string filePath = GetFilePath(tapeId);
+			using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 			{
 				fs.Seek(byteOffset, SeekOrigin.Begin);
 				int bytesRead = fs.Read(resultBytes, 0, byteLength);
@@ -46,13 +62,42 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 			return resultBytes;
 		}
 
-		protected override void WriteInternal(byte[] data, int byteOffset, int byteLength)
+		public override void WriteInternal(Guid tapeId, byte[] data, int byteOffset, int byteLength)
 		{
-			using (FileStream fs = new FileStream(_filePath, FileMode.Open, FileAccess.Write, FileShare.ReadWrite))
+			if (data == null)
+				throw new ArgumentNullException(nameof(data));
+			
+			if (byteOffset < 0 || byteLength <= 0 || byteOffset + byteLength > data.Length)
+				throw new ArgumentOutOfRangeException("Invalid byte offset or length.");
+
+			string filePath = GetFilePath(tapeId);
+			using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Write, FileShare.ReadWrite))
 			{
 				fs.Seek(byteOffset, SeekOrigin.Begin);
 				fs.Write(data, 0, byteLength);
 				fs.Flush();
+			}
+		}
+		#endregion
+
+		#region private methods
+		private string GetFilePath(Guid tapeId)
+		{
+			if (tapeId == Guid.Empty)
+				throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
+		
+			return Path.Combine(_directoryPath, $"{tapeId}.tape");
+		}
+
+		private void EnsureFileExists(string filePath)
+		{
+			// Ensure the file exists and is the correct size
+			if (!File.Exists(filePath))
+			{
+				using (FileStream fs = File.Create(filePath))
+				{
+					fs.SetLength(Tape.MaxContentLength / 8); // Allocate full tape size (125MB)
+				}
 			}
 		}
 		#endregion

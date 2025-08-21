@@ -61,7 +61,7 @@ namespace BigRedProf.Data.Tape.PackRats
 
 			// GUID, as 36-character string (for show)
 			Guid guid = Guid.Empty;
-			model.Label.TryGetTrait<Guid>(CoreTrait.Guid, out guid);
+			model.Label.TryGetTrait<Guid>(CoreTrait.Id, out guid);
 			stringBuilder.Append(guid.ToString());
 
 			// End-of-file (for show)
