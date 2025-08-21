@@ -1,7 +1,7 @@
 ﻿using System;
 using BigRedProf.Data.Core;
-using BigRedProf.Data.Tape.Providers.Memory;
 using BigRedProf.Data.Tape._TestHelpers;
+using BigRedProf.Data.Tape.Providers.Memory;
 using Xunit;
 
 namespace BigRedProf.Data.Tape.Test.Providers.Memory
@@ -11,6 +11,7 @@ namespace BigRedProf.Data.Tape.Test.Providers.Memory
 		#region MemoryTapeProvider methods
 		private static readonly Guid TestTapeId = Guid.NewGuid();
 		private const int MaxContentLength = 1_000_000_000; // 1 billion bits
+		private const int MaxContentBytes = MaxContentLength / 8;
 
 		[Trait("Region", "MemoryTapeProvider methods")]
 		[Fact]
@@ -61,8 +62,10 @@ namespace BigRedProf.Data.Tape.Test.Providers.Memory
 		{
 			var provider = new MemoryTapeProvider();
 			byte[] data = new byte[] { 0xFF };
-			int offset = (MaxContentLength / 8) - 1;
-			TapeProviderHelper.TestWriteAndReadRoundTrip(provider, TestTapeId, data, offset);
+			int offset = MaxContentBytes - 1;
+			provider.WriteInternal(TestTapeId, data, offset, 1);
+			var read = provider.ReadInternal(TestTapeId, offset, 1);
+			Assert.Equal(data, read);
 		}
 		#endregion
 	}
