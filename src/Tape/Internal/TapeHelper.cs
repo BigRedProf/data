@@ -11,8 +11,11 @@ namespace BigRedProf.Data.Tape.Internal
 			if (tape == null)
 				throw new ArgumentNullException(nameof(tape), "Tape cannot be null.");
 
-			// Implementation should be here or throw NotImplementedException
-			throw new NotImplementedException();
+			var piedPiper = tape.TapeProvider.PiedPiper;
+			// Read a reasonable max label size (4096 bytes = 32768 bits)
+			const int maxLabelBits = 4096 * 8;
+			Code code = ReadRawCode(tape.TapeProvider, tape.Id, 0, maxLabelBits);
+			return piedPiper.DecodeModel<FlexModel>(code, CoreSchema.FlexModel);
 		}
 
 		public static void WriteLabel(Tape tape, FlexModel label)
@@ -23,8 +26,9 @@ namespace BigRedProf.Data.Tape.Internal
 			if (label == null)
 				throw new ArgumentNullException(nameof(label), "Label cannot be null.");
 
-			// Implementation should be here or throw NotImplementedException
-			throw new NotImplementedException();
+			var piedPiper = tape.TapeProvider.PiedPiper;
+			var code = piedPiper.EncodeModel(label, CoreSchema.FlexModel);
+			WriteRawCode(tape.TapeProvider, tape.Id, code, 0);
 		}
 
 		public static Code ReadContent(Tape tape, int offset, int length)
