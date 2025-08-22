@@ -1,10 +1,28 @@
-﻿using System;
+﻿using BigRedProf.Data.Core;
+using System;
 using System.Collections.Generic;
 
 namespace BigRedProf.Data.Tape
 {
 	public abstract class TapeProvider
 	{
+		#region constructors
+		protected TapeProvider()
+		{
+			PiedPiper = new PiedPiper();
+			PiedPiper.RegisterCorePackRats();
+			PiedPiper.DefineCoreTraits();
+		}
+		#endregion
+
+		#region properties
+		public IPiedPiper PiedPiper 
+		{
+			get; 
+			private set; 
+		}
+		#endregion
+
 		#region abstract methods
 		/// <summary>
 		/// Retrieves all tapes from the underlying data source.
