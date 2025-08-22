@@ -50,6 +50,41 @@ namespace BigRedProf.Data.Tape.Internal
 				);
 			}
 
+			return ReadRawCode(tapeProvider, tapeId, offset, length);
+		}
+
+		/// <summary>
+		/// Writes content to the tape starting at the specified offset.
+		/// </summary>
+		/// <param name="tapeId">Unique identifier of the tape to write to.</param>
+		/// <param name="content">The content to write.</param>
+		/// <param name="offset">The starting position in bits.</param>
+		public static void WriteContent(TapeProvider tapeProvider, Guid tapeId, Code content, int offset)
+		{
+			if (offset < 0 || offset > Tape.MaxContentLength)
+			{
+				throw new ArgumentOutOfRangeException(
+					nameof(offset),
+					$"Offset must be in the range [0, {Tape.MaxContentLength}]"
+				);
+			}
+
+			if (offset + content.Length > Tape.MaxContentLength)
+			{
+				throw new ArgumentOutOfRangeException(
+					nameof(content),
+					$"Content length when added to the 'offset' parameter " +
+					$"cannot exceed {Tape.MaxContentLength}."
+				);
+			}
+
+			WriteRawCode(tapeProvider, tapeId, content, offset);
+		}
+		#endregion
+
+		#region private methods
+		private static Code ReadRawCode(TapeProvider tapeProvider, Guid tapeId, int offset, int length)
+		{
 			int byteStart = offset / 8;
 			int bitOffset = offset % 8;
 			int byteLength = ((offset + length - 1) / 8) - byteStart + 1;
@@ -79,31 +114,8 @@ namespace BigRedProf.Data.Tape.Internal
 			return new Code(bytesToEncode, length);
 		}
 
-		/// <summary>
-		/// Writes content to the tape starting at the specified offset.
-		/// </summary>
-		/// <param name="tapeId">Unique identifier of the tape to write to.</param>
-		/// <param name="content">The content to write.</param>
-		/// <param name="offset">The starting position in bits.</param>
-		public static void WriteContent(TapeProvider tapeProvider, Guid tapeId, Code content, int offset)
+		private static void WriteRawCode(TapeProvider tapeProvider, Guid tapeId, Code content, int offset)
 		{
-			if (offset < 0 || offset > Tape.MaxContentLength)
-			{
-				throw new ArgumentOutOfRangeException(
-					nameof(offset),
-					$"Offset must be in the range [0, {Tape.MaxContentLength}]"
-				);
-			}
-
-			if (offset + content.Length > Tape.MaxContentLength)
-			{
-				throw new ArgumentOutOfRangeException(
-					nameof(content),
-					$"Content length when added to the 'offset' parameter " +
-					$"cannot exceed {Tape.MaxContentLength}."
-				);
-			}
-
 			int byteStart = offset / 8;
 			int bitOffset = offset % 8;
 			int byteLength = ((offset + content.Length - 1) / 8) - byteStart + 1;
