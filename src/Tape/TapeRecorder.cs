@@ -13,7 +13,7 @@ public class TapeRecorder : TapeMover
 
 		VerifyTapeIsInserted();
 
-		TapeHelper.WriteContent(Tape.TapeProvider, Tape.Id, content, Tape.Position);
+		TapeHelper.WriteContent(Tape, content, Tape.Position);
 		RewindOrFastForwardTo(Tape.Position + content.Length);
 	}
 	#endregion

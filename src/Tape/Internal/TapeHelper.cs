@@ -6,79 +6,65 @@ namespace BigRedProf.Data.Tape.Internal
 	internal static class TapeHelper
 	{
 		#region public methods
-		public static FlexModel ReadLabel(TapeProvider tapeProvider, Guid tapeId)
+		public static FlexModel ReadLabel(Tape tape)
 		{
-			if (tapeProvider == null)
-				throw new ArgumentNullException(nameof(tapeProvider), "Tape provider cannot be null.");
+			if (tape == null)
+				throw new ArgumentNullException(nameof(tape), "Tape cannot be null.");
 
-			if (tapeId == Guid.Empty)
-				throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
-
+			// Implementation should be here or throw NotImplementedException
 			throw new NotImplementedException();
 		}
 
-		public static void WriteLabel(TapeProvider tapeProvider, Guid tapeId, FlexModel label)
+		public static void WriteLabel(Tape tape, FlexModel label)
 		{
-			if(tapeProvider == null)
-				throw new ArgumentNullException(nameof(tapeProvider), "Tape provider cannot be null.");
-
-			if (tapeId == Guid.Empty)
-				throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
+			if (tape == null)
+				throw new ArgumentNullException(nameof(tape), "Tape cannot be null.");
 
 			if (label == null)
 				throw new ArgumentNullException(nameof(label), "Label cannot be null.");
 
+			// Implementation should be here or throw NotImplementedException
 			throw new NotImplementedException();
 		}
 
-		public static Code ReadContent(TapeProvider tapeProvider, Guid tapeId, int offset, int length)
+		public static Code ReadContent(Tape tape, int offset, int length)
 		{
+			if (tape == null)
+				throw new ArgumentNullException(nameof(tape), "Tape cannot be null.");
+
 			if (offset < 0 || offset > Tape.MaxContentLength)
 			{
 				throw new ArgumentOutOfRangeException(
 					nameof(offset),
-					$"Offset must be in the range [0, {Tape.MaxContentLength}]"
-				);
+					$"Offset must be between 0 and {Tape.MaxContentLength}.");
 			}
 
-			if (length < 1 || offset + length > Tape.MaxContentLength)
+			if (length <= 0 || length > Tape.MaxContentLength - offset)
 			{
 				throw new ArgumentOutOfRangeException(
 					nameof(length),
-					$"Length must be at least 1 and when added to the 'offset' parameter " +
-					$"cannot exceed {Tape.MaxContentLength}."
-				);
+					$"Length must be greater than 0 and offset+length must be less than {Tape.MaxContentLength}.");
 			}
 
-			return ReadRawCode(tapeProvider, tapeId, offset, length);
+			return ReadRawCode(tape.TapeProvider, tape.Id, offset, length);
 		}
 
-		/// <summary>
-		/// Writes content to the tape starting at the specified offset.
-		/// </summary>
-		/// <param name="tapeId">Unique identifier of the tape to write to.</param>
-		/// <param name="content">The content to write.</param>
-		/// <param name="offset">The starting position in bits.</param>
-		public static void WriteContent(TapeProvider tapeProvider, Guid tapeId, Code content, int offset)
+		public static void WriteContent(Tape tape, Code content, int offset)
 		{
+			if (tape == null)
+				throw new ArgumentNullException(nameof(tape), "Tape cannot be null.");
+
+			if (content == null)
+				throw new ArgumentNullException(nameof(content), "Content cannot be null.");
+
 			if (offset < 0 || offset > Tape.MaxContentLength)
 			{
 				throw new ArgumentOutOfRangeException(
 					nameof(offset),
-					$"Offset must be in the range [0, {Tape.MaxContentLength}]"
-				);
+					$"Offset must be between 0 and {Tape.MaxContentLength}.");
 			}
 
-			if (offset + content.Length > Tape.MaxContentLength)
-			{
-				throw new ArgumentOutOfRangeException(
-					nameof(content),
-					$"Content length when added to the 'offset' parameter " +
-					$"cannot exceed {Tape.MaxContentLength}."
-				);
-			}
-
-			WriteRawCode(tapeProvider, tapeId, content, offset);
+			WriteRawCode(tape.TapeProvider, tape.Id, content, offset);
 		}
 		#endregion
 

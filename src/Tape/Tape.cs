@@ -60,15 +60,15 @@ namespace BigRedProf.Data.Tape
 		#region methods
 		public FlexModel ReadLabel()
 		{
-			return TapeHelper.ReadLabel(TapeProvider, Id);
+			return TapeHelper.ReadLabel(this);
 		}
 
 		public void WriteLabel(FlexModel label)
 		{
 			if (label == null)
 				throw new ArgumentNullException(nameof(label), "Label cannot be null.");
-		
-			TapeHelper.WriteLabel(TapeProvider, Id, label);
+
+			TapeHelper.WriteLabel(this, label);
 		}
 		#endregion
 	}

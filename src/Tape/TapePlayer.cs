@@ -9,7 +9,7 @@ public class TapePlayer : TapeMover
 	{
 		VerifyTapeIsInserted();
 
-		Code result = TapeHelper.ReadContent(Tape.TapeProvider, Tape.Id, Tape.Position, length);
+		Code result = TapeHelper.ReadContent(Tape, Tape.Position, length);
 		RewindOrFastForwardTo(Tape.Position + length);
 		return result;
 	} 
