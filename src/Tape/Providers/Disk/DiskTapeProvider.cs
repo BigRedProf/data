@@ -44,7 +44,7 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 			throw new NotImplementedException();
 		}
 
-		public override byte[] ReadInternal(Guid tapeId, int byteOffset, int byteLength)
+		public override byte[] ReadTapeInternal(Guid tapeId, int byteOffset, int byteLength)
 		{
 			byte[] resultBytes = new byte[byteLength];
 
@@ -62,7 +62,12 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 			return resultBytes;
 		}
 
-		public override void WriteInternal(Guid tapeId, byte[] data, int byteOffset, int byteLength)
+		public override byte[] ReadLabelInternal(Guid tapeId)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override void WriteTapeInternal(Guid tapeId, byte[] data, int byteOffset, int byteLength)
 		{
 			if (data == null)
 				throw new ArgumentNullException(nameof(data));
@@ -78,9 +83,17 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 				fs.Flush();
 			}
 		}
+
+		public override void WriteLabelInternal(Guid tapeId, byte[] data)
+		{
+			throw new NotImplementedException();
+		}
 		#endregion
 
 		#region private methods
+		// TODO: Add methods for the label files, too. They should be in a hidden
+		// .labels directory.
+
 		private string GetFilePath(Guid tapeId)
 		{
 			if (tapeId == Guid.Empty)

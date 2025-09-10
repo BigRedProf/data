@@ -28,7 +28,7 @@ namespace BigRedProf.Data.Tape.Providers.Memory
 			throw new NotImplementedException();
 		}
 
-		public override byte[] ReadInternal(Guid tapeId, int byteOffset, int byteLength)
+		public override byte[] ReadTapeInternal(Guid tapeId, int byteOffset, int byteLength)
 		{
 			if (tapeId == Guid.Empty)
 				throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
@@ -39,7 +39,12 @@ namespace BigRedProf.Data.Tape.Providers.Memory
 			return resultBytes;
 		}
 
-		public override void WriteInternal(Guid tapeId, byte[] data, int byteOffset, int byteLength)
+		public override byte[] ReadLabelInternal(Guid tapeId)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override void WriteTapeInternal(Guid tapeId, byte[] data, int byteOffset, int byteLength)
 		{
 			if (tapeId == Guid.Empty)
 				throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
@@ -55,6 +60,11 @@ namespace BigRedProf.Data.Tape.Providers.Memory
 
 			byte[] _data = GetTapeData(tapeId);
 			Array.Copy(data, 0, _data, byteOffset, byteLength);
+		}
+
+		public override void WriteLabelInternal(Guid tapeId, byte[] data)
+		{
+			throw new NotImplementedException();
 		}
 		#endregion
 

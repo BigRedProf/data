@@ -1,4 +1,5 @@
 ﻿using BigRedProf.Data.Core;
+using System;
 
 namespace BigRedProf.Data.Tape.Models
 {
@@ -15,6 +16,8 @@ namespace BigRedProf.Data.Tape.Models
 		/// The amount of space allocated for the packed label. We currently
 		/// support values of 1000, 5000, 25000, and 125000.
 		/// </summary>
+		/// <remarks>This is obsolete. Can remove it from pack rat too.</remarks>
+		// TODO: remove this
 		public int BytesAllocatedForLabel { get; set; }
 
 		// TODO: Not sure if we want this here yet or not. One one hand, we

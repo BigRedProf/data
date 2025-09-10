@@ -13,8 +13,8 @@ namespace BigRedProf.Data.Tape._TestHelpers
 			byte[] content,
 			int offset)
 		{
-			tapeProvider.WriteInternal(tapeId, content, offset, content.Length);
-			var result = tapeProvider.ReadInternal(tapeId, offset, content.Length);
+			tapeProvider.WriteTapeInternal(tapeId, content, offset, content.Length);
+			var result = tapeProvider.ReadTapeInternal(tapeId, offset, content.Length);
 			Assert.Equal(content, result);
 		}
 		#endregion

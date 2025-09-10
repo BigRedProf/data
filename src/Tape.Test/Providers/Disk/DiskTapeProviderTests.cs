@@ -44,7 +44,7 @@ namespace BigRedProf.Data.Tape.Test.Providers.Disk
 			TapeProvider provider = new DiskTapeProvider(_testFilePath);
 			Assert.ThrowsAny<Exception>(() =>
 			{
-				provider.ReadInternal(TestTapeId, -1, 1);
+				provider.ReadTapeInternal(TestTapeId, -1, 1);
 			});
 		}
 
@@ -55,8 +55,8 @@ namespace BigRedProf.Data.Tape.Test.Providers.Disk
 			TapeProvider provider = new DiskTapeProvider(_testFilePath);
 			byte[] data = new byte[] { 0xFF };
 			int offset = MaxContentBytes - 1;
-			provider.WriteInternal(TestTapeId, data, offset, 1);
-			var read = provider.ReadInternal(TestTapeId, offset, 1);
+			provider.WriteTapeInternal(TestTapeId, data, offset, 1);
+			var read = provider.ReadTapeInternal(TestTapeId, offset, 1);
 			Assert.Equal(data, read);
 		}
 
@@ -66,8 +66,8 @@ namespace BigRedProf.Data.Tape.Test.Providers.Disk
 		{
 			TapeProvider provider = new DiskTapeProvider(_testFilePath);
 			byte[] data = new byte[] { 0xAB, 0xCD, 0xEF };
-			provider.WriteInternal(TestTapeId, data, 0, data.Length);
-			var read = provider.ReadInternal(TestTapeId, 0, data.Length);
+			provider.WriteTapeInternal(TestTapeId, data, 0, data.Length);
+			var read = provider.ReadTapeInternal(TestTapeId, 0, data.Length);
 			Assert.Equal(data, read);
 		}
 		#endregion

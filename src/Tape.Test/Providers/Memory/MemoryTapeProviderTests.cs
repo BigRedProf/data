@@ -20,7 +20,7 @@ namespace BigRedProf.Data.Tape.Test.Providers.Memory
 			var provider = new MemoryTapeProvider();
 			Assert.Throws<ArgumentOutOfRangeException>(() =>
 			{
-				provider.ReadInternal(TestTapeId, -1, 1);
+				provider.ReadTapeInternal(TestTapeId, -1, 1);
 			});
 		}
 
@@ -31,7 +31,7 @@ namespace BigRedProf.Data.Tape.Test.Providers.Memory
 			var provider = new MemoryTapeProvider();
 			Assert.Throws<ArgumentException>(() =>
 			{
-				provider.ReadInternal(Guid.Empty, 0, 1);
+				provider.ReadTapeInternal(Guid.Empty, 0, 1);
 			});
 		}
 
@@ -43,7 +43,7 @@ namespace BigRedProf.Data.Tape.Test.Providers.Memory
 			byte[] data = new byte[1];
 			Assert.Throws<ArgumentException>(() =>
 			{
-				provider.WriteInternal(Guid.Empty, data, 0, 1);
+				provider.WriteTapeInternal(Guid.Empty, data, 0, 1);
 			});
 		}
 
@@ -63,8 +63,8 @@ namespace BigRedProf.Data.Tape.Test.Providers.Memory
 			var provider = new MemoryTapeProvider();
 			byte[] data = new byte[] { 0xFF };
 			int offset = MaxContentBytes - 1;
-			provider.WriteInternal(TestTapeId, data, offset, 1);
-			var read = provider.ReadInternal(TestTapeId, offset, 1);
+			provider.WriteTapeInternal(TestTapeId, data, offset, 1);
+			var read = provider.ReadTapeInternal(TestTapeId, offset, 1);
 			Assert.Equal(data, read);
 		}
 		#endregion

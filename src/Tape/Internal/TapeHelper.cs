@@ -80,7 +80,7 @@ namespace BigRedProf.Data.Tape.Internal
 			int byteLength = ((offset + length - 1) / 8) - byteStart + 1;
 
 			// TODO: Offset by label size!!
-			byte[] contentBytes = tapeProvider.ReadInternal(tapeId, byteStart, byteLength);
+			byte[] contentBytes = tapeProvider.ReadTapeInternal(tapeId, byteStart, byteLength);
 
 			// Fast path: Byte-aligned read
 			if (bitOffset == 0 && length % 8 == 0)
@@ -117,7 +117,7 @@ namespace BigRedProf.Data.Tape.Internal
 			// Fast path: Byte-aligned write
 			if (bitOffset == 0 && content.Length % 8 == 0)
 			{
-				tapeProvider.WriteInternal(tapeId, contentBytes, byteStart, byteLength);
+				tapeProvider.WriteTapeInternal(tapeId, contentBytes, byteStart, byteLength);
 				return;
 			}
 
@@ -132,7 +132,7 @@ namespace BigRedProf.Data.Tape.Internal
 			else
 			{
 				// we need to read one existing byte on tape to help calculate are first byte
-				byte firstByte = tapeProvider.ReadInternal(tapeId, byteStart, 1)[0];
+				byte firstByte = tapeProvider.ReadTapeInternal(tapeId, byteStart, 1)[0];
 				firstByte |= (byte)(contentBytes[0] << bitOffset);
 				bytesToWrite[0] = firstByte;
 
@@ -148,7 +148,7 @@ namespace BigRedProf.Data.Tape.Internal
 				}
 			}
 
-			tapeProvider.WriteInternal(tapeId, bytesToWrite, byteStart, byteLength);
+			tapeProvider.WriteTapeInternal(tapeId, bytesToWrite, byteStart, byteLength);
 		}
 		#endregion
 	}

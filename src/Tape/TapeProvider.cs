@@ -1,6 +1,7 @@
 ﻿using BigRedProf.Data.Core;
 using System;
 using System.Collections.Generic;
+using System.Reflection.Emit;
 
 namespace BigRedProf.Data.Tape
 {
@@ -44,14 +45,28 @@ namespace BigRedProf.Data.Tape
 		abstract public bool TryFetchTapeInternal(Guid tapeId, out Tape tape);
 
 		/// <summary>
-		/// Reads a portion of the tape or its label. Must be implemented by subclasses.
+		/// Reads a portion of the tape. Must be implemented by subclasses.
 		/// </summary>
-		abstract public byte[] ReadInternal(Guid tapeId, int byteOffset, int byteLength);
+		abstract public byte[] ReadTapeInternal(Guid tapeId, int byteOffset, int byteLength);
 
 		/// <summary>
-		/// Writes content to the tape or its label. Must be implemented by subclasses.
+		/// Reads a tape's label. Must be implemented by subclasses.
 		/// </summary>
-		abstract public void WriteInternal(Guid tapeId, byte[] data, int byteOffset, int byteLength);
+		/// <param name="tapeId">The tape identifier.</param>
+		/// <returns></returns>
+		abstract public byte[] ReadLabelInternal(Guid tapeId);
+
+		/// <summary>
+		/// Writes content to the tape. Must be implemented by subclasses.
+		/// </summary>
+		abstract public void WriteTapeInternal(Guid tapeId, byte[] data, int byteOffset, int byteLength);
+
+		/// <summary>
+		/// Writes a tape's label. Must be implemented by subclasses.
+		/// </summary>
+		/// <param name="tapeId">The tape identifier.</param>
+		/// <param name="data">The label, as packed bytes.</param>
+		abstract public void WriteLabelInternal(Guid tapeId, byte[] data);
 		#endregion
 	}
 }
