@@ -4,7 +4,7 @@ using System;
 
 namespace BigRedProf.Data.Tape
 {
-	public abstract class Tape
+	public class Tape
 	{
 		#region constants
 		/// <summary>
@@ -18,7 +18,7 @@ namespace BigRedProf.Data.Tape
 		#endregion
 
 		#region constructors
-		protected Tape(TapeProvider provider)
+		public Tape(TapeProvider provider)
 		{
 			_tapeProvider = provider ?? throw new ArgumentNullException(nameof(provider));
 		}
