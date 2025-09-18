@@ -88,6 +88,12 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 		{
 			throw new NotImplementedException();
 		}
+
+		public override void AddTapeInternal(Tape tape)
+		{
+			// TODO: Implement tape addition logic for disk provider
+			throw new NotImplementedException();
+		}
 		#endregion
 
 		#region private methods

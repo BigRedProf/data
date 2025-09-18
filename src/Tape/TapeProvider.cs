@@ -67,6 +67,12 @@ namespace BigRedProf.Data.Tape
 		/// <param name="tapeId">The tape identifier.</param>
 		/// <param name="data">The label, as packed bytes.</param>
 		abstract public void WriteLabelInternal(Guid tapeId, byte[] data);
+
+		/// <summary>
+		/// Adds a tape to the underlying data source.
+		/// </summary>
+		/// <param name="tape">The tape to add.</param>
+		abstract public void AddTapeInternal(Tape tape);
 		#endregion
 	}
 }

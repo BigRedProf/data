@@ -46,6 +46,14 @@ namespace BigRedProf.Data.Tape
 			return _tapeProvider.FetchAllTapesInternal()
 				.Where(tape => tape.ReadLabel().TryGetTrait<Guid>(CoreTrait.SeriesId, out Guid tapeSeriesId) && tapeSeriesId == seriesId);
 		}
+
+		public void AddTape(Tape tape)
+		{
+			if (tape == null)
+				throw new ArgumentNullException(nameof(tape), "Tape cannot be null.");
+			
+			_tapeProvider.AddTapeInternal(tape);
+		}
 		#endregion
 
 		#region private methods

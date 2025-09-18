@@ -66,6 +66,12 @@ namespace BigRedProf.Data.Tape.Providers.Memory
 		{
 			throw new NotImplementedException();
 		}
+
+		public override void AddTapeInternal(Tape tape)
+		{
+			// TODO: Implement tape addition logic for memory provider
+			throw new NotImplementedException();
+		}
 		#endregion
 
 		#region private methods
