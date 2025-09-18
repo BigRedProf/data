@@ -5,15 +5,15 @@ using System.Linq;
 
 namespace BigRedProf.Data.Tape
 {
-	abstract public class Librarian
+	public class Librarian
 	{
 		#region fields
 		private IPiedPiper _piedPiper;
 		private TapeProvider _tapeProvider;
 		#endregion
 
-		#region protected constructors
-		protected Librarian(IPiedPiper piedPiper, TapeProvider tapeProvider)
+		#region public constructors
+		public Librarian(IPiedPiper piedPiper, TapeProvider tapeProvider)
 		{
 			_piedPiper = piedPiper ?? throw new ArgumentNullException(nameof(piedPiper));
 			_tapeProvider = tapeProvider ?? throw new ArgumentNullException(nameof(tapeProvider));
