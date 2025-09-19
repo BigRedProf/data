@@ -1,4 +1,6 @@
 ﻿using BigRedProf.Data.Core;
+using BigRedProf.Data.Tape.Providers.Memory;
+using BigRedProf.Data.Tape.Providers.Disk;
 
 namespace BigRedProf.Data.Tape._TestHelpers
 {
@@ -11,6 +13,16 @@ namespace BigRedProf.Data.Tape._TestHelpers
 			piedPiper.RegisterCorePackRats();
 			piedPiper.DefineCoreTraits();
 			return piedPiper;
+		}
+
+		public static TapeProvider CreateMemoryTapeProvider()
+		{
+			return new MemoryTapeProvider();
+		}
+
+		public static TapeProvider CreateDiskTapeProvider(string directoryPath = "TestTapes")
+		{
+			return new DiskTapeProvider(directoryPath);
 		}
 
 		public static void TestWriteAndReadRoundTrip(

@@ -1,18 +1,25 @@
 ﻿using BigRedProf.Data.Core;
 using BigRedProf.Data.Tape._TestHelpers;
-using BigRedProf.Data.Tape.Providers.Memory;
 
 namespace BigRedProf.Data.Tape.Test
 {
 	public class LibrarianTests
 	{
+		#region static methods
+		public static IEnumerable<object[]> TapeProviders()
+		{
+			yield return new object[] { TapeProviderHelper.CreateMemoryTapeProvider() };
+			yield return new object[] { TapeProviderHelper.CreateDiskTapeProvider("TestTapes") };
+		} 
+		#endregion
+
 		#region Librarian methods
 		[Trait("Region", "Librarian methods")]
-		[Fact]
-		public void FetchTape_ShouldThrow_WhenTapeIdIsEmptyGuid()
+		[Theory]
+		[MemberData(nameof(TapeProviders))]
+		public void FetchTape_ShouldThrow_WhenTapeIdIsEmptyGuid(TapeProvider tapeProvider)
 		{
 			IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();
-			TapeProvider tapeProvider = new MemoryTapeProvider();
 			Librarian librarian = new Librarian(piedPiper, tapeProvider);
 			Assert.ThrowsAny<ArgumentException>(() =>
 			{
@@ -21,11 +28,11 @@ namespace BigRedProf.Data.Tape.Test
 		}
 
 		[Trait("Region", "Librarian methods")]
-		[Fact]
-		public void FetchTape_ShouldThrow_WhenTapeDoesNotExist()
+		[Theory]
+		[MemberData(nameof(TapeProviders))]
+		public void FetchTape_ShouldThrow_WhenTapeDoesNotExist(TapeProvider tapeProvider)
 		{
 			IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();
-			TapeProvider tapeProvider = new MemoryTapeProvider();
 			Librarian librarian = new Librarian(piedPiper, tapeProvider);
 			Assert.ThrowsAny<Exception>(() =>
 			{
