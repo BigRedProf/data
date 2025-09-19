@@ -1,12 +1,18 @@
 ﻿using BigRedProf.Data.Core;
-using Xunit;
-using System;
 
 namespace BigRedProf.Data.Tape._TestHelpers
 {
 	internal class TapeProviderHelper
 	{
 		#region functions
+		public static IPiedPiper CreatePiedPiper()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterCorePackRats();
+			piedPiper.DefineCoreTraits();
+			return piedPiper;
+		}
+
 		public static void TestWriteAndReadRoundTrip(
 			TapeProvider tapeProvider,
 			Guid tapeId,
