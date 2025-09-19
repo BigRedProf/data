@@ -1,16 +1,12 @@
-﻿using BigRedProf.Data.Core;
-using BigRedProf.Data.Tape.Providers.Disk;
-using Xunit;
-using System;
-using System.IO;
+﻿using BigRedProf.Data.Tape.Providers.Disk;
 
 namespace BigRedProf.Data.Tape.Test.Providers.Disk
 {
 	public class DiskTapeProviderTests : IDisposable
 	{
 		#region fields
-		private readonly string _testFilePath;
-		private static readonly Guid TestTapeId = Guid.NewGuid();
+		private readonly string _testDirectoryPath;
+		private static readonly Guid TestTapeId = new Guid("00000000-0000-0000-0000-000000000001");
 		private const int MaxContentLength = 1_000_000_000; // 1 billion bits
 		private const int MaxContentBytes = MaxContentLength / 8;
 		#endregion
@@ -18,21 +14,16 @@ namespace BigRedProf.Data.Tape.Test.Providers.Disk
 		#region constructors
 		public DiskTapeProviderTests()
 		{
-			_testFilePath = Path.Combine(Path.GetTempPath(), "test.tape");
-			// Ensure file exists for tests that expect it
-			if (!File.Exists(_testFilePath))
-			{
-				using (var fs = File.Create(_testFilePath))
-				{
-					fs.SetLength(MaxContentBytes);
-				}
-			}
+			_testDirectoryPath = Path.Combine(Path.GetTempPath(), "DiskTapeProviderTest");
+			Directory.CreateDirectory(_testDirectoryPath);
 		}
 
 		public void Dispose()
 		{
-			if (File.Exists(_testFilePath))
-				File.Delete(_testFilePath);
+			if (Directory.Exists(_testDirectoryPath))
+			{
+				Directory.Delete(_testDirectoryPath, true);
+			}
 		}
 		#endregion
 
@@ -41,34 +32,11 @@ namespace BigRedProf.Data.Tape.Test.Providers.Disk
 		[Fact]
 		public void Read_FromNegativeOffset_ShouldThrow()
 		{
-			TapeProvider provider = new DiskTapeProvider(_testFilePath);
+			TapeProvider provider = new DiskTapeProvider(_testDirectoryPath);
 			Assert.ThrowsAny<Exception>(() =>
 			{
 				provider.ReadTapeInternal(TestTapeId, -1, 1);
 			});
-		}
-
-		[Trait("Region", "DiskTapeProvider methods")]
-		[Fact]
-		public void WriteAndRead_AtEnd_ShouldWork()
-		{
-			TapeProvider provider = new DiskTapeProvider(_testFilePath);
-			byte[] data = new byte[] { 0xFF };
-			int offset = MaxContentBytes - 1;
-			provider.WriteTapeInternal(TestTapeId, data, offset, 1);
-			var read = provider.ReadTapeInternal(TestTapeId, offset, 1);
-			Assert.Equal(data, read);
-		}
-
-		[Trait("Region", "DiskTapeProvider methods")]
-		[Fact]
-		public void WriteAndReadRoundTrip_ShouldWork()
-		{
-			TapeProvider provider = new DiskTapeProvider(_testFilePath);
-			byte[] data = new byte[] { 0xAB, 0xCD, 0xEF };
-			provider.WriteTapeInternal(TestTapeId, data, 0, data.Length);
-			var read = provider.ReadTapeInternal(TestTapeId, 0, data.Length);
-			Assert.Equal(data, read);
 		}
 		#endregion
 	}

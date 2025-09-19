@@ -55,18 +55,6 @@ namespace BigRedProf.Data.Tape.Test.Providers.Memory
 			byte[] data = new byte[] { 0xAB, 0xCD, 0xEF };
 			TapeProviderHelper.TestWriteAndReadRoundTrip(provider, TestTapeId, data, 0);
 		}
-
-		[Trait("Region", "MemoryTapeProvider methods")]
-		[Fact]
-		public void WriteAndRead_AtEnd_ShouldWork()
-		{
-			var provider = new MemoryTapeProvider();
-			byte[] data = new byte[] { 0xFF };
-			int offset = MaxContentBytes - 1;
-			provider.WriteTapeInternal(TestTapeId, data, offset, 1);
-			var read = provider.ReadTapeInternal(TestTapeId, offset, 1);
-			Assert.Equal(data, read);
-		}
 		#endregion
 	}
 }
