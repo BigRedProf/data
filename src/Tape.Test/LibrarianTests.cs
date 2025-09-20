@@ -39,6 +39,26 @@ namespace BigRedProf.Data.Tape.Test
 				librarian.FetchTape(new Guid("00000000-4343-0000-0000-000000000001"));
 			});
 		}
+
+		[Trait("Region", "Librarian methods")]
+		[Theory]
+		[MemberData(nameof(TapeProviders))]
+		public void FetchTape_ShouldSucceed_WhenTapeDoesExist(TapeProvider tapeProvider)
+		{
+			IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();
+			Librarian librarian = new Librarian(piedPiper, tapeProvider);
+			Guid tapeId = new Guid("00000000-4343-0000-0000-000000000001");
+			Tape tape = new Tape(tapeProvider);
+			FlexModel label = new FlexModel();
+			label.AddTrait(new Trait<Guid>(CoreTrait.Id, tapeId));
+			librarian.AddTape(tape);
+
+			Tape fetchedTape = librarian.FetchTape(tapeId);
+			
+			FlexModel fetchedLabel = fetchedTape.ReadLabel();
+			Assert.True(fetchedLabel.TryGetTrait<Guid>(CoreTrait.Id, out Guid fetchedTapeId));
+			Assert.Equal(tapeId, fetchedTapeId);
+		}
 		#endregion
 	}
 }
