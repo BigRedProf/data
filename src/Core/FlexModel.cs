@@ -61,7 +61,16 @@ namespace BigRedProf.Data.Core
 		}
 		#endregion
 
-		#region properties
+		#region protected constructors
+		protected FlexModel(FlexModel modelToClone)
+		{
+			_untypedTraits = new Dictionary<Guid, UntypedTrait>(modelToClone._untypedTraits.Count);
+			foreach(KeyValuePair<Guid, UntypedTrait> kvp in modelToClone._untypedTraits)
+				_untypedTraits[kvp.Key] = kvp.Value;
+		}
+		#endregion
+
+		#region internal properties
 		internal Dictionary<Guid, UntypedTrait> InternalUntypedTraits => _untypedTraits;
 		#endregion
 
