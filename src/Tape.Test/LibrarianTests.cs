@@ -48,7 +48,7 @@ namespace BigRedProf.Data.Tape.Test
 			IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();
 			Librarian librarian = new Librarian(piedPiper, tapeProvider);
 			Guid tapeId = new Guid("00000000-4343-0000-0000-000000000001");
-			Tape tape = new Tape(tapeProvider);
+			Tape tape = new Tape(tapeProvider, tapeId);
 			TapeLabel tapeLabel = new TapeLabel()
 				.WithTapeId(tapeId);
 			tape.WriteLabel(tapeLabel);
@@ -56,9 +56,7 @@ namespace BigRedProf.Data.Tape.Test
 
 			Tape fetchedTape = librarian.FetchTape(tapeId);
 			
-			FlexModel fetchedLabel = fetchedTape.ReadLabel();
-			Assert.True(fetchedLabel.TryGetTrait<Guid>(CoreTrait.Id, out Guid fetchedTapeId));
-			Assert.Equal(tapeId, fetchedTapeId);
+			Assert.Equal(tapeId, fetchedTape.Id);
 		}
 		#endregion
 	}

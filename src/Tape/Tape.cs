@@ -18,23 +18,18 @@ namespace BigRedProf.Data.Tape
 		#endregion
 
 		#region constructors
-		public Tape(TapeProvider provider)
+		public Tape(TapeProvider provider, Guid tapeId)
 		{
 			_tapeProvider = provider ?? throw new ArgumentNullException(nameof(provider));
+			Id = tapeId != Guid.Empty ? tapeId : throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
 		}
 		#endregion
 
 		#region properties
 		public Guid Id
 		{
-			get
-			{
-				FlexModel label = ReadLabel();
-				if (label.TryGetTrait<Guid>(CoreTrait.Id, out Guid id))
-					return id;
-				
-				throw new InvalidOperationException("Tape ID is not defined in the label.");
-			}
+			get;
+			private set;
 		}
 
 		public int Position

@@ -8,19 +8,31 @@ namespace BigRedProf.Data.Tape.Providers.Memory
 	{
 		#region fields
 		private readonly Dictionary<Guid, byte[]> _tapes;
+		private readonly Dictionary<Guid, byte[]> _labels;
 		#endregion
 
 		#region constructors
 		public MemoryTapeProvider()
 		{
 			_tapes = new Dictionary<Guid, byte[]>();
+			_labels = new Dictionary<Guid, byte[]>();
 		}
 		#endregion
 
 		#region TapeProvider methods
-		public override bool TryFetchTapeInternal(Guid tapeId, out Tape tape)
+		public override bool TryFetchTapeInternal(Guid tapeId, out Tape? tape)
 		{
-			throw new NotImplementedException();
+			if (tapeId == Guid.Empty)
+				throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
+
+			if (!_tapes.ContainsKey(tapeId))
+			{
+				tape = null;
+				return false;
+			}
+
+			tape = new Tape(this, tapeId);
+			return true;
 		}
 
 		public override IEnumerable<Tape> FetchAllTapesInternal()
@@ -41,7 +53,13 @@ namespace BigRedProf.Data.Tape.Providers.Memory
 
 		public override byte[] ReadLabelInternal(Guid tapeId)
 		{
-			throw new NotImplementedException();
+			if (tapeId == Guid.Empty)
+				throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
+
+			if(!_labels.TryGetValue(tapeId, out byte[] labelData))
+				throw new KeyNotFoundException($"Label for tape ID '{tapeId}' not found.");
+
+			return labelData;
 		}
 
 		public override void WriteTapeInternal(Guid tapeId, byte[] data, int byteOffset, int byteLength)
@@ -64,13 +82,22 @@ namespace BigRedProf.Data.Tape.Providers.Memory
 
 		public override void WriteLabelInternal(Guid tapeId, byte[] data)
 		{
-			throw new NotImplementedException();
+			if (tapeId == Guid.Empty)
+				throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
+
+			if(data == null)
+				throw new ArgumentNullException(nameof(data), "Data cannot be null.");
+
+			_labels[tapeId] = data;
 		}
 
 		public override void AddTapeInternal(Tape tape)
 		{
-			// TODO: Implement tape addition logic for memory provider
-			throw new NotImplementedException();
+			if (tape == null)
+				throw new ArgumentNullException(nameof(tape), "Tape cannot be null.");
+			
+			_tapes[tape.Id] = new byte[0];
+			_labels[tape.Id] = new byte[0];
 		}
 		#endregion
 

@@ -5,8 +5,8 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 {
 	public class DiskTape : Tape
 	{
-		public DiskTape(string filePath)
-			: base(new DiskTapeProvider(filePath))
+		public DiskTape(string filePath, Guid tapeId)
+			: base(new DiskTapeProvider(filePath), tapeId)
 		{
 			if (string.IsNullOrWhiteSpace(filePath))
 				throw new ArgumentNullException(nameof(filePath));

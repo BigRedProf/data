@@ -30,13 +30,45 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 					throw new IOException($"Failed to create directory '{_directoryPath}'.", ex);
 				}
 			}
+
+			// Also ensure the labels directory exists
+			if (!Directory.Exists(LabelDirectoryPath))
+			{
+				try
+				{
+					Directory.CreateDirectory(LabelDirectoryPath);
+				}
+				catch (Exception ex)
+				{
+					throw new IOException($"Failed to create label directory '{LabelDirectoryPath}'.", ex);
+				}
+			}
+
+		}
+		#endregion
+
+		#region private properties
+		private string LabelDirectoryPath
+		{
+			get
+			{
+				return Path.Combine(_directoryPath, ".labels");
+			}
 		}
 		#endregion
 
 		#region TapeProvider methods
-		public override bool TryFetchTapeInternal(Guid tapeId, out Tape tape)
+		public override bool TryFetchTapeInternal(Guid tapeId, out Tape? tape)
 		{
-			throw new NotImplementedException();
+			string filePath = GetFilePath(tapeId);
+			if (!File.Exists(filePath))
+			{
+				tape = null;
+				return false;
+			}
+
+			tape = new Tape(this, tapeId);
+			return true;
 		}
 
 		public override IEnumerable<Tape> FetchAllTapesInternal()
@@ -64,7 +96,11 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 
 		public override byte[] ReadLabelInternal(Guid tapeId)
 		{
-			throw new NotImplementedException();
+			string labelFilePath = GetLabelFilePath(tapeId);
+			if (!File.Exists(labelFilePath))
+				throw new FileNotFoundException($"Label file for tape ID '{tapeId}' not found.", labelFilePath);
+
+			return File.ReadAllBytes(labelFilePath);
 		}
 
 		public override void WriteTapeInternal(Guid tapeId, byte[] data, int byteOffset, int byteLength)
@@ -86,26 +122,45 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 
 		public override void WriteLabelInternal(Guid tapeId, byte[] data)
 		{
-			throw new NotImplementedException();
+			if(data == null)
+				throw new ArgumentNullException(nameof(data));
+
+			string labelFilePath = GetLabelFilePath(tapeId);
+			File.WriteAllBytes(labelFilePath, data);
 		}
 
 		public override void AddTapeInternal(Tape tape)
 		{
-			// TODO: Implement tape addition logic for disk provider
-			throw new NotImplementedException();
+			if(tape == null)
+				throw new ArgumentNullException(nameof(tape));
+			
+			string filePath = GetFilePath(tape.Id);
+			EnsureFileExists(filePath);
+
+			// Initialize an empty label
+			string labelFilePath = GetLabelFilePath(tape.Id);
+			if (!File.Exists(labelFilePath))
+			{
+				File.WriteAllBytes(labelFilePath, new byte[0]); // Start with an empty label
+			}
 		}
 		#endregion
 
 		#region private methods
-		// TODO: Add methods for the label files, too. They should be in a hidden
-		// .labels directory.
-
 		private string GetFilePath(Guid tapeId)
 		{
 			if (tapeId == Guid.Empty)
 				throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
 		
 			return Path.Combine(_directoryPath, $"{tapeId}.tape");
+		}
+
+		private string GetLabelFilePath(Guid tapeId)
+		{
+			if (tapeId == Guid.Empty)
+				throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
+		
+			return Path.Combine(LabelDirectoryPath, $"{tapeId}.label");
 		}
 
 		private void EnsureFileExists(string filePath)

@@ -42,7 +42,7 @@ namespace BigRedProf.Data.Tape
 		/// <returns>
 		/// <see langword="true"/> if the tape was successfully retrieved; otherwise, <see langword="false"/>.
 		/// </returns>
-		abstract public bool TryFetchTapeInternal(Guid tapeId, out Tape tape);
+		abstract public bool TryFetchTapeInternal(Guid tapeId, out Tape? tape);
 
 		/// <summary>
 		/// Reads a portion of the tape. Must be implemented by subclasses.
