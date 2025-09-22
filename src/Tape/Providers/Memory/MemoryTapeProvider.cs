@@ -37,7 +37,11 @@ namespace BigRedProf.Data.Tape.Providers.Memory
 
 		public override IEnumerable<Tape> FetchAllTapesInternal()
 		{
-			throw new NotImplementedException();
+			// Return a Tape for each tapeId in _tapes
+			foreach (var tapeId in _tapes.Keys)
+			{
+				yield return new Tape(this, tapeId);
+			}
 		}
 
 		public override byte[] ReadTapeInternal(Guid tapeId, int byteOffset, int byteLength)

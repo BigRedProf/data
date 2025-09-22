@@ -79,7 +79,16 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 
 		public override IEnumerable<Tape> FetchAllTapesInternal()
 		{
-			throw new NotImplementedException();
+			// Enumerate all .tape files in the directory
+			var tapeFiles = Directory.GetFiles(_directoryPath, "*.tape");
+			foreach (var file in tapeFiles)
+			{
+				var fileName = Path.GetFileNameWithoutExtension(file);
+				if (Guid.TryParse(fileName, out Guid tapeId))
+				{
+					yield return new Tape(this, tapeId);
+				}
+			}
 		}
 
 		public override byte[] ReadTapeInternal(Guid tapeId, int byteOffset, int byteLength)
