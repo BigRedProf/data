@@ -32,11 +32,13 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 			}
 
 			// Also ensure the labels directory exists
+			bool createdLabelsDir = false;
 			if (!Directory.Exists(LabelDirectoryPath))
 			{
 				try
 				{
 					Directory.CreateDirectory(LabelDirectoryPath);
+					createdLabelsDir = true;
 				}
 				catch (Exception ex)
 				{
@@ -44,6 +46,10 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 				}
 			}
 
+			// Make the .labels directory hidden
+			FileAttributes attributes = File.GetAttributes(LabelDirectoryPath);
+			if ((attributes & FileAttributes.Hidden) == 0)
+				File.SetAttributes(LabelDirectoryPath, attributes | FileAttributes.Hidden);
 		}
 		#endregion
 
