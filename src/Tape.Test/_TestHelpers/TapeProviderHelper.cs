@@ -1,11 +1,15 @@
 ﻿using BigRedProf.Data.Core;
 using BigRedProf.Data.Tape.Providers.Memory;
 using BigRedProf.Data.Tape.Providers.Disk;
+using System;
+using System.IO;
 
 namespace BigRedProf.Data.Tape._TestHelpers
 {
 	internal class TapeProviderHelper
 	{
+		public static readonly string TestDirectory = Path.Combine(Path.GetTempPath(), "TapeProviderTestTapes");
+
 		#region functions
 		public static IPiedPiper CreatePiedPiper()
 		{
@@ -20,9 +24,18 @@ namespace BigRedProf.Data.Tape._TestHelpers
 			return new MemoryTapeProvider();
 		}
 
-		public static TapeProvider CreateDiskTapeProvider(string directoryPath = "TestTapes")
+		public static TapeProvider CreateDiskTapeProvider()
 		{
-			return new DiskTapeProvider(directoryPath);
+			Directory.CreateDirectory(TestDirectory);
+			return new DiskTapeProvider(TestDirectory);
+		}
+
+		public static void DestroyDiskTapeProvider()
+		{
+			if (Directory.Exists(TestDirectory))
+			{
+				Directory.Delete(TestDirectory, true);
+			}
 		}
 
 		public static void TestWriteAndReadRoundTrip(
