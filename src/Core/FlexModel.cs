@@ -106,10 +106,12 @@ namespace BigRedProf.Data.Core
 				throw new ArgumentException($"Trait '{traitIdentifier}' does not exist.");
 
 			if (!(untypedTrait.Model is M))
+			{
 				throw new InvalidOperationException(
 					$"Trait '{traitIdentifier}' exists but cannot be cast to type '{typeof(M).Name}'. " +
 					$"Actual type: '{(untypedTrait.Model != null ? untypedTrait.Model.GetType().Name : "null")}'."
 				);
+			}
 
 			return (M)untypedTrait.Model;
 		}
@@ -126,6 +128,14 @@ namespace BigRedProf.Data.Core
 			trait = default;
 			if (!_untypedTraits.TryGetValue(traitIdentifier, out UntypedTrait untypedTrait))
 				return false;
+
+			if (!(untypedTrait.Model is M))
+			{
+				throw new InvalidOperationException(
+					$"Trait '{traitIdentifier}' exists but cannot be cast to type '{typeof(M).Name}'. " +
+					$"Actual type: '{(untypedTrait.Model != null ? untypedTrait.Model.GetType().Name : "null")}'."
+				);
+			}
 
 			trait = (M)untypedTrait.Model;
 			return true;

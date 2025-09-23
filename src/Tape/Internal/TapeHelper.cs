@@ -6,7 +6,7 @@ namespace BigRedProf.Data.Tape.Internal
 	internal static class TapeHelper
 	{
 		#region public methods
-		public static FlexModel ReadLabel(Tape tape)
+		public static TapeLabel ReadLabel(Tape tape)
 		{
 			if (tape == null)
 				throw new ArgumentNullException(nameof(tape), "Tape cannot be null.");
@@ -16,7 +16,9 @@ namespace BigRedProf.Data.Tape.Internal
 			byte[] bytes = tape.TapeProvider.ReadLabelInternal(tape.Id);
 			Code code = new Code(bytes);
 
-			return piedPiper.DecodeModel<FlexModel>(code, CoreSchema.FlexModel);
+			FlexModel flexModel = piedPiper.DecodeModel<FlexModel>(code, CoreSchema.FlexModel);
+			TapeLabel tapeLabel = TapeLabel.FromFlexModel(flexModel);
+			return tapeLabel;
 		}
 
 		public static void WriteLabel(Tape tape, FlexModel label)

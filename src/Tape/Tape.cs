@@ -17,8 +17,8 @@ namespace BigRedProf.Data.Tape
 		private readonly TapeProvider _tapeProvider;
 		#endregion
 
-		#region constructors
-		public Tape(TapeProvider provider, Guid tapeId)
+		#region internal constructors
+		internal Tape(TapeProvider provider, Guid tapeId)
 		{
 			_tapeProvider = provider ?? throw new ArgumentNullException(nameof(provider));
 			Id = tapeId != Guid.Empty ? tapeId : throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
@@ -52,8 +52,19 @@ namespace BigRedProf.Data.Tape
 		}
 		#endregion
 
+		#region functions
+		public static Tape CreateNew(TapeProvider provider, Guid tapeId)
+		{
+			Tape tape = new Tape(provider, tapeId);
+			TapeLabel tapeLabel = new TapeLabel()
+				.WithTapeId(tapeId);
+			tape.WriteLabel(tapeLabel);
+			return tape;
+		}
+		#endregion
+
 		#region methods
-		public FlexModel ReadLabel()
+		public TapeLabel ReadLabel()
 		{
 			return TapeHelper.ReadLabel(this);
 		}

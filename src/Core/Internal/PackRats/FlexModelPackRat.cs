@@ -85,11 +85,13 @@ namespace BigRedProf.Data.Core.Internal.PackRats
 					int encodedModelLength = encodedModelLengths[i];
 
 					Code encodedModel = reader.Read(encodedModelLength);
-					UntypedTrait encodedTrait = new UntypedTrait();
-					encodedTrait.TraitId = traitId;
-					encodedTrait.Model = encodedModel;
+					UntypedTrait untypedTrait = new UntypedTrait();
+					untypedTrait.TraitId = traitId;
+					Guid schema = PiedPiper.GetTraitDefinition(untypedTrait.TraitId).SchemaId;
+					object decodedModel = ((PiedPiper)PiedPiper).DecodeModel(encodedModel, schema);
+					untypedTrait.Model = decodedModel;
 
-					model.InternalUntypedTraits.Add(traitId, encodedTrait);
+					model.InternalUntypedTraits.Add(traitId, untypedTrait);
 				}
 			}
 

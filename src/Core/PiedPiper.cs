@@ -557,6 +557,25 @@ namespace BigRedProf.Data.Core
 
 			return code;
 		}
+
+		internal object DecodeModel(Code code, AttributeFriendlyGuid schemaId)
+		{
+			if (code == null)
+				throw new ArgumentNullException(nameof(code));
+
+			if (schemaId == null)
+				throw new ArgumentNullException(nameof(schemaId));
+
+			object model;
+			IWeaklyTypedPackRat packRat = GetPackRat(schemaId);
+			MemoryStream memoryStream = new MemoryStream(code.ToByteArray());
+			using (CodeReader codeReader = new CodeReader(memoryStream))
+			{
+				model = packRat.UnpackModel(codeReader);
+			}
+
+			return model;
+		}
 		#endregion
 
 		#region private methods

@@ -44,7 +44,17 @@ namespace BigRedProf.Data.Tape
 				throw new ArgumentException("Series ID cannot be empty.", nameof(seriesId));
 			
 			return _tapeProvider.FetchAllTapesInternal()
-				.Where(tape => tape.ReadLabel().TryGetTrait<Guid>(CoreTrait.SeriesId, out Guid tapeSeriesId) && tapeSeriesId == seriesId);
+				.Where(tape =>
+					{
+						if (!tape.ReadLabel().TryGetTrait<Guid>(CoreTrait.SeriesId, out Guid tapeSeriesId))
+							return false;
+
+						if (tapeSeriesId != seriesId)
+							return false;
+
+						return true;
+					}
+				);
 		}
 
 		public void AddTape(Tape tape)

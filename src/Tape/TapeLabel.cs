@@ -14,7 +14,7 @@ namespace BigRedProf.Data.Tape
 		#endregion
 
 		#region private constructors
-		private TapeLabel(TapeLabel tapeLabelToClone)
+		private TapeLabel(FlexModel tapeLabelToClone)
 			: base(tapeLabelToClone)
 		{
 		}
@@ -30,6 +30,16 @@ namespace BigRedProf.Data.Tape
 		public Multihash SeriesParentMultihash => this.GetTrait<Multihash>(CoreTrait.SeriesParentDigest);
 		public Multihash SeriesHeadMultihash => this.GetTrait<Multihash>(CoreTrait.SeriesHeadDigest);
 		public int TapePosition => this.GetTrait<int>(TapeTrait.TapePosition);
+		#endregion
+
+		#region functions
+		public static TapeLabel FromFlexModel(FlexModel flexModel)
+		{
+			if (flexModel == null)
+				throw new ArgumentNullException(nameof(flexModel), "FlexModel cannot be null.");
+		
+			return new TapeLabel(flexModel);
+		}
 		#endregion
 
 		#region methods

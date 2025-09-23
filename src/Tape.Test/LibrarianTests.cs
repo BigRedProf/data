@@ -1,8 +1,5 @@
 ﻿using BigRedProf.Data.Core;
 using BigRedProf.Data.Tape._TestHelpers;
-using System;
-using System.Collections.Generic;
-using Xunit;
 
 namespace BigRedProf.Data.Tape.Test
 {
@@ -67,7 +64,7 @@ namespace BigRedProf.Data.Tape.Test
 			IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();
 			Librarian librarian = new Librarian(piedPiper, tapeProvider);
 			Guid tapeId = new Guid("00000000-4343-0000-0000-000000000001");
-			Tape tape = new Tape(tapeProvider, tapeId);
+			Tape tape = Tape.CreateNew(tapeProvider, tapeId);
 			TapeLabel tapeLabel = new TapeLabel()
 				.WithTapeId(tapeId);
 			tape.WriteLabel(tapeLabel);
@@ -99,7 +96,7 @@ namespace BigRedProf.Data.Tape.Test
 			IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();
 			Librarian librarian = new Librarian(piedPiper, tapeProvider);
 			Guid tapeId = new Guid("00000000-4343-0000-0000-000000000001");
-			Tape tape = new Tape(tapeProvider, tapeId);
+			Tape tape = Tape.CreateNew(tapeProvider, tapeId);
 			librarian.AddTape(tape);
 
 			IList<Tape> tapes = librarian.FetchAllTapes().ToList();
@@ -116,10 +113,10 @@ namespace BigRedProf.Data.Tape.Test
 			IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();
 			Librarian librarian = new Librarian(piedPiper, tapeProvider);
 			Guid tape1Id = new Guid("00000000-4343-0000-0000-000000000001");
-			Tape tape1 = new Tape(tapeProvider, tape1Id);
+			Tape tape1 = Tape.CreateNew(tapeProvider, tape1Id);
 			librarian.AddTape(tape1);
 			Guid tape2Id = new Guid("00000000-4343-0000-0000-000000000002");
-			Tape tape2 = new Tape(tapeProvider, tape2Id);
+			Tape tape2 = Tape.CreateNew(tapeProvider, tape2Id);
 			librarian.AddTape(tape2);
 
 			IList<Tape> tapes = librarian.FetchAllTapes().ToList();
@@ -127,6 +124,57 @@ namespace BigRedProf.Data.Tape.Test
 			Assert.Equal(2, tapes.Count);
 			Assert.Contains(tapes, t => t.Id == tape1Id);
 			Assert.Contains(tapes, t => t.Id == tape2Id);
+		}
+
+		[Trait("Region", "Librarian methods")]
+		[Theory]
+		[MemberData(nameof(TapeProviders))]
+		public void FetchAllTapesInSeries_ShouldSucceed_WithNoTapesInSeries(TapeProvider tapeProvider)
+		{
+			IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();
+			Librarian librarian = new Librarian(piedPiper, tapeProvider);
+			Guid seriesId = new Guid("00000000-4343-0000-0000-0000053c1351");
+			Guid tape1Id = new Guid("00000000-4343-0000-0000-000000000001");
+			Tape tape1 = Tape.CreateNew(tapeProvider, tape1Id);
+			librarian.AddTape(tape1);
+
+			IList<Tape> tapes = librarian.FetchTapesInSeries(seriesId).ToList();
+
+			Assert.Empty(tapes);
+		}
+
+		[Trait("Region", "Librarian methods")]
+		[Theory]
+		[MemberData(nameof(TapeProviders))]
+		public void FetchAllTapesInSeries_ShouldSucceed_WithOneTapesInSeries(TapeProvider tapeProvider)
+		{
+			IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();
+			Librarian librarian = new Librarian(piedPiper, tapeProvider);
+			Guid seriesId = new Guid("00000000-4343-0000-0000-0000053c1351");
+			Guid tape1Id = new Guid("00000000-4343-0000-0000-000000000001");
+			Tape tape1 = Tape.CreateNew(tapeProvider, tape1Id);
+			librarian.AddTape(tape1);
+			Guid tape2Id = new Guid("00000000-4343-0000-0000-000000000002");
+			Tape tape2 = Tape.CreateNew(tapeProvider, tape2Id);
+			TapeLabel tape2Label = tape2.ReadLabel()
+				.WithTapeId(tape2Id)
+				.WithSeriesInfo(seriesId, "Test Series", 1);
+			tape2.WriteLabel(tape2Label);
+			librarian.AddTape(tape2);
+			Guid tape3Id = new Guid("00000000-4343-0000-0000-000000000003");
+			Tape tape3 = Tape.CreateNew(tapeProvider, tape3Id);
+			librarian.AddTape(tape3);
+
+			//IList<Tape> tapes = librarian.FetchTapesInSeries(seriesId).ToList();
+			IEnumerable<Tape> tapesEnum = librarian.FetchTapesInSeries(seriesId);
+			IList<Tape> tapes = tapesEnum.ToList();
+
+			Assert.Single(tapes);
+			Assert.Equal(tape2Id, tapes[0].Id);
+			TapeLabel fetchedLabel = tapes[0].ReadLabel();
+			Assert.Equal(seriesId, fetchedLabel.SeriesId);
+			Assert.Equal("Test Series", fetchedLabel.SeriesName);
+			Assert.Equal(1, fetchedLabel.SeriesNumber);
 		}
 	}
 }

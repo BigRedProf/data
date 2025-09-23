@@ -101,7 +101,6 @@ namespace BigRedProf.Data.Tape.Providers.Memory
 				throw new ArgumentNullException(nameof(tape), "Tape cannot be null.");
 			
 			_tapes[tape.Id] = new byte[0];
-			_labels[tape.Id] = new byte[0];
 		}
 		#endregion
 
