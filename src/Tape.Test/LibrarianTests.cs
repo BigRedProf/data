@@ -34,6 +34,29 @@ namespace BigRedProf.Data.Tape.Test
 		[Trait("Region", "Librarian methods")]
 		[Theory]
 		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
+		public void Constructor_ShouldThrow_WhenPiedPiperIsNull(TapeProvider tapeProvider)
+		{
+			Assert.ThrowsAny<ArgumentNullException>(() =>
+			{
+				var librarian = new Librarian(null!, tapeProvider);
+			});
+		}
+
+		[Trait("Region", "Librarian methods")]
+		[Theory]
+		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
+		public void Constructor_ShouldThrow_WhenTapeProviderIsNull(TapeProvider tapeProvider)
+		{
+			IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();
+			Assert.ThrowsAny<ArgumentNullException>(() =>
+			{
+				var librarian = new Librarian(piedPiper, null!);
+			});
+		}
+
+		[Trait("Region", "Librarian methods")]
+		[Theory]
+		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
 		public void FetchTape_ShouldThrow_WhenTapeIdIsEmptyGuid(TapeProvider tapeProvider)
 		{
 			IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();
@@ -60,6 +83,19 @@ namespace BigRedProf.Data.Tape.Test
 		[Trait("Region", "Librarian methods")]
 		[Theory]
 		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
+		public void FetchTape_ShouldThrow_WhenTapeIdIsEmptyGuid_Negative(TapeProvider tapeProvider)
+		{
+			IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();
+			Librarian librarian = new Librarian(piedPiper, tapeProvider);
+			Assert.ThrowsAny<ArgumentException>(() =>
+			{
+				librarian.FetchTape(Guid.Empty);
+			});
+		}
+
+		[Trait("Region", "Librarian methods")]
+		[Theory]
+		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
 		public void FetchTape_ShouldSucceed_WhenTapeDoesExist(TapeProvider tapeProvider)
 		{
 			IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();
@@ -74,6 +110,19 @@ namespace BigRedProf.Data.Tape.Test
 			Tape fetchedTape = librarian.FetchTape(tapeId);
 
 			Assert.Equal(tapeId, fetchedTape.Id);
+		}
+
+		[Trait("Region", "Librarian methods")]
+		[Theory]
+		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
+		public void FetchTapesInSeries_ShouldThrow_WhenSeriesIdIsEmptyGuid(TapeProvider tapeProvider)
+		{
+			IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();
+			Librarian librarian = new Librarian(piedPiper, tapeProvider);
+			Assert.ThrowsAny<ArgumentException>(() =>
+			{
+				librarian.FetchTapesInSeries(Guid.Empty).ToList();
+			});
 		}
 
 		[Trait("Region", "Librarian methods")]
@@ -177,6 +226,19 @@ namespace BigRedProf.Data.Tape.Test
 			Assert.Equal("Test Series", fetchedLabel.SeriesName);
 			Assert.Equal(1, fetchedLabel.SeriesNumber);
 		}
-		#endregion		
+
+		[Trait("Region", "Librarian methods")]
+		[Theory]
+		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
+		public void AddTape_ShouldThrow_WhenTapeIsNull(TapeProvider tapeProvider)
+		{
+			Assert.ThrowsAny<ArgumentNullException>(() =>
+			{
+				IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();
+				Librarian librarian = new Librarian(piedPiper, _memoryTapeProvider);
+				librarian.AddTape(null!);
+			});
+		}
+		#endregion
 	}
 }
