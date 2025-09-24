@@ -5,22 +5,29 @@ namespace BigRedProf.Data.Tape.Test
 {
 	public class LibrarianTests : IDisposable
 	{
-		private readonly TapeProvider _memoryTapeProvider;
-		private readonly TapeProvider _diskTapeProvider;
-		private bool _disposed;
-
-		public LibrarianTests()
-		{
-			_memoryTapeProvider = TapeProviderHelper.CreateMemoryTapeProvider();
-			_diskTapeProvider = TapeProviderHelper.CreateDiskTapeProvider();
-		}
-
+		#region static data
 		public static IEnumerable<object[]> TapeProviders()
 		{
 			yield return new object[] { TapeProviderHelper.CreateMemoryTapeProvider() };
 			yield return new object[] { TapeProviderHelper.CreateDiskTapeProvider() };
 		}
+		#endregion
 
+		#region fields
+		private readonly TapeProvider _memoryTapeProvider;
+		private readonly TapeProvider _diskTapeProvider;
+		private bool _disposed;
+		#endregion
+
+		#region constructors
+		public LibrarianTests()
+		{
+			_memoryTapeProvider = TapeProviderHelper.CreateMemoryTapeProvider();
+			_diskTapeProvider = TapeProviderHelper.CreateDiskTapeProvider();
+		}
+		#endregion
+
+		#region IDisposable
 		public void Dispose()
 		{
 			if (!_disposed)
@@ -29,7 +36,9 @@ namespace BigRedProf.Data.Tape.Test
 				_disposed = true;
 			}
 		}
+		#endregion
 
+		#region unit tests
 		[Trait("Region", "Librarian methods")]
 		[Theory]
 		[MemberData(nameof(TapeProviders))]
@@ -176,5 +185,6 @@ namespace BigRedProf.Data.Tape.Test
 			Assert.Equal("Test Series", fetchedLabel.SeriesName);
 			Assert.Equal(1, fetchedLabel.SeriesNumber);
 		}
+		#endregion		
 	}
 }

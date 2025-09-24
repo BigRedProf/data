@@ -8,7 +8,9 @@ namespace BigRedProf.Data.Tape._TestHelpers
 {
 	internal class TapeProviderHelper
 	{
+		#region static fields
 		public static readonly string TestDirectory = Path.Combine(Path.GetTempPath(), "TapeProviderTestTapes");
+		#endregion
 
 		#region functions
 		public static IPiedPiper CreatePiedPiper()
