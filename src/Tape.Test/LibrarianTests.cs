@@ -5,14 +5,6 @@ namespace BigRedProf.Data.Tape.Test
 {
 	public class LibrarianTests : IDisposable
 	{
-		#region static data
-		public static IEnumerable<object[]> TapeProviders()
-		{
-			yield return new object[] { TapeProviderHelper.CreateMemoryTapeProvider() };
-			yield return new object[] { TapeProviderHelper.CreateDiskTapeProvider() };
-		}
-		#endregion
-
 		#region fields
 		private readonly TapeProvider _memoryTapeProvider;
 		private readonly TapeProvider _diskTapeProvider;
@@ -41,7 +33,7 @@ namespace BigRedProf.Data.Tape.Test
 		#region unit tests
 		[Trait("Region", "Librarian methods")]
 		[Theory]
-		[MemberData(nameof(TapeProviders))]
+		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
 		public void FetchTape_ShouldThrow_WhenTapeIdIsEmptyGuid(TapeProvider tapeProvider)
 		{
 			IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();
@@ -54,7 +46,7 @@ namespace BigRedProf.Data.Tape.Test
 
 		[Trait("Region", "Librarian methods")]
 		[Theory]
-		[MemberData(nameof(TapeProviders))]
+		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
 		public void FetchTape_ShouldThrow_WhenTapeDoesNotExist(TapeProvider tapeProvider)
 		{
 			IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();
@@ -67,7 +59,7 @@ namespace BigRedProf.Data.Tape.Test
 
 		[Trait("Region", "Librarian methods")]
 		[Theory]
-		[MemberData(nameof(TapeProviders))]
+		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
 		public void FetchTape_ShouldSucceed_WhenTapeDoesExist(TapeProvider tapeProvider)
 		{
 			IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();
@@ -86,7 +78,7 @@ namespace BigRedProf.Data.Tape.Test
 
 		[Trait("Region", "Librarian methods")]
 		[Theory]
-		[MemberData(nameof(TapeProviders))]
+		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
 		public void FetchAllTapes_ShouldSucceed_WithNoTapes(TapeProvider tapeProvider)
 		{
 			IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();
@@ -99,7 +91,7 @@ namespace BigRedProf.Data.Tape.Test
 
 		[Trait("Region", "Librarian methods")]
 		[Theory]
-		[MemberData(nameof(TapeProviders))]
+		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
 		public void FetchAllTapes_ShouldSucceed_WithOneTape(TapeProvider tapeProvider)
 		{
 			IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();
@@ -116,7 +108,7 @@ namespace BigRedProf.Data.Tape.Test
 
 		[Trait("Region", "Librarian methods")]
 		[Theory]
-		[MemberData(nameof(TapeProviders))]
+		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
 		public void FetchAllTapes_ShouldSucceed_WithTwoTapes(TapeProvider tapeProvider)
 		{
 			IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();
@@ -137,7 +129,7 @@ namespace BigRedProf.Data.Tape.Test
 
 		[Trait("Region", "Librarian methods")]
 		[Theory]
-		[MemberData(nameof(TapeProviders))]
+		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
 		public void FetchAllTapesInSeries_ShouldSucceed_WithNoTapesInSeries(TapeProvider tapeProvider)
 		{
 			IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();
@@ -154,7 +146,7 @@ namespace BigRedProf.Data.Tape.Test
 
 		[Trait("Region", "Librarian methods")]
 		[Theory]
-		[MemberData(nameof(TapeProviders))]
+		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
 		public void FetchAllTapesInSeries_ShouldSucceed_WithOneTapesInSeries(TapeProvider tapeProvider)
 		{
 			IPiedPiper piedPiper = TapeProviderHelper.CreatePiedPiper();

@@ -8,6 +8,14 @@ namespace BigRedProf.Data.Tape._TestHelpers
 {
 	internal class TapeProviderHelper
 	{
+		#region static data
+		public static IEnumerable<object[]> TapeProviders()
+		{
+			yield return new object[] { TapeProviderHelper.CreateMemoryTapeProvider() };
+			yield return new object[] { TapeProviderHelper.CreateDiskTapeProvider() };
+		}
+		#endregion
+
 		#region static fields
 		public static readonly string TestDirectory = Path.Combine(Path.GetTempPath(), "TapeProviderTestTapes");
 		#endregion
