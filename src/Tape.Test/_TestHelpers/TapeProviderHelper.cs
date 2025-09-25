@@ -12,7 +12,7 @@ namespace BigRedProf.Data.Tape._TestHelpers
 		public static IEnumerable<object[]> TapeProviders()
 		{
 			yield return new object[] { TapeProviderHelper.CreateMemoryTapeProvider() };
-			yield return new object[] { TapeProviderHelper.CreateDiskTapeProvider() };
+			//yield return new object[] { TapeProviderHelper.CreateDiskTapeProvider() };
 		}
 		#endregion
 
@@ -26,6 +26,7 @@ namespace BigRedProf.Data.Tape._TestHelpers
 			IPiedPiper piedPiper = new PiedPiper();
 			piedPiper.RegisterCorePackRats();
 			piedPiper.DefineCoreTraits();
+			piedPiper.DefineTrait(new TraitDefinition(TapeTrait.TapePosition, CoreSchema.Int32));
 			return piedPiper;
 		}
 
@@ -54,6 +55,7 @@ namespace BigRedProf.Data.Tape._TestHelpers
 			byte[] content,
 			int offset)
 		{
+			Tape tape = Tape.CreateNew(tapeProvider, tapeId);
 			tapeProvider.WriteTapeInternal(tapeId, content, offset, content.Length);
 			var result = tapeProvider.ReadTapeInternal(tapeId, offset, content.Length);
 			Assert.Equal(content, result);

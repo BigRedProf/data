@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BigRedProf.Data.Core;
+using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
 
@@ -82,6 +83,7 @@ namespace BigRedProf.Data.Tape.Providers.Memory
 
 			byte[] _data = GetTapeData(tapeId);
 			Array.Copy(data, 0, _data, byteOffset, byteLength);
+			SetTapeData(tapeId, _data);
 		}
 
 		public override void WriteLabelInternal(Guid tapeId, byte[] data)
@@ -100,22 +102,21 @@ namespace BigRedProf.Data.Tape.Providers.Memory
 			if (tape == null)
 				throw new ArgumentNullException(nameof(tape), "Tape cannot be null.");
 			
-			_tapes[tape.Id] = new byte[0];
+			// TODO: Consider making tape length grow dynamically so it's not always 125MB long.
+			_tapes[tape.Id] = new byte[Code.MaxLength];
 		}
 		#endregion
 
 		#region private methods
 		private byte[] GetTapeData(Guid tapeId)
 		{
-			byte[] tapeData;
-			if (!_tapes.TryGetValue(tapeId, out tapeData))
-			{
-				// Allocate space for 1 billion bits (125 MB)
-				tapeData = new byte[Tape.MaxContentLength / 8];
-				_tapes[tapeId] = tapeData;
-			}
+			return _tapes[tapeId];
+		}
 
-			return tapeData;
+		private byte[] SetTapeData(Guid tapeId, byte[] data)
+		{
+			_tapes[tapeId] = data;
+			return data;
 		}
 		#endregion
 	}

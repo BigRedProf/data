@@ -34,6 +34,7 @@ namespace BigRedProf.Data.Tape
 
 		public int Position
 		{
+			// TODO: Not sure this belongs on a label. Perhaps should delegate to TapeProvider?
 			get
 			{
 				FlexModel label = ReadLabel();
@@ -41,6 +42,12 @@ namespace BigRedProf.Data.Tape
 					return position;
 				
 				throw new InvalidOperationException("Tape position is not defined in the label.");
+			}
+			internal set
+			{
+				FlexModel label = ReadLabel();
+				label.AddTrait(new Trait<int>(TapeTrait.TapePosition, value));
+				WriteLabel(label);
 			}
 		}
 		#endregion
@@ -56,9 +63,15 @@ namespace BigRedProf.Data.Tape
 		public static Tape CreateNew(TapeProvider provider, Guid tapeId)
 		{
 			Tape tape = new Tape(provider, tapeId);
+
+			provider.AddTapeInternal(tape);
+
 			TapeLabel tapeLabel = new TapeLabel()
 				.WithTapeId(tapeId);
 			tape.WriteLabel(tapeLabel);
+			
+			tape.Position = 0;
+
 			return tape;
 		}
 		#endregion

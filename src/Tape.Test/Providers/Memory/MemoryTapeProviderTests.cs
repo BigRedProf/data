@@ -9,7 +9,7 @@ namespace BigRedProf.Data.Tape.Test.Providers.Memory
 	public class MemoryTapeProviderTests
 	{
 		#region MemoryTapeProvider methods
-		private static readonly Guid TestTapeId = Guid.NewGuid();
+		private static readonly Guid TestTapeId = new Guid("00000000-4343-0000-0000-000000000001");
 		private const int MaxContentLength = 1_000_000_000; // 1 billion bits
 		private const int MaxContentBytes = MaxContentLength / 8;
 
@@ -18,6 +18,7 @@ namespace BigRedProf.Data.Tape.Test.Providers.Memory
 		public void Read_FromNegativeOffset_ShouldThrow()
 		{
 			var provider = new MemoryTapeProvider();
+			provider.AddTapeInternal(Tape.CreateNew(provider, TestTapeId));
 			Assert.Throws<ArgumentOutOfRangeException>(() =>
 			{
 				provider.ReadTapeInternal(TestTapeId, -1, 1);

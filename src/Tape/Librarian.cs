@@ -17,7 +17,6 @@ namespace BigRedProf.Data.Tape
 		{
 			_piedPiper = piedPiper ?? throw new ArgumentNullException(nameof(piedPiper));
 			_tapeProvider = tapeProvider ?? throw new ArgumentNullException(nameof(tapeProvider));
-			DefineCoreTraits();
 		}
 		#endregion
 
@@ -62,14 +61,8 @@ namespace BigRedProf.Data.Tape
 			if (tape == null)
 				throw new ArgumentNullException(nameof(tape), "Tape cannot be null.");
 			
-			_tapeProvider.AddTapeInternal(tape);
-		}
-		#endregion
-
-		#region private methods
-		private void DefineCoreTraits()
-		{
-			_piedPiper.DefineTrait(new TraitDefinition(TapeTrait.TapePosition, CoreSchema.Int32));
+			// TODO: Should this be here or in Tape.CreateNew?? Need to figure this out.
+			//_tapeProvider.AddTapeInternal(tape);
 		}
 		#endregion
 	}

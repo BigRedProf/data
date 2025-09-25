@@ -25,6 +25,25 @@ namespace BigRedProf.Data.Tape
 		#endregion
 
 		#region methods
+		public void InsertTape(Tape tape)
+		{
+			if (tape == null)
+				throw new ArgumentNullException(nameof(tape));
+
+			if (IsTapeInserted)
+				throw new InvalidOperationException("A tape is already inserted.");
+
+			_tape = tape;
+		}
+
+		public void EjectTape()
+		{
+			if (!IsTapeInserted)
+				throw new InvalidOperationException("No tape is currently inserted.");
+
+			_tape = null;
+		}
+
 		public void RewindOrFastForwardTo(int position)
 		{
 			VerifyTapeIsInserted();
@@ -47,25 +66,6 @@ namespace BigRedProf.Data.Tape
 			if (!IsTapeInserted)
 				throw new InvalidOperationException("Tape is not inserted.");
 		}
-
-		protected void InsertTape(Tape tape)
-		{
-			if (tape == null)
-				throw new ArgumentNullException(nameof(tape));
-
-			if (IsTapeInserted)
-				throw new InvalidOperationException("A tape is already inserted.");
-
-			_tape = tape;
-		}
-
-		protected void EjectTape()
-		{
-			if (!IsTapeInserted)
-				throw new InvalidOperationException("No tape is currently inserted.");
-
-			_tape = null;
-		}
 		#endregion
 
 		#region private methods
@@ -76,11 +76,7 @@ namespace BigRedProf.Data.Tape
 
 			VerifyTapeIsInserted();
 
-			// TODO: Consider renaming AddTrait to SetTrait and changing arguments to take
-			// trait identifier and value directly.
-			//Tape.Label.SetTrait<int>(TapeTrait.TapePosition, position);
-			Trait<int> trait = new Trait<int>(TapeTrait.TapePosition, position);
-			Tape.ReadLabel().AddTrait(trait);
+			Tape.Position = position;
 		}
 		#endregion
 	}
