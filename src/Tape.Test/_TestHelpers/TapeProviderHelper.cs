@@ -3,6 +3,7 @@ using BigRedProf.Data.Tape.Providers.Memory;
 using BigRedProf.Data.Tape.Providers.Disk;
 using System;
 using System.IO;
+using BigRedProf.Data.Tape.Test._TestHelpers;
 
 namespace BigRedProf.Data.Tape._TestHelpers
 {
@@ -12,12 +13,12 @@ namespace BigRedProf.Data.Tape._TestHelpers
 		public static IEnumerable<object[]> TapeProviders()
 		{
 			yield return new object[] { TapeProviderHelper.CreateMemoryTapeProvider() };
-			//yield return new object[] { TapeProviderHelper.CreateDiskTapeProvider() };
+			yield return new object[] { TapeProviderHelper.CreateDiskTapeProvider() };
 		}
 		#endregion
 
 		#region static fields
-		public static readonly string TestDirectory = Path.Combine(Path.GetTempPath(), "TapeProviderTestTapes");
+		private static TempDir _tempDir;
 		#endregion
 
 		#region functions
@@ -37,16 +38,13 @@ namespace BigRedProf.Data.Tape._TestHelpers
 
 		public static TapeProvider CreateDiskTapeProvider()
 		{
-			Directory.CreateDirectory(TestDirectory);
-			return new DiskTapeProvider(TestDirectory);
+			_tempDir = new TempDir(Path.Combine(Path.GetTempPath(), "UnitTests.DiskTapeProvider"));
+			return new DiskTapeProvider(_tempDir.Path);
 		}
 
 		public static void DestroyDiskTapeProvider()
 		{
-			if (Directory.Exists(TestDirectory))
-			{
-				Directory.Delete(TestDirectory, true);
-			}
+			_tempDir?.Dispose();
 		}
 
 		public static void TestWriteAndReadRoundTrip(
