@@ -2,47 +2,40 @@ using BigRedProf.Data.Core;
 using BigRedProf.Data.Tape;
 using BigRedProf.Data.Tape._TestHelpers;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Linq.Expressions;
-using System.Reflection.Metadata;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
+using System.Text;
 using Xunit;
-using static System.Net.Mime.MediaTypeNames;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace BigRedProf.Data.Tape.Test
 {
-    public class TapeRecorderTests : IDisposable
-    {
-        #region fields
-        private readonly TapeProvider _memoryTapeProvider;
-        private readonly TapeProvider _diskTapeProvider;
-        private bool _disposed;
-        #endregion
+	public class TapeRecorderTests : IDisposable
+	{
+		#region fields
+		private readonly TapeProvider _memoryTapeProvider;
+		private readonly TapeProvider _diskTapeProvider;
+		private bool _disposed;
+		#endregion
 
-        #region constructors
-        public TapeRecorderTests()
-        {
-            _memoryTapeProvider = TapeProviderHelper.CreateMemoryTapeProvider();
-            _diskTapeProvider = TapeProviderHelper.CreateDiskTapeProvider();
-        }
-        #endregion
+		#region constructors
+		public TapeRecorderTests()
+		{
+			_memoryTapeProvider = TapeProviderHelper.CreateMemoryTapeProvider();
+			_diskTapeProvider = TapeProviderHelper.CreateDiskTapeProvider();
+		}
+		#endregion
 
-        #region IDisposable
-        public void Dispose()
-        {
-            if (!_disposed)
-            {
-                TapeProviderHelper.DestroyDiskTapeProvider();
-                _disposed = true;
-            }
-        }
-        #endregion
+		#region IDisposable
+		public void Dispose()
+		{
+			if (!_disposed)
+			{
+				TapeProviderHelper.DestroyDiskTapeProvider();
+				_disposed = true;
+			}
+		}
+		#endregion
 
-        #region unit tests
+		#region unit tests
+
 		[Trait("Region", "TapeRecorder methods")]
 		[Theory]
 		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
@@ -51,12 +44,19 @@ namespace BigRedProf.Data.Tape.Test
 			// Arrange
 			Guid tapeId = Guid.NewGuid();
 			Tape tape = Tape.CreateNew(tapeProvider, tapeId);
-			var tapeRecorder = new TapeRecorder();
+			TapeRecorder tapeRecorder = new TapeRecorder();
 			tapeRecorder.InsertTape(tape);
 
 			// Act
 			Code code = new Code("10101010 00000000 11111111 00001111 010");
-			byte[] expectedBytes = new byte[] { 0b01010101, 0b00000000, 0b11111111, 0b11110000, 0b010 };
+			byte[] expectedBytes = new byte[]
+			{
+				0b01010101,
+				0b00000000,
+				0b11111111,
+				0b11110000,
+				0b00000010
+			};
 			tapeRecorder.Record(code);
 
 			// Assert
@@ -71,17 +71,23 @@ namespace BigRedProf.Data.Tape.Test
 		{
 			// Arrange
 			Guid tapeId = Guid.NewGuid();
-			var tape = Tape.CreateNew(tapeProvider, tapeId);
-			var rec = new TapeRecorder();
+			Tape tape = Tape.CreateNew(tapeProvider, tapeId);
+			TapeRecorder rec = new TapeRecorder();
 			rec.InsertTape(tape);
 
 			// Act (aligned, whole bytes)
+			// LSB-first per byte: "11110000" -> 0000_1111, "00110011" -> 1100_1100, "01010101" -> 1010_1010, "10101010" -> 0101_0101
 			Code code = new Code("11110000 00110011 01010101 10101010");
 			rec.Record(code);
 
 			// Assert
-			// Note: Code packs LSB-first per byte: "11110000" => 0x0F, "00110011" => 0xCC, "01010101" => 0xAA, "10101010" => 0x55
-			byte[] expected = { 0x0F, 0xCC, 0xAA, 0x55 };
+			byte[] expected = new byte[]
+			{
+				0b00001111,
+				0b11001100,
+				0b10101010,
+				0b01010101
+			};
 			byte[] actual = tapeProvider.ReadTapeInternal(tapeId, 0, expected.Length);
 			Assert.Equal(expected, actual);
 		}
@@ -93,17 +99,20 @@ namespace BigRedProf.Data.Tape.Test
 		{
 			// Arrange
 			Guid tapeId = Guid.NewGuid();
-			var tape = Tape.CreateNew(tapeProvider, tapeId);
-			var rec = new TapeRecorder();
+			Tape tape = Tape.CreateNew(tapeProvider, tapeId);
+			TapeRecorder rec = new TapeRecorder();
 			rec.InsertTape(tape);
 
-			// Act (aligned, but not a multiple of 8 bits: 8 + 4 = 12 bits)
-			Code code = new Code("11111111 1111"); // 12 bits total
+			// Act (aligned, but not multiple of 8 bits: 8 + 4 = 12 bits)
+			Code code = new Code("11111111 1111"); // 12 bits total, LSB-first
 			rec.Record(code);
 
 			// Assert
-			// LSB-first: first byte all ones => 0xFF; second byte low 4 bits set => 0x0F
-			byte[] expected = { 0xFF, 0x0F };
+			byte[] expected = new byte[]
+			{
+				0b11111111,
+				0b00001111
+			};
 			byte[] actual = tapeProvider.ReadTapeInternal(tapeId, 0, expected.Length);
 			Assert.Equal(expected, actual);
 		}
@@ -115,8 +124,8 @@ namespace BigRedProf.Data.Tape.Test
 		{
 			// Arrange
 			Guid tapeId = Guid.NewGuid();
-			var tape = Tape.CreateNew(tapeProvider, tapeId);
-			var rec = new TapeRecorder();
+			Tape tape = Tape.CreateNew(tapeProvider, tapeId);
+			TapeRecorder rec = new TapeRecorder();
 			rec.InsertTape(tape);
 
 			// Advance head by 3 bits (misaligned start)
@@ -126,12 +135,11 @@ namespace BigRedProf.Data.Tape.Test
 			rec.Record(new Code("11111111"));
 
 			// Assert
-			// Bits 3..7 of byte0 become 1 -> 11111000 (0xF8)
-			// Bits 0..2 of byte1 become 1 -> 00000111 (0x07)
-			byte[] expected = { 0x00 /* first 3 zeros live here, but combined result is below */, 0x00 }; // we'll read two bytes then assert
+			// Byte0 bits 3..7 => 11111_000 -> 1111_1000
+			// Byte1 bits 0..2 => 00000_111 -> 0000_0111
 			byte[] actual = tapeProvider.ReadTapeInternal(tapeId, 0, 2);
-			Assert.Equal(0xF8, actual[0]);
-			Assert.Equal(0x07, actual[1]);
+			Assert.Equal(0b11111000, actual[0]);
+			Assert.Equal(0b00000111, actual[1]);
 		}
 
 		[Trait("Region", "TapeRecorder methods")]
@@ -141,22 +149,22 @@ namespace BigRedProf.Data.Tape.Test
 		{
 			// Arrange
 			Guid tapeId = Guid.NewGuid();
-			var tape = Tape.CreateNew(tapeProvider, tapeId);
-			var rec = new TapeRecorder();
+			Tape tape = Tape.CreateNew(tapeProvider, tapeId);
+			TapeRecorder rec = new TapeRecorder();
 			rec.InsertTape(tape);
 
 			// Start at bit offset 5
 			rec.Record(new Code("00000"));
 
-			// Act: write 10 ones (will span two bytes, not end on a byte boundary)
+			// Act: write 10 ones (spans two bytes, not byte-aligned end)
 			rec.Record(new Code("1111111111"));
 
 			// Assert
-			// Byte0: bits 5..7 => 11100000 (0xE0)
-			// Byte1: bits 0..6 => 01111111 (0x7F)
+			// Byte0 bits 5..7 => 111_00000 -> 1110_0000
+			// Byte1 bits 0..6 => 0_1111111 -> 0111_1111
 			byte[] actual = tapeProvider.ReadTapeInternal(tapeId, 0, 2);
-			Assert.Equal(0xE0, actual[0]);
-			Assert.Equal(0x7F, actual[1]);
+			Assert.Equal(0b11100000, actual[0]);
+			Assert.Equal(0b01111111, actual[1]);
 		}
 
 		[Trait("Region", "TapeRecorder methods")]
@@ -166,8 +174,8 @@ namespace BigRedProf.Data.Tape.Test
 		{
 			// Arrange
 			Guid tapeId = Guid.NewGuid();
-			var tape = Tape.CreateNew(tapeProvider, tapeId);
-			var rec = new TapeRecorder();
+			Tape tape = Tape.CreateNew(tapeProvider, tapeId);
+			TapeRecorder rec = new TapeRecorder();
 			rec.InsertTape(tape);
 
 			// Start at bit offset 7
@@ -177,13 +185,13 @@ namespace BigRedProf.Data.Tape.Test
 			rec.Record(new Code("11111111 11111111"));
 
 			// Assert
-			// Byte0: only bit7 set => 10000000 (0x80)
-			// Byte1: all ones      => 11111111 (0xFF)
-			// Byte2: bits 0..6     => 01111111 (0x7F)
+			// Byte0: only bit7 set => 1000_0000
+			// Byte1: all ones      => 1111_1111
+			// Byte2: bits 0..6     => 0111_1111
 			byte[] actual = tapeProvider.ReadTapeInternal(tapeId, 0, 3);
-			Assert.Equal(0x80, actual[0]);
-			Assert.Equal(0xFF, actual[1]);
-			Assert.Equal(0x7F, actual[2]);
+			Assert.Equal(0b10000000, actual[0]);
+			Assert.Equal(0b11111111, actual[1]);
+			Assert.Equal(0b01111111, actual[2]);
 		}
 
 		[Trait("Region", "TapeRecorder methods")]
@@ -193,16 +201,16 @@ namespace BigRedProf.Data.Tape.Test
 		{
 			// Arrange
 			Guid tapeId = Guid.NewGuid();
-			var tape = Tape.CreateNew(tapeProvider, tapeId);
-			var rec = new TapeRecorder();
+			Tape tape = Tape.CreateNew(tapeProvider, tapeId);
+			TapeRecorder rec = new TapeRecorder();
 			rec.InsertTape(tape);
 
-			// Act: 4 bits, LSB-first "1010" => 0b00000101 (0x05)
+			// Act: 4 bits, LSB-first "1010" => 0000_0101 (0x05)
 			rec.Record(new Code("1010"));
 
 			// Assert
 			byte[] actual = tapeProvider.ReadTapeInternal(tapeId, 0, 1);
-			Assert.Equal(0x05, actual[0]); // LSB-first
+			Assert.Equal(0b00000101, actual[0]); // LSB-first
 		}
 
 		[Trait("Region", "TapeRecorder methods")]
@@ -212,70 +220,69 @@ namespace BigRedProf.Data.Tape.Test
 		{
 			// Arrange
 			Guid tapeId = Guid.NewGuid();
-			var tape = Tape.CreateNew(tapeProvider, tapeId);
-			var rec = new TapeRecorder();
+			Tape tape = Tape.CreateNew(tapeProvider, tapeId);
+			TapeRecorder rec = new TapeRecorder();
 			rec.InsertTape(tape);
 
-			// Act: "0101" (LSB-first) => 0b00001010 (0x0A)
+			// Act: "0101" (LSB-first) => 0000_1010 (0x0A)
 			rec.Record(new Code("0101"));
 
 			// Assert
 			byte[] actual = tapeProvider.ReadTapeInternal(tapeId, 0, 1);
-			Assert.Equal(0x0A, actual[0]);
+			Assert.Equal(0b00001010, actual[0]);
 		}
 
 		[Trait("Region", "TapeRecorder methods")]
-        [Theory]
-        [MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
-        public void Record_ShouldThrow_WhenContentIsNull(TapeProvider tapeProvider)
-        {
-            // Arrange
-            Guid tapeId = Guid.NewGuid();
-            Tape tape = Tape.CreateNew(tapeProvider, tapeId);
-            var tapeRecorder = new TapeRecorder();
-            tapeRecorder.InsertTape(tape);
+		[Theory]
+		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
+		public void Record_ShouldThrow_WhenContentIsNull(TapeProvider tapeProvider)
+		{
+			// Arrange
+			Guid tapeId = Guid.NewGuid();
+			Tape tape = Tape.CreateNew(tapeProvider, tapeId);
+			TapeRecorder tapeRecorder = new TapeRecorder();
+			tapeRecorder.InsertTape(tape);
 
-            // Act & Assert
-            Assert.ThrowsAny<ArgumentNullException>(() => tapeRecorder.Record(null!));
-        }
+			// Act & Assert
+			Assert.ThrowsAny<ArgumentNullException>(() => tapeRecorder.Record(null!));
+		}
 
-        [Trait("Region", "TapeRecorder methods")]
-        [Theory]
-        [MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
-        public void Record_ShouldThrow_WhenTapeNotInserted(TapeProvider tapeProvider)
-        {
-            // Arrange
-            var tapeRecorder = new TapeRecorder();
-            var codeToWrite = new Code("10101010");
+		[Trait("Region", "TapeRecorder methods")]
+		[Theory]
+		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
+		public void Record_ShouldThrow_WhenTapeNotInserted(TapeProvider tapeProvider)
+		{
+			// Arrange
+			TapeRecorder tapeRecorder = new TapeRecorder();
+			Code codeToWrite = new Code("10101010");
 
-            // Act & Assert
-            Assert.ThrowsAny<InvalidOperationException>(() => tapeRecorder.Record(codeToWrite));
-        }
+			// Act & Assert
+			Assert.ThrowsAny<InvalidOperationException>(() => tapeRecorder.Record(codeToWrite));
+		}
 
 		// ---------- Helpers (pure, deterministic) ----------
 
-		// Convert raw bytes to your Code-string bit format (LSB-first per byte).
+		// Convert raw bytes to Code-string bit format (LSB-first per byte).
 		private static string ToLsbFirstBitString(byte[] bytes, int bitLength)
 		{
-			var sb = new System.Text.StringBuilder(bitLength + bitLength / 8);
+			StringBuilder sb = new StringBuilder(bitLength + (bitLength / 8));
 			for (int i = 0; i < bitLength; i++)
 			{
 				int b = bytes[i >> 3];
 				int bit = (b >> (i & 7)) & 1;
 				sb.Append(bit == 1 ? '1' : '0');
-				// (Optional) spaces every 8 bits:
-				// if (((i + 1) % 8) == 0 && i + 1 < bitLength) sb.Append(' ');
+				// If you ever want spaces: if (((i + 1) % 8) == 0 && i + 1 < bitLength) sb.Append(' ');
 			}
 			return sb.ToString();
 		}
 
-		// Read-modify-write overlay: returns the resulting bytes after placing 'src' at 'startBit' over 'background'
+		// Read-modify-write overlay: returns the resulting bytes after placing 'src' at 'startBit' over 'background'.
 		private static byte[] OverlayBits(byte[] background, int startBit, byte[] src, int bitLen)
 		{
-			var dst = new byte[background.Length];
-			System.Buffer.BlockCopy(background, 0, dst, 0, background.Length);
+			byte[] dst = new byte[background.Length];
+			Buffer.BlockCopy(background, 0, dst, 0, background.Length);
 
-			// mask tail of src so no garbage leaks
+			// Mask tail of src so no garbage leaks
 			if ((bitLen & 7) != 0)
 			{
 				int last = (bitLen - 1) >> 3;
@@ -301,14 +308,14 @@ namespace BigRedProf.Data.Tape.Test
 			return dst;
 		}
 
-		// Convenience to size the buffer we need to read/expect.
+		// Convenience to size the buffer we need to read/expect when a write begins mid-byte.
 		private static int AffectedByteCount(int offsetBits, int bitLen)
 		{
 			int startBit = offsetBits & 7;
 			return (startBit + bitLen + 7) >> 3; // ceil((startBit + bitLen)/8)
 		}
 
-		// ---------- Tests ----------
+		// ---------- Long stress tests ----------
 
 		[Trait("Region", "TapeRecorder methods")]
 		[Theory]
@@ -317,12 +324,12 @@ namespace BigRedProf.Data.Tape.Test
 		{
 			// Arrange
 			Guid tapeId = Guid.NewGuid();
-			var tape = Tape.CreateNew(tapeProvider, tapeId);
-			var rec = new TapeRecorder();
+			Tape tape = Tape.CreateNew(tapeProvider, tapeId);
+			TapeRecorder rec = new TapeRecorder();
 			rec.InsertTape(tape);
 
 			int offsetBits = 3;
-			byte[] payload = { 0xDE, 0xAD, 0xBE, 0xEF, 0x01 }; // 5 bytes => 40 bits, will use only 37
+			byte[] payload = new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0x01 }; // 40 bits available
 			int payloadBits = 37;
 
 			// Advance head by offset
@@ -336,7 +343,6 @@ namespace BigRedProf.Data.Tape.Test
 			int bytesToRead = AffectedByteCount(offsetBits, payloadBits);
 			byte[] actual = tapeProvider.ReadTapeInternal(tapeId, 0, bytesToRead);
 
-			// background is zeros
 			byte[] expected = OverlayBits(new byte[bytesToRead], offsetBits, (byte[])payload.Clone(), payloadBits);
 			Assert.Equal(expected, actual);
 		}
@@ -348,26 +354,25 @@ namespace BigRedProf.Data.Tape.Test
 		{
 			// Arrange
 			Guid tapeId = Guid.NewGuid();
-			var tape = Tape.CreateNew(tapeProvider, tapeId);
-			var rec = new TapeRecorder();
+			Tape tape = Tape.CreateNew(tapeProvider, tapeId);
+			TapeRecorder rec = new TapeRecorder();
 			rec.InsertTape(tape);
 
 			int offsetBits = 11;
-			byte[] payload = { 0x13, 0x57, 0x9B, 0xDF, 0xF0, 0x0D, 0xAA, 0x55, 0x01 }; // 72 bits available
+			byte[] payload = new byte[] { 0x13, 0x57, 0x9B, 0xDF, 0xF0, 0x0D, 0xAA, 0x55, 0x01 }; // 72 bits available
 			int payloadBits = 65;
 
-			// Build one contiguous write: 11 zeros + payload
+			// Build one contiguous write: 11 zeros + payload (avoids mid-stream extend)
 			string codeBits = ToLsbFirstBitString(payload, payloadBits);
 			string combined = new string('0', offsetBits) + codeBits;
 
 			// Act
 			rec.Record(new Code(combined));
 
-			// Assert
+			// Assert (total length from bit 0)
 			int totalBytes = (offsetBits + payloadBits + 7) >> 3; // ceil((offset+len)/8)
 			byte[] actual = tapeProvider.ReadTapeInternal(tapeId, 0, totalBytes);
 
-			// Expected: overlay payload at bit 11 over zero background
 			byte[] expected = OverlayBits(new byte[totalBytes], offsetBits, (byte[])payload.Clone(), payloadBits);
 			Assert.Equal(expected, actual);
 		}
@@ -379,19 +384,19 @@ namespace BigRedProf.Data.Tape.Test
 		{
 			// Arrange
 			Guid tapeId = Guid.NewGuid();
-			var tape = Tape.CreateNew(tapeProvider, tapeId);
-			var rec = new TapeRecorder();
+			Tape tape = Tape.CreateNew(tapeProvider, tapeId);
+			TapeRecorder rec = new TapeRecorder();
 			rec.InsertTape(tape);
 
 			int offsetBits = 7;
-			// 33 bytes (264 bits); we'll write 257 bits (crosses 32+ bytes, awkward tail)
+			// 33 bytes (264 bits); write 257 bits (crosses >32 bytes, awkward tail)
 			byte[] payload = new byte[]
 			{
-			0xA5, 0x5A, 0xC3, 0x3C, 0x0F, 0xF0, 0x96, 0x69,
-			0x12, 0x48, 0x24, 0x81, 0x7E, 0xE7, 0x3B, 0xB3,
-			0xD2, 0x2D, 0xCC, 0x4C, 0x55, 0xAA, 0xFE, 0x01,
-			0x39, 0x93, 0xC0, 0x0C, 0xED, 0xDE, 0xBE, 0xEF,
-			0x42
+				0xA5, 0x5A, 0xC3, 0x3C, 0x0F, 0xF0, 0x96, 0x69,
+				0x12, 0x48, 0x24, 0x81, 0x7E, 0xE7, 0x3B, 0xB3,
+				0xD2, 0x2D, 0xCC, 0x4C, 0x55, 0xAA, 0xFE, 0x01,
+				0x39, 0x93, 0xC0, 0x0C, 0xED, 0xDE, 0xBE, 0xEF,
+				0x42
 			};
 			int payloadBits = 257;
 
@@ -409,32 +414,33 @@ namespace BigRedProf.Data.Tape.Test
 			Assert.Equal(expected, actual);
 		}
 
-        [Trait("Region", "TapeRecorder methods")]
-        [Theory]
-        [MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
-        public void InsertTape_ShouldThrow_WhenTapeIsNull(TapeProvider tapeProvider)
-        {
-            // Arrange
-            var tapeRecorder = new TapeRecorder();
+		[Trait("Region", "TapeRecorder methods")]
+		[Theory]
+		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
+		public void InsertTape_ShouldThrow_WhenTapeIsNull(TapeProvider tapeProvider)
+		{
+			// Arrange
+			TapeRecorder tapeRecorder = new TapeRecorder();
 
-            // Act & Assert
-            Assert.ThrowsAny<ArgumentNullException>(() => tapeRecorder.InsertTape(null!));
-        }
+			// Act & Assert
+			Assert.ThrowsAny<ArgumentNullException>(() => tapeRecorder.InsertTape(null!));
+		}
 
-        [Trait("Region", "TapeRecorder methods")]
-        [Theory]
-        [MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
-        public void InsertTape_ShouldThrow_WhenTapeAlreadyInserted(TapeProvider tapeProvider)
-        {
-            // Arrange
-            Guid tapeId = Guid.NewGuid();
-            Tape tape = Tape.CreateNew(tapeProvider, tapeId);
-            var tapeRecorder = new TapeRecorder();
-            tapeRecorder.InsertTape(tape);
+		[Trait("Region", "TapeRecorder methods")]
+		[Theory]
+		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
+		public void InsertTape_ShouldThrow_WhenTapeAlreadyInserted(TapeProvider tapeProvider)
+		{
+			// Arrange
+			Guid tapeId = Guid.NewGuid();
+			Tape tape = Tape.CreateNew(tapeProvider, tapeId);
+			TapeRecorder tapeRecorder = new TapeRecorder();
+			tapeRecorder.InsertTape(tape);
 
-            // Act & Assert
-            Assert.ThrowsAny<InvalidOperationException>(() => tapeRecorder.InsertTape(tape));
-        }
-        #endregion
-    }
+			// Act & Assert
+			Assert.ThrowsAny<InvalidOperationException>(() => tapeRecorder.InsertTape(tape));
+		}
+
+		#endregion
+	}
 }
