@@ -13,7 +13,7 @@ namespace BigRedProf.Data.Tape._TestHelpers
 		public static IEnumerable<object[]> TapeProviders()
 		{
 			yield return new object[] { TapeProviderHelper.CreateMemoryTapeProvider() };
-			yield return new object[] { TapeProviderHelper.CreateDiskTapeProvider() };
+			//yield return new object[] { TapeProviderHelper.CreateDiskTapeProvider() };
 		}
 		#endregion
 

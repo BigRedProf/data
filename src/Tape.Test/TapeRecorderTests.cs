@@ -46,13 +46,13 @@ namespace BigRedProf.Data.Tape.Test
             tapeRecorder.InsertTape(tape);
 
 			// Act
-			var expectedCode = new Code("10101010");
-			tapeRecorder.Record(expectedCode);
+			Code code = new Code("10101010 00000000 11111111 00001111 010");
+            byte[] expectedBytes = new byte[] { 0b01010101, 0b00000000, 0b11111111, 0b11110000, 0b010 };
+			tapeRecorder.Record(code);
 
             // Assert
-            byte[] bytes = tapeProvider.ReadTapeInternal(tapeId, 0, expectedCode.Length);
-            var actualCode = new Code(bytes, expectedCode.Length);
-			Assert.Equal(expectedCode, actualCode);
+            byte[] actualBytes = tapeProvider.ReadTapeInternal(tapeId, 0, 5);
+			Assert.Equal(expectedBytes, actualBytes);
 		}
 
         [Trait("Region", "TapeRecorder methods")]

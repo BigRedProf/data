@@ -110,51 +110,59 @@ namespace BigRedProf.Data.Tape.Internal
 			return new Code(bytesToEncode, length);
 		}
 
-		private static void WriteRawCode(TapeProvider tapeProvider, Guid tapeId, Code content, int offset)
+		private static void WriteRawCode(TapeProvider tapeProvider, Guid tapeId, Code content, int offsetBits)
 		{
-			int byteStart = offset / 8;
-			int bitOffset = offset % 8;
-			int byteLength = ((offset + content.Length - 1) / 8) - byteStart + 1;
+			// Number of bits we are writing
+			int bitLen = content.Length;
+			if (bitLen == 0) return;
 
-			byte[] contentBytes = content.ToByteArray();
+			int startByte = offsetBits >> 3;
+			int startBit = offsetBits & 7;
 
-			// TODO: Offset by label size!!
+			// Bytes of content (may include unused bits in the last byte)
+			byte[] src = content.ToByteArray();
 
-			// Fast path: Byte-aligned write
-			if (bitOffset == 0 && content.Length % 8 == 0)
+			// Mask out any unused high bits in the final source byte so we never leak garbage
+			int tailBits = bitLen & 7;
+			if (tailBits != 0)
 			{
-				tapeProvider.WriteTapeInternal(tapeId, contentBytes, byteStart, byteLength);
+				byte mask = (byte)((1 << tailBits) - 1); // keep low 'tailBits' bits
+				src[(bitLen - 1) >> 3] &= mask;
+			}
+
+			// Fast path: fully byte-aligned and whole-byte length
+			if (startBit == 0 && (bitLen & 7) == 0)
+			{
+				int fullBytes = bitLen >> 3;
+				if (fullBytes > 0)
+					tapeProvider.WriteTapeInternal(tapeId, src, startByte, fullBytes);
 				return;
 			}
 
-			// Slow path: Create the byte array shifting each byte as needed
-			byte[] bytesToWrite = new byte[byteLength];
-			if (bitOffset == 0)
-			{
-				// we start aligned, so just shift each byte
-				for (int i = 0; i < byteLength - 1; ++i)
-					bytesToWrite[i] = (byte)((contentBytes[i] >> bitOffset) | (contentBytes[i + 1] << bitOffset));
-			}
-			else
-			{
-				// we need to read one existing byte on tape to help calculate are first byte
-				byte firstByte = tapeProvider.ReadTapeInternal(tapeId, byteStart, 1)[0];
-				firstByte |= (byte)(contentBytes[0] << bitOffset);
-				bytesToWrite[0] = firstByte;
+			// How many destination bytes are affected on tape?
+			int affectedBytes = (startBit + bitLen + 7) >> 3; // ceil((startBit + bitLen)/8)
 
-				// subsequent bytes are created by shifting bytes from our content bytes
-				int bytesToWriteIndex;
-				if (byteLength > 1)
-				{
-					for (bytesToWriteIndex = 1; bytesToWriteIndex < byteLength - 1; ++bytesToWriteIndex)
-						bytesToWrite[bytesToWriteIndex] = (byte)((contentBytes[bytesToWriteIndex - 1] >> 8 - bitOffset) | (contentBytes[bytesToWriteIndex] << bitOffset));
+			// Read existing region so we can preserve untouched bits
+			byte[] dst = tapeProvider.ReadTapeInternal(tapeId, startByte, affectedBytes);
 
-					// except for the last byte which doesn't have an upper part to merge in
-					bytesToWrite[bytesToWriteIndex] = (byte)(contentBytes[bytesToWriteIndex - 1] >> 8 - bitOffset);
-				}
+			// Overlay bit-by-bit (clear & set) for clarity and correctness
+			for (int i = 0; i < bitLen; i++)
+			{
+				int sByte = i >> 3;
+				int sBit = i & 7;
+				int bit = (src[sByte] >> sBit) & 1;
+
+				int tIndex = startBit + i;
+				int dByte = tIndex >> 3;
+				int dBit = tIndex & 7;
+
+				// clear then set
+				dst[dByte] = (byte)(dst[dByte] & ~(1 << dBit));
+				dst[dByte] = (byte)(dst[dByte] | ((bit & 1) << dBit));
 			}
 
-			tapeProvider.WriteTapeInternal(tapeId, bytesToWrite, byteStart, byteLength);
+			// Write the merged bytes back to tape
+			tapeProvider.WriteTapeInternal(tapeId, dst, startByte, affectedBytes);
 		}
 		#endregion
 	}
