@@ -301,6 +301,145 @@ namespace BigRedProf.Data.Tape.Test
 			return dst;
 		}
 
+		// --- Round-trip tests (Recorder -> Player) ---
+
+		[Trait("Region", "Tape round-trip")]
+		[Theory]
+		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
+		public void RoundTrip_AlignedWholeBytes(TapeProvider tapeProvider)
+		{
+			// Arrange (write aligned 32 bits)
+			Guid tapeId = Guid.NewGuid();
+			Tape tape = Tape.CreateNew(tapeProvider, tapeId);
+
+			TapeRecorder rec = new TapeRecorder();
+			rec.InsertTape(tape);
+			Code written = new Code("11110000 00110011 01010101 10101010");
+			rec.Record(written);
+
+			// Rewind via recorder (tape is shared by reference)
+			rec.RewindOrFastForwardTo(0);
+
+			// Act
+			TapePlayer player = new TapePlayer();
+			player.InsertTape(tape);
+			Code read = player.Play(written.Length);
+
+			// Assert
+			Assert.Equal(written, read);
+		}
+
+		[Trait("Region", "Tape round-trip")]
+		[Theory]
+		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
+		public void RoundTrip_AlignedWithTailBits(TapeProvider tapeProvider)
+		{
+			// Arrange (12 bits: byte-aligned start with a tail)
+			Guid tapeId = Guid.NewGuid();
+			Tape tape = Tape.CreateNew(tapeProvider, tapeId);
+
+			TapeRecorder rec = new TapeRecorder();
+			rec.InsertTape(tape);
+			Code written = new Code("11111111 1111"); // 12 bits, LSB-first per byte
+			rec.Record(written);
+
+			// Rewind via recorder
+			rec.RewindOrFastForwardTo(0);
+
+			// Act
+			TapePlayer player = new TapePlayer();
+			player.InsertTape(tape);
+			Code read = player.Play(written.Length);
+
+			// Assert
+			Assert.Equal(written, read);
+		}
+
+		[Trait("Region", "Tape round-trip")]
+		[Theory]
+		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
+		public void RoundTrip_MisalignedStartBit3_Read8Ones(TapeProvider tapeProvider)
+		{
+			// Arrange: write "000" then "11111111" (forces misaligned start for payload)
+			Guid tapeId = Guid.NewGuid();
+			Tape tape = Tape.CreateNew(tapeProvider, tapeId);
+
+			TapeRecorder rec = new TapeRecorder();
+			rec.InsertTape(tape);
+			rec.Record(new Code("000"));
+			rec.Record(new Code("11111111"));
+
+			// Rewind via recorder
+			rec.RewindOrFastForwardTo(0);
+
+			// Act: skip 3, then read 8
+			TapePlayer player = new TapePlayer();
+			player.InsertTape(tape);
+			_ = player.Play(3);
+			Code read = player.Play(8);
+
+			// Assert
+			Assert.Equal(new Code("11111111"), read);
+		}
+
+		[Trait("Region", "Tape round-trip")]
+		[Theory]
+		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
+		public void RoundTrip_MisalignedStartBit5_Tail10Bits(TapeProvider tapeProvider)
+		{
+			// Arrange: write "00000" then 10 ones
+			Guid tapeId = Guid.NewGuid();
+			Tape tape = Tape.CreateNew(tapeProvider, tapeId);
+
+			TapeRecorder rec = new TapeRecorder();
+			rec.InsertTape(tape);
+			rec.Record(new Code("00000"));
+			rec.Record(new Code("1111111111"));
+
+			// Rewind via recorder
+			rec.RewindOrFastForwardTo(0);
+
+			// Act: skip 5, then read 10
+			TapePlayer player = new TapePlayer();
+			player.InsertTape(tape);
+			_ = player.Play(5);
+			Code read = player.Play(10);
+
+			// Assert
+			Assert.Equal(new Code("1111111111"), read);
+		}
+
+		[Trait("Region", "Tape round-trip")]
+		[Theory]
+		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
+		public void RoundTrip_Long_Carry_Offset11_Len65(TapeProvider tapeProvider)
+		{
+			// Arrange: combine as one write to avoid mid-stream extend quirks
+			Guid tapeId = Guid.NewGuid();
+			Tape tape = Tape.CreateNew(tapeProvider, tapeId);
+
+			TapeRecorder rec = new TapeRecorder();
+			rec.InsertTape(tape);
+
+			byte[] payload = new byte[] { 0x13, 0x57, 0x9B, 0xDF, 0xF0, 0x0D, 0xAA, 0x55, 0x01 }; // 72 bits available
+			int payloadBits = 65;
+			string codeBits = ToLsbFirstBitString(payload, payloadBits);
+			string combined = new string('0', 11) + codeBits;
+
+			rec.Record(new Code(combined));
+
+			// Rewind via recorder
+			rec.RewindOrFastForwardTo(0);
+
+			// Act: skip 11, read 65
+			TapePlayer player = new TapePlayer();
+			player.InsertTape(tape);
+			_ = player.Play(11);
+			Code read = player.Play(payloadBits);
+
+			// Assert
+			Assert.Equal(new Code(codeBits), read);
+		}
 		#endregion
 	}
 }
