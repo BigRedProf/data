@@ -10,11 +10,28 @@ namespace BigRedProf.Data.Tape
 		private Guid _seriesId;
 		#endregion
 
-		#region constructors
-		public BackupWizard(Librarian librarian, Guid seriesId)
+		#region private constructors
+		private BackupWizard(Librarian librarian, Guid seriesId)
 		{
 			_librarian = librarian;
 			_seriesId = seriesId;
+		}
+		#endregion
+
+		#region functions
+		public BackupWizard CreateNew(
+			Librarian librarian, 
+			Guid seriesId, 
+			string seriesName, 
+			string seriesDescription
+		)
+		{
+			throw new NotImplementedException();
+		}
+
+		public BackupWizard OpenExisting(Librarian librarian, Guid seriesId)
+		{
+			throw new NotImplementedException(); 
 		}
 		#endregion
 
