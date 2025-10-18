@@ -13,6 +13,7 @@ namespace BigRedProf.Data.Tape
 			PiedPiper = new PiedPiper();
 			PiedPiper.RegisterCorePackRats();
 			PiedPiper.DefineCoreTraits();
+			PiedPiper.DefineTrait(new TraitDefinition(TapeTrait.ClientCheckpointCode, CoreSchema.Code));
 			PiedPiper.DefineTrait(new TraitDefinition(TapeTrait.TapePosition, CoreSchema.Int32));
 		}
 		#endregion
