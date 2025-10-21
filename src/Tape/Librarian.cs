@@ -20,6 +20,13 @@ namespace BigRedProf.Data.Tape
 		}
 		#endregion
 
+		#region internal properties
+		internal TapeProvider TapeProvider
+		{
+			get { return _tapeProvider; }
+		}
+		#endregion
+
 		#region methods
 		public Tape FetchTape(Guid tapeId)
 		{

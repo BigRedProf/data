@@ -27,6 +27,8 @@ namespace BigRedProf.Data.Tape._TestHelpers
 			IPiedPiper piedPiper = new PiedPiper();
 			piedPiper.RegisterCorePackRats();
 			piedPiper.DefineCoreTraits();
+			piedPiper.DefineTrait(new TraitDefinition(TapeTrait.ClientCheckpointCode, CoreSchema.Code));
+			piedPiper.DefineTrait(new TraitDefinition(TapeTrait.SeriesDescription, CoreSchema.TextUtf8));
 			piedPiper.DefineTrait(new TraitDefinition(TapeTrait.TapePosition, CoreSchema.Int32));
 			return piedPiper;
 		}

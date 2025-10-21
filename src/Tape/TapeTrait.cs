@@ -11,6 +11,11 @@
 		/// </summary>
 		public const string ClientCheckpointCode = "1522097a-9ab5-44d3-86ea-3635c4701bcc";
 
+		/// <summary>
+		/// Stores an optional human-readable description of the tape series.
+		/// </summary>
+		public const string SeriesDescription = "5b8d1d0f-3c6d-4ef0-8f58-7fdf7f6b1c80";
+
 		#region static fields
 		/// <summary>
 		/// Represents the current position in the tape, in bits. 0 is fully rewound, 1,000,000,000 is
