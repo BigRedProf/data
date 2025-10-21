@@ -80,10 +80,11 @@ namespace BigRedProf.Data.Core
 			if (byteArray == null)
 				throw new ArgumentNullException(nameof(byteArray));
 
-			if (length * 8 < byteArray.Length)
-			{ 
+			int requiredByteCount = (length + 7) / 8;
+			if (byteArray.Length < requiredByteCount)
+			{
 				throw new ArgumentOutOfRangeException(
-					nameof(length), 
+					nameof(length),
 					"The specified length is too small to accomodate the byte array."
 				);
 			}

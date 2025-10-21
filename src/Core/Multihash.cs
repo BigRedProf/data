@@ -70,8 +70,7 @@ namespace BigRedProf.Data.Core
 			if (code == null)
 				throw new ArgumentNullException(nameof(code));
 
-			Code packedCode = _piedPiper.EncodeModel<Code>(code, CoreSchema.Code);
-			byte[] packedBytes = packedCode.ToByteArray();
+			byte[] packedBytes = _piedPiper.SaveCodeToByteArray(code);
 
 			byte[] digest = HashBytes(packedBytes, algorithm);
 			return new Multihash(digest, algorithm);
