@@ -58,6 +58,83 @@ namespace BigRedProf.Data.Tape
 			tapeLabel.AddTrait(new Trait<int>(CoreTrait.SeriesNumber, seriesNumber));
 			return tapeLabel;
 		}
+
+		public TapeLabel WithName(string name)
+		{
+			if (string.IsNullOrWhiteSpace(name))
+				throw new ArgumentException("Name cannot be null or whitespace.", nameof(name));
+
+			TapeLabel tapeLabel = new TapeLabel(this);
+			tapeLabel.AddTrait(new Trait<string>(CoreTrait.Name, name));
+			return tapeLabel;
+		}
+
+		public TapeLabel WithSeriesDescription(string description)
+		{
+			if (description == null)
+				throw new ArgumentNullException(nameof(description));
+
+			TapeLabel tapeLabel = new TapeLabel(this);
+			tapeLabel.AddTrait(new Trait<string>(TapeTrait.SeriesDescription, description));
+			return tapeLabel;
+		}
+
+		public TapeLabel WithContentMultihash(Multihash digest)
+		{
+			if (digest == null)
+				throw new ArgumentNullException(nameof(digest));
+
+			TapeLabel tapeLabel = new TapeLabel(this);
+			tapeLabel.AddTrait(new Trait<Multihash>(CoreTrait.ContentDigest, digest));
+			return tapeLabel;
+		}
+
+		public TapeLabel WithSeriesParentMultihash(Multihash digest)
+		{
+			if (digest == null)
+				throw new ArgumentNullException(nameof(digest));
+
+			TapeLabel tapeLabel = new TapeLabel(this);
+			tapeLabel.AddTrait(new Trait<Multihash>(CoreTrait.SeriesParentDigest, digest));
+			return tapeLabel;
+		}
+
+		public TapeLabel WithSeriesHeadMultihash(Multihash digest)
+		{
+			if (digest == null)
+				throw new ArgumentNullException(nameof(digest));
+
+			TapeLabel tapeLabel = new TapeLabel(this);
+			tapeLabel.AddTrait(new Trait<Multihash>(CoreTrait.SeriesHeadDigest, digest));
+			return tapeLabel;
+		}
+
+		public TapeLabel WithClientCheckpoint(Code checkpoint)
+		{
+			if (checkpoint == null)
+				throw new ArgumentNullException(nameof(checkpoint));
+
+			TapeLabel tapeLabel = new TapeLabel(this);
+			tapeLabel.AddTrait(new Trait<Code>(TapeTrait.ClientCheckpointCode, checkpoint));
+			return tapeLabel;
+		}
+
+		public TapeLabel WithoutClientCheckpoint()
+		{
+			TapeLabel tapeLabel = new TapeLabel(this);
+			tapeLabel.RemoveTrait(TapeTrait.ClientCheckpointCode);
+			return tapeLabel;
+		}
+
+		public bool TryGetSeriesDescription(out string description)
+		{
+			return this.TryGetTrait<string>(TapeTrait.SeriesDescription, out description);
+		}
+
+		public bool TryGetClientCheckpoint(out Code checkpoint)
+		{
+			return this.TryGetTrait<Code>(TapeTrait.ClientCheckpointCode, out checkpoint);
+		}
 		#endregion
 	}
 }
