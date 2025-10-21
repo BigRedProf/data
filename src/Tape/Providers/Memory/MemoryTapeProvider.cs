@@ -78,12 +78,19 @@ namespace BigRedProf.Data.Tape.Providers.Memory
 			if (byteOffset < 0)
 				throw new ArgumentOutOfRangeException(nameof(byteOffset), "Byte offset cannot be negative.");
 
-			if (byteLength <= 0 || byteOffset + byteLength > data.Length)
+			if (byteLength < 0)
+				throw new ArgumentOutOfRangeException(nameof(byteLength), "Byte length cannot be negative.");
+
+			if (byteLength > data.Length)
+				throw new ArgumentException("Byte length exceeds source data length.", nameof(byteLength));
+
+			byte[] tapeData = GetTapeData(tapeId);
+
+			if (byteOffset + byteLength > tapeData.Length)
 				throw new ArgumentOutOfRangeException(nameof(byteLength), "Invalid byte length specified.");
 
-			byte[] _data = GetTapeData(tapeId);
-			Array.Copy(data, 0, _data, byteOffset, byteLength);
-			SetTapeData(tapeId, _data);
+			Array.Copy(data, 0, tapeData, byteOffset, byteLength);
+			SetTapeData(tapeId, tapeData);
 		}
 
 		public override void WriteLabelInternal(Guid tapeId, byte[] data)
