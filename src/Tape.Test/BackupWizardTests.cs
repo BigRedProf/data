@@ -78,7 +78,7 @@ namespace BigRedProf.Data.Tape.Test
 
 			[Trait("Region", "BackupWizard methods")]
 			[Fact]
-			public void Record_ShouldUpdateTapeContentAndDigests()
+			public void Record_ShouldUpdateTapeContentWithoutComputingDigests()
 			{
 				MemoryLibrary library = new MemoryLibrary();
 				Librarian librarian = library.Librarian;
@@ -94,14 +94,42 @@ namespace BigRedProf.Data.Tape.Test
 				Assert.Equal(content.Length, tape.Position);
 
 				TapeLabel label = tape.ReadLabel();
-				Multihash actualContentDigest = label.ContentMultihash;
-				Multihash expectedContentDigest = ComputeContentDigest(tape);
-				Assert.Equal(expectedContentDigest, actualContentDigest);
+				Multihash baselineDigest = ComputeBaselineSeriesDigest();
+				Assert.Equal(baselineDigest, label.ContentMultihash);
+				Assert.Equal(baselineDigest, label.SeriesParentMultihash);
+				Assert.Equal(baselineDigest, label.SeriesHeadMultihash);
+			}
+
+			[Trait("Region", "BackupWizard methods")]
+			[Fact]
+			public void SetLatestCheckpoint_ShouldComputeDigestsAfterRecording()
+			{
+				MemoryLibrary library = new MemoryLibrary();
+				Librarian librarian = library.Librarian;
+				Guid seriesId = new Guid("cccccccc-0000-0000-0000-000000000006");
+				string seriesName = "Checkpoint Digest Series";
+
+				BackupWizard wizard = BackupWizard.CreateNew(library, seriesId, seriesName, "Checkpoint digest description");
+
+				Code content = new Code("11110000 00001111");
+				wizard.Record(content);
+
+				Code checkpoint = new Code("0101");
+				wizard.SetLatestCheckpoint(checkpoint);
+
+				Tape tape = librarian.FetchTapesInSeries(seriesId).Single();
+				TapeLabel label = tape.ReadLabel();
+
+				Code storedCheckpoint;
+				Assert.True(label.TryGetClientCheckpoint(out storedCheckpoint));
+				Assert.Equal(checkpoint, storedCheckpoint);
 
 				Multihash expectedParentDigest = ComputeBaselineSeriesDigest();
-				Assert.Equal(expectedParentDigest, label.SeriesParentMultihash);
-
+				Multihash expectedContentDigest = ComputeContentDigest(tape);
 				Multihash expectedHeadDigest = ComputeSeriesHeadDigest(expectedParentDigest, expectedContentDigest);
+
+				Assert.Equal(expectedContentDigest, label.ContentMultihash);
+				Assert.Equal(expectedParentDigest, label.SeriesParentMultihash);
 				Assert.Equal(expectedHeadDigest, label.SeriesHeadMultihash);
 			}
 
@@ -143,8 +171,10 @@ namespace BigRedProf.Data.Tape.Test
 				Assert.Equal(firstLabel.SeriesNumber + 1, secondLabel.SeriesNumber);
 				Assert.Equal(firstLabel.ContentMultihash, secondLabel.SeriesParentMultihash);
 
-				Multihash expectedSecondHead = ComputeSeriesHeadDigest(secondLabel.SeriesParentMultihash, secondLabel.ContentMultihash);
-				Assert.Equal(expectedSecondHead, secondLabel.SeriesHeadMultihash);
+				Multihash baselineDigest = ComputeBaselineSeriesDigest();
+				Assert.Equal(baselineDigest, firstLabel.ContentMultihash);
+				Assert.Equal(baselineDigest, secondLabel.ContentMultihash);
+				Assert.Equal(firstLabel.SeriesHeadMultihash, secondLabel.SeriesHeadMultihash);
 			}
 
 			[Trait("Region", "BackupWizard factories")]
@@ -168,19 +198,27 @@ namespace BigRedProf.Data.Tape.Test
 
 				Code additionalContent = new Code("11110000");
 				reopened.Record(additionalContent);
+				Code newCheckpoint = new Code("1100");
+				reopened.SetLatestCheckpoint(newCheckpoint);
 
 				Tape tape = librarian.FetchTapesInSeries(seriesId).Single();
 				int expectedPosition = initialContent.Length + additionalContent.Length;
 				Assert.Equal(expectedPosition, tape.Position);
 
 				TapeLabel label = tape.ReadLabel();
+				Code storedCheckpoint;
+				Assert.True(label.TryGetClientCheckpoint(out storedCheckpoint));
+				Assert.Equal(newCheckpoint, storedCheckpoint);
 				Multihash expectedContentDigest = ComputeContentDigest(tape);
 				Assert.Equal(expectedContentDigest, label.ContentMultihash);
 				Multihash expectedParentDigest = ComputeBaselineSeriesDigest();
 				Assert.Equal(expectedParentDigest, label.SeriesParentMultihash);
 				Multihash expectedHeadDigest = ComputeSeriesHeadDigest(expectedParentDigest, expectedContentDigest);
 				Assert.Equal(expectedHeadDigest, label.SeriesHeadMultihash);
+				Code refreshedCheckpoint = reopened.GetLatestCheckpoint();
+				Assert.Equal(newCheckpoint, refreshedCheckpoint);
 			}
+
 		#endregion
 
 		#region private static methods

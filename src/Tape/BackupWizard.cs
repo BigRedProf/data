@@ -22,6 +22,7 @@ namespace BigRedProf.Data.Tape
 			private Multihash _seriesParentDigest;
 			private Multihash _currentSeriesHeadDigest;
 			private Multihash _currentTapeContentDigest;
+			private bool _isTapeContentDirty;
 		#endregion
 
 		#region private constructors
@@ -56,6 +57,7 @@ namespace BigRedProf.Data.Tape
 				_seriesParentDigest = seriesParentDigest;
 				_currentSeriesHeadDigest = currentSeriesHeadDigest;
 				_currentTapeContentDigest = currentTapeContentDigest;
+				_isTapeContentDirty = false;
 			}
 		#endregion
 
@@ -180,8 +182,28 @@ namespace BigRedProf.Data.Tape
 					throw new ArgumentNullException(nameof(clientCheckpointCode));
 
 				TapeLabel label = _currentTape.ReadLabel();
+				label = ApplySeriesMetadata(label);
+				Multihash contentDigest;
+				if (_isTapeContentDirty)
+					contentDigest = ComputeContentDigest(_currentTape);
+				else
+					contentDigest = _currentTapeContentDigest;
+
+				Multihash seriesHeadDigest;
+				if (_isTapeContentDirty)
+					seriesHeadDigest = ComputeSeriesHeadDigest(_seriesParentDigest, contentDigest);
+				else
+					seriesHeadDigest = _currentSeriesHeadDigest;
+
+				label = label.WithContentMultihash(contentDigest);
+				label = label.WithSeriesParentMultihash(_seriesParentDigest);
+				label = label.WithSeriesHeadMultihash(seriesHeadDigest);
 				label = label.WithClientCheckpoint(clientCheckpointCode);
 				_currentTape.WriteLabel(label);
+
+				_currentTapeContentDigest = contentDigest;
+				_currentSeriesHeadDigest = seriesHeadDigest;
+				_isTapeContentDirty = false;
 			}
 
 			public void Record(Code content)
@@ -212,21 +234,9 @@ namespace BigRedProf.Data.Tape
 					TapeHelper.WriteContent(_currentTape, segment, tapePosition);
 					_currentTape.Position = tapePosition + bitsToWrite;
 
-					Multihash contentDigest = ComputeContentDigest(_currentTape);
-					Multihash seriesHeadDigest = ComputeSeriesHeadDigest(_seriesParentDigest, contentDigest);
-
-					TapeLabel label = _currentTape.ReadLabel();
-					label = ApplySeriesMetadata(label);
-					label = label.WithContentMultihash(contentDigest);
-					label = label.WithSeriesParentMultihash(_seriesParentDigest);
-					label = label.WithSeriesHeadMultihash(seriesHeadDigest);
-					_currentTape.WriteLabel(label);
-
-					_currentTapeContentDigest = contentDigest;
-					_currentSeriesHeadDigest = seriesHeadDigest;
-
 					contentOffset += bitsToWrite;
 					remainingBits -= bitsToWrite;
+					_isTapeContentDirty = true;
 
 					if (_currentTape.Position >= Tape.MaxContentLength)
 					{
@@ -236,10 +246,8 @@ namespace BigRedProf.Data.Tape
 					}
 				}
 			}
-		#endregion
 
-		#region private methods
-			private TapeLabel ApplySeriesMetadata(TapeLabel label)
+				private TapeLabel ApplySeriesMetadata(TapeLabel label)
 			{
 				if (label == null)
 					throw new ArgumentNullException(nameof(label));
@@ -263,6 +271,7 @@ namespace BigRedProf.Data.Tape
 				_currentSeriesNumber++;
 				_currentTape = tape;
 				_currentTapeContentDigest = BaselineSeriesDigest;
+				_isTapeContentDirty = false;
 
 				TapeLabel label = tape.ReadLabel();
 				label = ApplySeriesMetadata(label);
