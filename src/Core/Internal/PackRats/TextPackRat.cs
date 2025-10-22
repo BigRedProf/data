@@ -1,4 +1,4 @@
-﻿using BigRedProf.Data.Core.PackRats;
+using BigRedProf.Data.Core.PackRats;
 using System;
 using System.Text;
 

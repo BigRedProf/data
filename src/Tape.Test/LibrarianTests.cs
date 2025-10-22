@@ -1,4 +1,4 @@
-﻿using BigRedProf.Data.Core;
+using BigRedProf.Data.Core;
 using BigRedProf.Data.Tape._TestHelpers;
 
 namespace BigRedProf.Data.Tape.Test

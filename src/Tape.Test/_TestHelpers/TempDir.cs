@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 
 namespace BigRedProf.Data.Tape.Test._TestHelpers

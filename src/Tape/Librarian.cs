@@ -1,4 +1,4 @@
-﻿using BigRedProf.Data.Core;
+using BigRedProf.Data.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +21,7 @@ namespace BigRedProf.Data.Tape
 					: this(tapeProvider)
 			{
 				if (piedPiper == null)
-				throw new ArgumentNullException(nameof(piedPiper));
+					throw new ArgumentNullException(nameof(piedPiper));
 			}
 		#endregion
 
@@ -36,13 +36,13 @@ namespace BigRedProf.Data.Tape
 			public Tape FetchTape(Guid tapeId)
 			{
 				if (tapeId == Guid.Empty)
-				throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
+					throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
 
 				if (!_tapeProvider.TryFetchTapeInternal(tapeId, out Tape? tape))
-				throw new KeyNotFoundException($"Tape with ID '{tapeId}' not found.");
+					throw new KeyNotFoundException($"Tape with ID '{tapeId}' not found.");
 
 				if (tape == null)
-				throw new InvalidOperationException($"Tape provider returned null for tape '{tapeId}'.");
+					throw new InvalidOperationException($"Tape provider returned null for tape '{tapeId}'.");
 
 				return tape;
 			}
@@ -55,16 +55,16 @@ namespace BigRedProf.Data.Tape
 			public IEnumerable<Tape> FetchTapesInSeries(Guid seriesId)
 			{
 				if (seriesId == Guid.Empty)
-				throw new ArgumentException("Series ID cannot be empty.", nameof(seriesId));
+					throw new ArgumentException("Series ID cannot be empty.", nameof(seriesId));
 
 				return _tapeProvider.FetchAllTapesInternal()
 				.Where(tape =>
 				{
 					if (!tape.ReadLabel().TryGetTrait<Guid>(CoreTrait.SeriesId, out Guid tapeSeriesId))
-					return false;
+						return false;
 
 					if (tapeSeriesId != seriesId)
-					return false;
+						return false;
 
 					return true;
 				}
@@ -74,7 +74,7 @@ namespace BigRedProf.Data.Tape
 			public void AddTape(Tape tape)
 			{
 				if (tape == null)
-				throw new ArgumentNullException(nameof(tape), "Tape cannot be null.");
+					throw new ArgumentNullException(nameof(tape), "Tape cannot be null.");
 
 				// TODO: Should this be here or in Tape.CreateNew?? Need to figure this out.
 				//_tapeProvider.AddTapeInternal(tape);

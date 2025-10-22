@@ -187,11 +187,11 @@ namespace BigRedProf.Data.Tape.Test
 			private static Multihash ComputeContentDigest(Tape tape)
 			{
 				if (tape == null)
-				throw new ArgumentNullException(nameof(tape));
+					throw new ArgumentNullException(nameof(tape));
 
 				int contentLength = tape.Position;
 				if (contentLength == 0)
-				return ComputeBaselineSeriesDigest();
+					return ComputeBaselineSeriesDigest();
 
 				TapePlayer player = new TapePlayer();
 				player.InsertTape(tape);
@@ -210,9 +210,9 @@ namespace BigRedProf.Data.Tape.Test
 			private static Multihash ComputeSeriesHeadDigest(Multihash parentDigest, Multihash contentDigest)
 			{
 				if (parentDigest == null)
-				throw new ArgumentNullException(nameof(parentDigest));
+					throw new ArgumentNullException(nameof(parentDigest));
 				if (contentDigest == null)
-				throw new ArgumentNullException(nameof(contentDigest));
+					throw new ArgumentNullException(nameof(contentDigest));
 
 				byte[] parentBytes = parentDigest.Digest;
 				byte[] contentBytes = contentDigest.Digest;

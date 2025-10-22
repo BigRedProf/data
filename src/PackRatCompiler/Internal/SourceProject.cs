@@ -1,4 +1,4 @@
-﻿using BigRedProf.Data.PackRatCompiler.Internal.Symbols;
+using BigRedProf.Data.PackRatCompiler.Internal.Symbols;
 using Microsoft.CodeAnalysis;
 using System.Diagnostics;
 

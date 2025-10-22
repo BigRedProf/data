@@ -1,4 +1,4 @@
-﻿using BigRedProf.Data.Core;
+using BigRedProf.Data.Core;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 

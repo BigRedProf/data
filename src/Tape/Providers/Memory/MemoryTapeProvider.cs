@@ -1,4 +1,4 @@
-﻿using BigRedProf.Data.Core;
+using BigRedProf.Data.Core;
 using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
@@ -30,7 +30,7 @@ namespace BigRedProf.Data.Tape.Providers.Memory
 			public override bool TryFetchTapeInternal(Guid tapeId, out Tape? tape)
 			{
 				if (tapeId == Guid.Empty)
-				throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
+					throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
 
 				if (!_tapes.ContainsKey(tapeId))
 				{
@@ -54,7 +54,7 @@ namespace BigRedProf.Data.Tape.Providers.Memory
 			public override byte[] ReadTapeInternal(Guid tapeId, int byteOffset, int byteLength)
 			{
 				if (tapeId == Guid.Empty)
-				throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
+					throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
 
 				byte[] tapeData = GetTapeData(tapeId);
 				var resultBytes = new byte[byteLength];
@@ -65,10 +65,10 @@ namespace BigRedProf.Data.Tape.Providers.Memory
 			public override byte[] ReadLabelInternal(Guid tapeId)
 			{
 				if (tapeId == Guid.Empty)
-				throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
+					throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
 
 				if(!_labels.TryGetValue(tapeId, out byte[] labelData))
-				throw new KeyNotFoundException($"Label for tape ID '{tapeId}' not found.");
+					throw new KeyNotFoundException($"Label for tape ID '{tapeId}' not found.");
 
 				return labelData;
 			}
@@ -76,24 +76,24 @@ namespace BigRedProf.Data.Tape.Providers.Memory
 			public override void WriteTapeInternal(Guid tapeId, byte[] data, int byteOffset, int byteLength)
 			{
 				if (tapeId == Guid.Empty)
-				throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
+					throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
 
 				if (data == null)
-				throw new ArgumentNullException(nameof(data), "Data cannot be null.");
+					throw new ArgumentNullException(nameof(data), "Data cannot be null.");
 
 				if (byteOffset < 0)
-				throw new ArgumentOutOfRangeException(nameof(byteOffset), "Byte offset cannot be negative.");
+					throw new ArgumentOutOfRangeException(nameof(byteOffset), "Byte offset cannot be negative.");
 
 				if (byteLength < 0)
-				throw new ArgumentOutOfRangeException(nameof(byteLength), "Byte length cannot be negative.");
+					throw new ArgumentOutOfRangeException(nameof(byteLength), "Byte length cannot be negative.");
 
 				if (byteLength > data.Length)
-				throw new ArgumentException("Byte length exceeds source data length.", nameof(byteLength));
+					throw new ArgumentException("Byte length exceeds source data length.", nameof(byteLength));
 
 				byte[] tapeData = GetTapeData(tapeId);
 
 				if (byteOffset + byteLength > tapeData.Length)
-				throw new ArgumentOutOfRangeException(nameof(byteLength), "Invalid byte length specified.");
+					throw new ArgumentOutOfRangeException(nameof(byteLength), "Invalid byte length specified.");
 
 				Array.Copy(data, 0, tapeData, byteOffset, byteLength);
 				SetTapeData(tapeId, tapeData);
@@ -102,10 +102,10 @@ namespace BigRedProf.Data.Tape.Providers.Memory
 			public override void WriteLabelInternal(Guid tapeId, byte[] data)
 			{
 				if (tapeId == Guid.Empty)
-				throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
+					throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
 
 				if(data == null)
-				throw new ArgumentNullException(nameof(data), "Data cannot be null.");
+					throw new ArgumentNullException(nameof(data), "Data cannot be null.");
 
 				_labels[tapeId] = data;
 			}
@@ -113,7 +113,7 @@ namespace BigRedProf.Data.Tape.Providers.Memory
 			public override void AddTapeInternal(Tape tape)
 			{
 				if (tape == null)
-				throw new ArgumentNullException(nameof(tape), "Tape cannot be null.");
+					throw new ArgumentNullException(nameof(tape), "Tape cannot be null.");
 
 				// TODO: Consider making tape length grow dynamically so it's not always 125MB long.
 				_tapes[tape.Id] = new byte[Code.MaxLength];

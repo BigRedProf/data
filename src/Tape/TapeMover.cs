@@ -1,4 +1,4 @@
-﻿using BigRedProf.Data.Core;
+using BigRedProf.Data.Core;
 using BigRedProf.Data.Tape.Internal;
 using System;
 using System.Diagnostics;

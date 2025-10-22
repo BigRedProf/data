@@ -1,4 +1,4 @@
-﻿using BigRedProf.Data.Core;
+using BigRedProf.Data.Core;
 using BigRedProf.Data.Core.PackRats;
 using BigRedProf.Data.Tape.Models;
 using System;
