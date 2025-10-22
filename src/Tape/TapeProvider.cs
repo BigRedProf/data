@@ -1,4 +1,4 @@
-﻿using BigRedProf.Data.Core;
+using BigRedProf.Data.Core;
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
@@ -9,21 +9,36 @@ namespace BigRedProf.Data.Tape
 	{
 		#region constructors
 		protected TapeProvider()
+			: this(null)
 		{
-			PiedPiper = new PiedPiper();
-			PiedPiper.RegisterCorePackRats();
-			PiedPiper.DefineCoreTraits();
-			PiedPiper.DefineTrait(new TraitDefinition(TapeTrait.ClientCheckpointCode, CoreSchema.Code));
-			PiedPiper.DefineTrait(new TraitDefinition(TapeTrait.SeriesDescription, CoreSchema.TextUtf8));
-			PiedPiper.DefineTrait(new TraitDefinition(TapeTrait.TapePosition, CoreSchema.Int32));
+		}
+
+		protected TapeProvider(IPiedPiper? piedPiper)
+		{
+			PiedPiper = piedPiper ?? new PiedPiper();
+			EnsureTapePiedPiper(PiedPiper);
 		}
 		#endregion
 
 		#region properties
-		public IPiedPiper PiedPiper 
+		public IPiedPiper PiedPiper
 		{
-			get; 
-			private set; 
+			get;
+			private set;
+		}
+		#endregion
+
+		#region protected methods
+		internal static void EnsureTapePiedPiper(IPiedPiper piedPiper)
+		{
+			if (piedPiper == null)
+				throw new ArgumentNullException(nameof(piedPiper));
+
+			EnsureCorePackRats(piedPiper);
+			EnsureCoreTraits(piedPiper);
+			EnsureTrait(piedPiper, new TraitDefinition(TapeTrait.ClientCheckpointCode, CoreSchema.Code));
+			EnsureTrait(piedPiper, new TraitDefinition(TapeTrait.SeriesDescription, CoreSchema.TextUtf8));
+			EnsureTrait(piedPiper, new TraitDefinition(TapeTrait.TapePosition, CoreSchema.Int32));
 		}
 		#endregion
 
@@ -76,6 +91,44 @@ namespace BigRedProf.Data.Tape
 		/// </summary>
 		/// <param name="tape">The tape to add.</param>
 		abstract public void AddTapeInternal(Tape tape);
+		#endregion
+
+		#region private static methods
+		private static void EnsureCorePackRats(IPiedPiper piedPiper)
+		{
+			try
+			{
+				piedPiper.GetPackRat<Guid>(CoreSchema.Guid);
+			}
+			catch (ArgumentException)
+			{
+				piedPiper.RegisterCorePackRats();
+			}
+		}
+
+		private static void EnsureCoreTraits(IPiedPiper piedPiper)
+		{
+			try
+			{
+				piedPiper.GetTraitDefinition(CoreTrait.Id);
+			}
+			catch (ArgumentException)
+			{
+				piedPiper.DefineCoreTraits();
+			}
+		}
+
+		private static void EnsureTrait(IPiedPiper piedPiper, TraitDefinition traitDefinition)
+		{
+			try
+			{
+				piedPiper.GetTraitDefinition(traitDefinition.TraitId);
+			}
+			catch (ArgumentException)
+			{
+				piedPiper.DefineTrait(traitDefinition);
+			}
+		}
 		#endregion
 	}
 }
