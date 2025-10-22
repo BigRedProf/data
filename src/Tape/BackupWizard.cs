@@ -38,15 +38,15 @@ namespace BigRedProf.Data.Tape
 			{
 				_librarian = librarian ?? throw new ArgumentNullException(nameof(librarian));
 				if (seriesId == Guid.Empty)
-				throw new ArgumentException("Series identifier cannot be empty.", nameof(seriesId));
+					throw new ArgumentException("Series identifier cannot be empty.", nameof(seriesId));
 				if (currentTape == null)
-				throw new ArgumentNullException(nameof(currentTape));
+					throw new ArgumentNullException(nameof(currentTape));
 				if (seriesParentDigest == null)
-				throw new ArgumentNullException(nameof(seriesParentDigest));
+					throw new ArgumentNullException(nameof(seriesParentDigest));
 				if (currentSeriesHeadDigest == null)
-				throw new ArgumentNullException(nameof(currentSeriesHeadDigest));
+					throw new ArgumentNullException(nameof(currentSeriesHeadDigest));
 				if (currentTapeContentDigest == null)
-				throw new ArgumentNullException(nameof(currentTapeContentDigest));
+					throw new ArgumentNullException(nameof(currentTapeContentDigest));
 
 				_seriesId = seriesId;
 				_currentTape = currentTape;
@@ -67,7 +67,7 @@ namespace BigRedProf.Data.Tape
 			string seriesDescription)
 			{
 				if (library == null)
-				throw new ArgumentNullException(nameof(library));
+					throw new ArgumentNullException(nameof(library));
 
 				return CreateNew(library.Librarian, seriesId, seriesName, seriesDescription);
 			}
@@ -79,11 +79,11 @@ namespace BigRedProf.Data.Tape
 			string seriesDescription)
 			{
 				if (librarian == null)
-				throw new ArgumentNullException(nameof(librarian));
+					throw new ArgumentNullException(nameof(librarian));
 				if (seriesId == Guid.Empty)
-				throw new ArgumentException("Series identifier cannot be empty.", nameof(seriesId));
+					throw new ArgumentException("Series identifier cannot be empty.", nameof(seriesId));
 				if (string.IsNullOrWhiteSpace(seriesName))
-				throw new ArgumentException("Series name cannot be null or whitespace.", nameof(seriesName));
+					throw new ArgumentException("Series name cannot be null or whitespace.", nameof(seriesName));
 
 				string actualDescription = seriesDescription ?? string.Empty;
 				Guid tapeId = Guid.NewGuid();
@@ -114,7 +114,7 @@ namespace BigRedProf.Data.Tape
 			public static BackupWizard OpenExisting(TapeLibrary library, Guid seriesId)
 			{
 				if (library == null)
-				throw new ArgumentNullException(nameof(library));
+					throw new ArgumentNullException(nameof(library));
 
 				return OpenExisting(library.Librarian, seriesId);
 			}
@@ -122,9 +122,9 @@ namespace BigRedProf.Data.Tape
 			public static BackupWizard OpenExisting(Librarian librarian, Guid seriesId)
 			{
 				if (librarian == null)
-				throw new ArgumentNullException(nameof(librarian));
+					throw new ArgumentNullException(nameof(librarian));
 				if (seriesId == Guid.Empty)
-				throw new ArgumentException("Series identifier cannot be empty.", nameof(seriesId));
+					throw new ArgumentException("Series identifier cannot be empty.", nameof(seriesId));
 
 				IEnumerable<Tape> tapes = librarian.FetchTapesInSeries(seriesId);
 				Tape latestTape = SelectLatestTape(tapes);
@@ -133,19 +133,19 @@ namespace BigRedProf.Data.Tape
 				string seriesName = label.SeriesName;
 				string seriesDescription;
 				if (!label.TryGetSeriesDescription(out seriesDescription))
-				seriesDescription = string.Empty;
+					seriesDescription = string.Empty;
 
 				Multihash parentDigest;
 				if (!label.TryGetTrait<Multihash>(CoreTrait.SeriesParentDigest, out parentDigest))
-				parentDigest = BaselineSeriesDigest;
+					parentDigest = BaselineSeriesDigest;
 
 				Multihash headDigest;
 				if (!label.TryGetTrait<Multihash>(CoreTrait.SeriesHeadDigest, out headDigest))
-				headDigest = parentDigest;
+					headDigest = parentDigest;
 
 				Multihash contentDigest;
 				if (!label.TryGetTrait<Multihash>(CoreTrait.ContentDigest, out contentDigest))
-				contentDigest = BaselineSeriesDigest;
+					contentDigest = BaselineSeriesDigest;
 
 				int seriesNumber = label.SeriesNumber;
 
@@ -169,7 +169,7 @@ namespace BigRedProf.Data.Tape
 				TapeLabel label = _currentTape.ReadLabel();
 				Code checkpoint;
 				if (!label.TryGetClientCheckpoint(out checkpoint))
-				throw new InvalidOperationException("No checkpoint has been recorded for the current tape.");
+					throw new InvalidOperationException("No checkpoint has been recorded for the current tape.");
 
 				return checkpoint;
 			}
@@ -177,7 +177,7 @@ namespace BigRedProf.Data.Tape
 			public void SetLatestCheckpoint(Code clientCheckpointCode)
 			{
 				if (clientCheckpointCode == null)
-				throw new ArgumentNullException(nameof(clientCheckpointCode));
+					throw new ArgumentNullException(nameof(clientCheckpointCode));
 
 				TapeLabel label = _currentTape.ReadLabel();
 				label = label.WithClientCheckpoint(clientCheckpointCode);
@@ -187,10 +187,10 @@ namespace BigRedProf.Data.Tape
 			public void Record(Code content)
 			{
 				if (content == null)
-				throw new ArgumentNullException(nameof(content));
+					throw new ArgumentNullException(nameof(content));
 
 				if (content.Length == 0)
-				return;
+					return;
 
 				int remainingBits = content.Length;
 				int contentOffset = 0;
@@ -232,7 +232,7 @@ namespace BigRedProf.Data.Tape
 					{
 						FinalizeCurrentTape();
 						if (remainingBits > 0)
-						AdvanceToNextTape();
+							AdvanceToNextTape();
 					}
 				}
 			}
@@ -242,7 +242,7 @@ namespace BigRedProf.Data.Tape
 			private TapeLabel ApplySeriesMetadata(TapeLabel label)
 			{
 				if (label == null)
-				throw new ArgumentNullException(nameof(label));
+					throw new ArgumentNullException(nameof(label));
 
 				TapeLabel updatedLabel = label.WithSeriesInfo(_seriesId, _seriesName, _currentSeriesNumber);
 				updatedLabel = updatedLabel.WithName(_seriesName);
@@ -275,11 +275,11 @@ namespace BigRedProf.Data.Tape
 			private static Multihash ComputeContentDigest(Tape tape)
 			{
 				if (tape == null)
-				throw new ArgumentNullException(nameof(tape));
+					throw new ArgumentNullException(nameof(tape));
 
 				int contentLength = tape.Position;
 				if (contentLength <= 0)
-				return BaselineSeriesDigest;
+					return BaselineSeriesDigest;
 
 				Code content = TapeHelper.ReadContent(tape, 0, contentLength);
 				return Multihash.FromCode(content, SeriesDigestAlgorithm);
@@ -288,12 +288,12 @@ namespace BigRedProf.Data.Tape
 			private static Multihash ComputeSeriesHeadDigest(Multihash parentDigest, Multihash contentDigest)
 			{
 				if (parentDigest == null)
-				throw new ArgumentNullException(nameof(parentDigest));
+					throw new ArgumentNullException(nameof(parentDigest));
 				if (contentDigest == null)
-				throw new ArgumentNullException(nameof(contentDigest));
+					throw new ArgumentNullException(nameof(contentDigest));
 
 				if (parentDigest.Algorithm != contentDigest.Algorithm)
-				throw new InvalidOperationException("Digest algorithms must match to compute the series head digest.");
+					throw new InvalidOperationException("Digest algorithms must match to compute the series head digest.");
 
 				byte[] parentBytes = parentDigest.Digest;
 				byte[] contentBytes = contentDigest.Digest;
@@ -307,7 +307,7 @@ namespace BigRedProf.Data.Tape
 			private static Tape SelectLatestTape(IEnumerable<Tape> tapes)
 			{
 				if (tapes == null)
-				throw new ArgumentNullException(nameof(tapes));
+					throw new ArgumentNullException(nameof(tapes));
 
 				Tape? latestTape = null;
 				int highestSeriesNumber = 0;
@@ -315,12 +315,12 @@ namespace BigRedProf.Data.Tape
 				foreach (Tape tape in tapes)
 				{
 					if (tape == null)
-					continue;
+						continue;
 
 					TapeLabel label = tape.ReadLabel();
 					int seriesNumber;
 					if (!label.TryGetTrait<int>(CoreTrait.SeriesNumber, out seriesNumber))
-					continue;
+						continue;
 
 					if (latestTape == null || seriesNumber > highestSeriesNumber)
 					{
@@ -330,7 +330,7 @@ namespace BigRedProf.Data.Tape
 				}
 
 				if (latestTape == null)
-				throw new InvalidOperationException("No tapes found in the requested series.");
+					throw new InvalidOperationException("No tapes found in the requested series.");
 
 				return latestTape;
 			}

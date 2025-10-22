@@ -21,7 +21,7 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 					: base(piedPiper)
 			{
 				if (string.IsNullOrWhiteSpace(directoryPath))
-				throw new ArgumentNullException(nameof(directoryPath));
+					throw new ArgumentNullException(nameof(directoryPath));
 
 				_directoryPath = directoryPath;
 
@@ -54,7 +54,7 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 				// Make the .labels directory hidden
 				FileAttributes attributes = File.GetAttributes(LabelDirectoryPath);
 				if ((attributes & FileAttributes.Hidden) == 0)
-				File.SetAttributes(LabelDirectoryPath, attributes | FileAttributes.Hidden);
+					File.SetAttributes(LabelDirectoryPath, attributes | FileAttributes.Hidden);
 			}
 		#endregion
 
@@ -108,7 +108,7 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 
 					// Zero-fill any unread bytes (e.g., reading past EOF)
 					if (bytesRead < byteLength)
-					Array.Clear(resultBytes, bytesRead, byteLength - bytesRead);
+						Array.Clear(resultBytes, bytesRead, byteLength - bytesRead);
 				}
 
 				return resultBytes;
@@ -118,7 +118,7 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 			{
 				string labelFilePath = GetLabelFilePath(tapeId);
 				if (!File.Exists(labelFilePath))
-				throw new FileNotFoundException($"Label file for tape ID '{tapeId}' not found.", labelFilePath);
+					throw new FileNotFoundException($"Label file for tape ID '{tapeId}' not found.", labelFilePath);
 
 				return File.ReadAllBytes(labelFilePath);
 			}
@@ -126,10 +126,10 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 			public override void WriteTapeInternal(Guid tapeId, byte[] data, int byteOffset, int byteLength)
 			{
 				if (data == null)
-				throw new ArgumentNullException(nameof(data));
+					throw new ArgumentNullException(nameof(data));
 
 				if (byteOffset < 0 || byteLength <= 0 || byteOffset + byteLength > data.Length)
-				throw new ArgumentOutOfRangeException("Invalid byte offset or length.");
+					throw new ArgumentOutOfRangeException("Invalid byte offset or length.");
 
 				string filePath = GetFilePath(tapeId);
 				using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Write, FileShare.ReadWrite))
@@ -143,7 +143,7 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 			public override void WriteLabelInternal(Guid tapeId, byte[] data)
 			{
 				if(data == null)
-				throw new ArgumentNullException(nameof(data));
+					throw new ArgumentNullException(nameof(data));
 
 				string labelFilePath = GetLabelFilePath(tapeId);
 				File.WriteAllBytes(labelFilePath, data);
@@ -152,7 +152,7 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 			public override void AddTapeInternal(Tape tape)
 			{
 				if(tape == null)
-				throw new ArgumentNullException(nameof(tape));
+					throw new ArgumentNullException(nameof(tape));
 
 				string filePath = GetFilePath(tape.Id);
 				EnsureFileExists(filePath);
@@ -170,7 +170,7 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 			private string GetFilePath(Guid tapeId)
 			{
 				if (tapeId == Guid.Empty)
-				throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
+					throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
 
 				return Path.Combine(_directoryPath, $"{tapeId}.tape");
 			}
@@ -178,7 +178,7 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 			private string GetLabelFilePath(Guid tapeId)
 			{
 				if (tapeId == Guid.Empty)
-				throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
+					throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
 
 				return Path.Combine(LabelDirectoryPath, $"{tapeId}.label");
 			}

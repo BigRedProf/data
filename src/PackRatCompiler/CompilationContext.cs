@@ -1,4 +1,4 @@
-﻿using BigRedProf.Data.PackRatCompiler.Internal;
+using BigRedProf.Data.PackRatCompiler.Internal;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.MSBuild;

@@ -1,4 +1,4 @@
-﻿using BigRedProf.Data.Tape.Providers.Disk;
+using BigRedProf.Data.Tape.Providers.Disk;
 
 namespace BigRedProf.Data.Tape.Test.Providers.Disk
 {

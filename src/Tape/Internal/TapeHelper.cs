@@ -1,4 +1,4 @@
-﻿using BigRedProf.Data.Core;
+using BigRedProf.Data.Core;
 using System;
 
 namespace BigRedProf.Data.Tape.Internal
@@ -114,7 +114,8 @@ namespace BigRedProf.Data.Tape.Internal
 		{
 			// Number of bits we are writing
 			int bitLen = content.Length;
-			if (bitLen == 0) return;
+			if (bitLen == 0)
+				return;
 
 			int startByte = offsetBits >> 3;
 			int startBit = offsetBits & 7;
