@@ -227,9 +227,8 @@ namespace BigRedProf.Data.Tape.Test
 		// Exceptions
 
 		[Trait("Region", "TapePlayer methods")]
-		[Theory]
-		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
-		public void Play_ShouldThrow_WhenTapeNotInserted(TapeProvider tapeProvider)
+		[Fact]
+		public void Play_ShouldThrow_WhenTapeNotInserted()
 		{
 			// Arrange
 			TapePlayer tapePlayer = new TapePlayer();

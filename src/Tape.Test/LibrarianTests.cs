@@ -222,9 +222,8 @@ namespace BigRedProf.Data.Tape.Test
 			}
 
 			[Trait("Region", "Librarian methods")]
-			[Theory]
-			[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
-			public void AddTape_ShouldThrow_WhenTapeIsNull(TapeProvider tapeProvider)
+			[Fact]
+			public void AddTape_ShouldThrow_WhenTapeIsNull()
 			{
 				Assert.ThrowsAny<ArgumentNullException>(() =>
 				{

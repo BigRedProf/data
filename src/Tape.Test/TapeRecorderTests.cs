@@ -248,9 +248,8 @@ namespace BigRedProf.Data.Tape.Test
 		}
 
 		[Trait("Region", "TapeRecorder methods")]
-		[Theory]
-		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
-		public void Record_ShouldThrow_WhenTapeNotInserted(TapeProvider tapeProvider)
+		[Fact]
+		public void Record_ShouldThrow_WhenTapeNotInserted()
 		{
 			// Arrange
 			TapeRecorder tapeRecorder = new TapeRecorder();
@@ -415,9 +414,8 @@ namespace BigRedProf.Data.Tape.Test
 		}
 
 		[Trait("Region", "TapeRecorder methods")]
-		[Theory]
-		[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
-		public void InsertTape_ShouldThrow_WhenTapeIsNull(TapeProvider tapeProvider)
+		[Fact]
+		public void InsertTape_ShouldThrow_WhenTapeIsNull()
 		{
 			// Arrange
 			TapeRecorder tapeRecorder = new TapeRecorder();
