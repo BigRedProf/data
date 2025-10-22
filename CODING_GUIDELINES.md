@@ -290,3 +290,52 @@ namespace BigRedProf.Math
 		#endregion
 	}
 }
+
+## Defensive Programming & Nullability
+- **Nullable Reference Types (NRTs):** Enable in new code (`<Nullable>enable</Nullable>`) and annotate reference types accurately (`string` vs `string?`).  
+
+- **Public/Protected entry points (API boundaries):**  
+  - Validate inputs and **throw** appropriate exceptions.  
+    - Use `ArgumentNullException.ThrowIfNull(argName);`  
+    - Use `string.IsNullOrWhiteSpace` checks for textual inputs.  
+    - Prefer specific exceptions (`ArgumentNullException`, `ArgumentException`, `ArgumentOutOfRangeException`).  
+  - **Rationale:** Callers may come from legacy or non-NRT code; runtime guarantees matter at boundaries.  
+
+	  ```csharp
+	  public static Librarian CreateLibrarian(IPiedPiper? piedPiper, string directoryPath)
+	  {
+	      if (string.IsNullOrWhiteSpace(directoryPath))
+	          throw new ArgumentNullException(nameof(directoryPath));
+
+	      ArgumentNullException.ThrowIfNull(piedPiper);
+
+	      IPiedPiper actual = PreparePiedPiper(piedPiper);
+	      return new Librarian(new DiskTapeProvider(actual, directoryPath));
+	  }
+	  ```
+
+- **Internal/Private code paths (owned invariants):**  
+  - Prefer **`Debug.Assert`** to enforce invariants that indicate *bugs* if violated.  
+  - Do **not** use asserts for control flow.  
+  - Assertions must be side-effect free and cheap.  
+  - Keep messages clear and actionable.  
+
+	  ```csharp
+	  private static Librarian CreateLibrarian(IPiedPiper? piedPiper, string directoryPath)
+	  {
+	      System.Diagnostics.Debug.Assert(!string.IsNullOrWhiteSpace(directoryPath), \"directoryPath must be non-empty/non-whitespace.\");
+	      System.Diagnostics.Debug.Assert(piedPiper is not null, \"piedPiper must be provided for internal calls.\");
+
+	      IPiedPiper actual = PreparePiedPiper(piedPiper);
+	      return new Librarian(new DiskTapeProvider(actual, directoryPath));
+	  }
+	  ```
+
+- **Null-forgiving operator (`!`):**  
+  Use sparingly and only when you can *prove* non-null via prior guards or invariants; prefer a guard or `Debug.Assert` first.  
+
+- **Data contracts & serialization boundaries:**  
+  Treat deserialization, reflection, and DI activations as *external inputs* → validate and throw.  
+
+- **Documentation:**  
+  Method/parameter summaries should reflect nullability expectations (e.g., “`directoryPath` must be non-empty.”).  
