@@ -8,69 +8,77 @@ namespace BigRedProf.Data.Tape
 	public class Librarian
 	{
 		#region fields
-		private IPiedPiper _piedPiper;
-		private TapeProvider _tapeProvider;
+			private readonly TapeProvider _tapeProvider;
 		#endregion
 
-		#region public constructors
-		public Librarian(IPiedPiper piedPiper, TapeProvider tapeProvider)
-		{
-			_piedPiper = piedPiper ?? throw new ArgumentNullException(nameof(piedPiper));
-			_tapeProvider = tapeProvider ?? throw new ArgumentNullException(nameof(tapeProvider));
-		}
+		#region constructors
+			public Librarian(TapeProvider tapeProvider)
+			{
+				_tapeProvider = tapeProvider ?? throw new ArgumentNullException(nameof(tapeProvider));
+			}
+
+			public Librarian(IPiedPiper piedPiper, TapeProvider tapeProvider)
+					: this(tapeProvider)
+			{
+				if (piedPiper == null)
+				throw new ArgumentNullException(nameof(piedPiper));
+			}
 		#endregion
 
 		#region internal properties
-		internal TapeProvider TapeProvider
-		{
-			get { return _tapeProvider; }
-		}
+			internal TapeProvider TapeProvider
+			{
+				get { return _tapeProvider; }
+			}
 		#endregion
 
 		#region methods
-		public Tape FetchTape(Guid tapeId)
-		{
-			if (tapeId == Guid.Empty)
+			public Tape FetchTape(Guid tapeId)
+			{
+				if (tapeId == Guid.Empty)
 				throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
-			
-			if (!_tapeProvider.TryFetchTapeInternal(tapeId, out Tape tape))
+
+				if (!_tapeProvider.TryFetchTapeInternal(tapeId, out Tape? tape))
 				throw new KeyNotFoundException($"Tape with ID '{tapeId}' not found.");
-			
-			return tape;
-		}
 
-		public IEnumerable<Tape> FetchAllTapes()
-		{
-			return _tapeProvider.FetchAllTapesInternal();
-		}
+				if (tape == null)
+				throw new InvalidOperationException($"Tape provider returned null for tape '{tapeId}'.");
 
-		public IEnumerable<Tape> FetchTapesInSeries(Guid seriesId)
-		{
-			if (seriesId == Guid.Empty)
+				return tape;
+			}
+
+			public IEnumerable<Tape> FetchAllTapes()
+			{
+				return _tapeProvider.FetchAllTapesInternal();
+			}
+
+			public IEnumerable<Tape> FetchTapesInSeries(Guid seriesId)
+			{
+				if (seriesId == Guid.Empty)
 				throw new ArgumentException("Series ID cannot be empty.", nameof(seriesId));
-			
-			return _tapeProvider.FetchAllTapesInternal()
+
+				return _tapeProvider.FetchAllTapesInternal()
 				.Where(tape =>
-					{
-						if (!tape.ReadLabel().TryGetTrait<Guid>(CoreTrait.SeriesId, out Guid tapeSeriesId))
-							return false;
+				{
+					if (!tape.ReadLabel().TryGetTrait<Guid>(CoreTrait.SeriesId, out Guid tapeSeriesId))
+					return false;
 
-						if (tapeSeriesId != seriesId)
-							return false;
+					if (tapeSeriesId != seriesId)
+					return false;
 
-						return true;
-					}
+					return true;
+				}
 				);
-		}
+			}
 
-		public void AddTape(Tape tape)
-		{
-			if (tape == null)
+			public void AddTape(Tape tape)
+			{
+				if (tape == null)
 				throw new ArgumentNullException(nameof(tape), "Tape cannot be null.");
-			
-			// TODO: Should this be here or in Tape.CreateNew?? Need to figure this out.
-			//_tapeProvider.AddTapeInternal(tape);
-		}
+
+				// TODO: Should this be here or in Tape.CreateNew?? Need to figure this out.
+				//_tapeProvider.AddTapeInternal(tape);
+			}
 		#endregion
 	}
 }
