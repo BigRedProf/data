@@ -45,6 +45,68 @@ namespace BigRedProf.Data.Test
 		#region Parse
 		[Fact]
 		[Trait("Region", "Parse")]
+		public void Parse_ShouldThrowArgumentNullExceptionForNullOrWhitespace()
+		{
+			Assert.Throws<ArgumentNullException>(() => Multihash.Parse(null));
+			Assert.Throws<FormatException>(() => Multihash.Parse(" "));
+		}
+
+		[Fact]
+		[Trait("Region", "TryParse")]
+		public void TryParse_ShouldFailWhenTrailingGarbagePresent()
+		{
+			byte[] digest = new byte[32];
+			Multihash mh = new Multihash(digest, MultihashAlgorithm.SHA2_256);
+			string s = mh.ToMultibaseString(); // 'b...'
+											   // Append a harmless base32 char
+			bool ok = Multihash.TryParse(s + "a", out _);
+			Assert.False(ok);
+			Assert.Throws<FormatException>(() => Multihash.Parse(s + "a"));
+		}
+
+		[Fact]
+		[Trait("Region", "Parse")]
+		public void Parse_ShouldRejectUnknownMulticode()
+		{
+			// Build: varint(0x13) | varint(32) | 32 zeros
+			byte[] payload = new byte[2 + 32];
+			payload[0] = 0x13; // code
+			payload[1] = 0x20; // length 32
+			string hex = "f" + BitConverter.ToString(payload).Replace("-", "").ToLowerInvariant();
+
+			Assert.False(Multihash.TryParse(hex, out _));
+			Assert.Throws<FormatException>(() => Multihash.Parse(hex));
+		}
+
+		[Fact]
+		[Trait("Region", "Parse")]
+		public void Parse_ShouldRoundTripRandomDigests()
+		{
+			var rng = new Random(12345);
+			for (int i = 0; i < 12; i++)
+			{
+				byte[] digest = new byte[32];
+				rng.NextBytes(digest);
+				Multihash m = new Multihash(digest, MultihashAlgorithm.SHA2_256);
+
+				string b32 = m.ToMultibaseString();
+				Assert.Equal(m, Multihash.Parse(b32));
+
+				string hx = m.ToMultibaseString(MultibaseEncoding.HexLower);
+				Assert.Equal(m, Multihash.Parse(hx));
+			}
+		}
+
+		[Fact]
+		[Trait("Region", "ToMultibaseString")]
+		public void ToMultibaseString_DefaultIsBase32Lower()
+		{
+			var m = new Multihash(new byte[32], MultihashAlgorithm.SHA2_256);
+			Assert.Equal(m.ToMultibaseString(MultibaseEncoding.Base32Lower), m.ToMultibaseString());
+		}
+
+		[Fact]
+		[Trait("Region", "Parse")]
 		public void Parse_ShouldRoundTripKnownDigests()
 		{
 			byte[][] digests = new byte[][]
