@@ -74,7 +74,38 @@ namespace BigRedProf.Data.Tape.Internal
 					$"Offset must be between 0 and {Tape.MaxContentLength}.");
 			}
 
-			WriteRawCode(tape.TapeProvider, tape.Id, content, offset);
+			WriteRawCode(tape.TapeProvider, tape.Id, offset, content, 0, content.Length);
+		}
+
+		public static void WriteContent(Tape tape, Code content, int tapeOffset, int contentOffset, int length)
+		{
+			if (tape == null)
+				throw new ArgumentNullException(nameof(tape), "Tape cannot be null.");
+
+			if (content == null)
+				throw new ArgumentNullException(nameof(content), "Content cannot be null.");
+
+			if (tapeOffset < 0 || tapeOffset > Tape.MaxContentLength)
+			{
+				throw new ArgumentOutOfRangeException(
+					nameof(tapeOffset),
+					$"Offset must be between 0 and {Tape.MaxContentLength}.");
+			}
+
+			if (length <= 0 || length > Tape.MaxContentLength - tapeOffset)
+			{
+				throw new ArgumentOutOfRangeException(
+					nameof(length),
+					$"Length must be greater than 0 and offset+length must be less than {Tape.MaxContentLength}.");
+			}
+
+			if (contentOffset < 0 || contentOffset >= content.Length)
+				throw new ArgumentOutOfRangeException(nameof(contentOffset));
+
+			if (length > content.Length - contentOffset)
+				throw new ArgumentOutOfRangeException(nameof(length));
+
+			WriteRawCode(tape.TapeProvider, tape.Id, tapeOffset, content, contentOffset, length);
 		}
 		#endregion
 
@@ -110,47 +141,57 @@ namespace BigRedProf.Data.Tape.Internal
 			return new Code(bytesToEncode, length);
 		}
 
-		private static void WriteRawCode(TapeProvider tapeProvider, Guid tapeId, Code content, int offsetBits)
+		private static void WriteRawCode(TapeProvider tapeProvider, Guid tapeId, int tapeOffset, Code content, int contentOffset, int length)
 		{
-			// Number of bits we are writing
-			int bitLen = content.Length;
-			if (bitLen == 0)
+			// Validate input range
+			if (content == null)
+				throw new ArgumentNullException(nameof(content));
+
+			if (length <= 0)
 				return;
 
-			int startByte = offsetBits >> 3;
-			int startBit = offsetBits & 7;
+			if (contentOffset < 0 || length > content.Length - contentOffset)
+				throw new ArgumentOutOfRangeException(nameof(length));
 
-			// Bytes of content (may include unused bits in the last byte)
+			int startByte = tapeOffset >> 3;
+			int startBit = tapeOffset & 7;
+
 			byte[] src = content.ToByteArray();
 
-			// Mask out any unused high bits in the final source byte so we never leak garbage
-			int tailBits = bitLen & 7;
-			if (tailBits != 0)
+			// Fast path: fully byte-aligned on both content and tape, whole-byte length
+			if (startBit == 0 && (contentOffset & 7) == 0 && (length & 7) == 0)
 			{
-				byte mask = (byte)((1 << tailBits) - 1); // keep low 'tailBits' bits
-				src[(bitLen - 1) >> 3] &= mask;
-			}
-
-			// Fast path: fully byte-aligned and whole-byte length
-			if (startBit == 0 && (bitLen & 7) == 0)
-			{
-				int fullBytes = bitLen >> 3;
+				int fullBytes = length >> 3;
 				if (fullBytes > 0)
-					tapeProvider.WriteTapeInternal(tapeId, src, startByte, fullBytes);
+				{
+					int srcStartByte = contentOffset >> 3;
+					// If content starts at byte 0 we can avoid copying; otherwise take a slice
+					if (srcStartByte == 0)
+					{
+						tapeProvider.WriteTapeInternal(tapeId, src, startByte, fullBytes);
+					}
+					else
+					{
+						byte[] tmp = new byte[fullBytes];
+						Array.Copy(src, srcStartByte, tmp, 0, fullBytes);
+						tapeProvider.WriteTapeInternal(tapeId, tmp, startByte, fullBytes);
+					}
+				}
 				return;
 			}
 
 			// How many destination bytes are affected on tape?
-			int affectedBytes = (startBit + bitLen + 7) >> 3; // ceil((startBit + bitLen)/8)
+			int affectedBytes = (startBit + length + 7) >> 3; // ceil((startBit + length)/8)
 
 			// Read existing region so we can preserve untouched bits
 			byte[] dst = tapeProvider.ReadTapeInternal(tapeId, startByte, affectedBytes);
 
-			// Overlay bit-by-bit (clear & set) for clarity and correctness
-			for (int i = 0; i < bitLen; i++)
+			// Overlay bit-by-bit (clear & set)
+			for (int i = 0; i < length; i++)
 			{
-				int sByte = i >> 3;
-				int sBit = i & 7;
+				int sIndex = contentOffset + i;
+				int sByte = sIndex >> 3;
+				int sBit = sIndex & 7;
 				int bit = (src[sByte] >> sBit) & 1;
 
 				int tIndex = startBit + i;

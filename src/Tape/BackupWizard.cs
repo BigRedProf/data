@@ -230,8 +230,7 @@ namespace BigRedProf.Data.Tape
 					}
 
 					int bitsToWrite = remainingBits < availableBits ? remainingBits : availableBits;
-					Code segment = content[contentOffset, bitsToWrite];
-					TapeHelper.WriteContent(_currentTape, segment, tapePosition);
+					TapeHelper.WriteContent(_currentTape, content, tapePosition, contentOffset, bitsToWrite);
 					_currentTape.Position = tapePosition + bitsToWrite;
 
 					contentOffset += bitsToWrite;
