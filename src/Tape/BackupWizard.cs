@@ -5,6 +5,12 @@ using System.Collections.Generic;
 
 namespace BigRedProf.Data.Tape
 {
+	/// <summary>
+	/// Orchestrates writing content to a tape series and maintains series metadata.
+	/// Design note: the "latest" client checkpoint is stored on the highest-numbered
+	/// (latest) tape in the series. Older tapes are left intact and may retain their
+	/// historical checkpoints; they are not rewritten when advancing to new tapes.
+	/// </summary>
 	public class BackupWizard
 	{
 		#region static fields
@@ -129,6 +135,7 @@ namespace BigRedProf.Data.Tape
 					throw new ArgumentException("Series identifier cannot be empty.", nameof(seriesId));
 
 				IEnumerable<Tape> tapes = librarian.FetchTapesInSeries(seriesId);
+				// Policy: operate on the highest-numbered (latest) tape in the series.
 				Tape latestTape = SelectLatestTape(tapes);
 				TapeLabel label = latestTape.ReadLabel();
 
@@ -168,6 +175,7 @@ namespace BigRedProf.Data.Tape
 		#region methods
 			public Code GetLatestCheckpoint()
 			{
+				// The latest checkpoint is stored on the current (latest) tape's label.
 				TapeLabel label = _currentTape.ReadLabel();
 				Code checkpoint;
 				if (!label.TryGetClientCheckpoint(out checkpoint))
@@ -181,6 +189,8 @@ namespace BigRedProf.Data.Tape
 				if (clientCheckpointCode == null)
 					throw new ArgumentNullException(nameof(clientCheckpointCode));
 
+				// Write the checkpoint to the current (latest) tape only; do not
+				// rewrite older tapes when advancing the series.
 				TapeLabel label = _currentTape.ReadLabel();
 				label = ApplySeriesMetadata(label);
 				Multihash contentDigest;
