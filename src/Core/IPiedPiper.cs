@@ -27,6 +27,8 @@ namespace BigRedProf.Data.Core
 
 		PackRat<T> GetPackRat<T>(AttributeFriendlyGuid schemaId);
 
+		bool IsPackRatRegistered(AttributeFriendlyGuid schemaId);
+
 		/// <summary>
 		/// Defines all the core traits such as <see cref="CoreTrait.Id"/>, <see cref="CoreTrait.Name"/>,
 		/// and <see cref="CoreTrait.Content"/>.
@@ -91,6 +93,8 @@ namespace BigRedProf.Data.Core
 		/// <param name="traitId">The trait identifier.</param>
 		/// <returns>The trait definition.</returns>
 		TraitDefinition GetTraitDefinition(AttributeFriendlyGuid traitId);
+
+		bool IsTraitDefined(AttributeFriendlyGuid traitId);
 
 		/// <summary>
 		/// Packs a model using the specified pack rat.

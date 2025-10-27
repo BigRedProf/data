@@ -96,38 +96,20 @@ namespace BigRedProf.Data.Tape
 		#region private static methods
 		private static void EnsureCorePackRats(IPiedPiper piedPiper)
 		{
-			try
-			{
-				piedPiper.GetPackRat<Guid>(CoreSchema.Guid);
-			}
-			catch (ArgumentException)
-			{
+			if(!piedPiper.IsPackRatRegistered(CoreSchema.Guid))
 				piedPiper.RegisterCorePackRats();
-			}
 		}
 
 		private static void EnsureCoreTraits(IPiedPiper piedPiper)
 		{
-			try
-			{
-				piedPiper.GetTraitDefinition(CoreTrait.Id);
-			}
-			catch (ArgumentException)
-			{
+			if(!piedPiper.IsTraitDefined(CoreTrait.Id))
 				piedPiper.DefineCoreTraits();
-			}
 		}
 
 		private static void EnsureTrait(IPiedPiper piedPiper, TraitDefinition traitDefinition)
 		{
-			try
-			{
-				piedPiper.GetTraitDefinition(traitDefinition.TraitId);
-			}
-			catch (ArgumentException)
-			{
+			if(!piedPiper.IsTraitDefined(traitDefinition.TraitId))
 				piedPiper.DefineTrait(traitDefinition);
-			}
 		}
 		#endregion
 	}

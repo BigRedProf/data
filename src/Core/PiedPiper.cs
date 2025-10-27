@@ -138,6 +138,14 @@ namespace BigRedProf.Data.Core
 			return packRat;
 		}
 
+		public bool IsPackRatRegistered(AttributeFriendlyGuid schemaId)
+		{
+			if (schemaId == null)
+				throw new ArgumentNullException(nameof(schemaId));
+		
+			return _packRats.ContainsKey(schemaId);
+		}
+
 		/// <inheritdoc/>
 		public void RegisterPackRat<T>(PackRat<T> packRat, AttributeFriendlyGuid schemaId)
 		{
@@ -238,6 +246,12 @@ namespace BigRedProf.Data.Core
 				throw new ArgumentException($"Trait '{traitId}' not defined.", nameof(traitId));
 
 			return traitDefinition;
+		}
+
+		/// <inheritdoc/>
+		public bool IsTraitDefined(AttributeFriendlyGuid traitId)
+		{
+			return _traitDefinitions.ContainsKey(traitId);
 		}
 
 		/// <inheritdoc/>
