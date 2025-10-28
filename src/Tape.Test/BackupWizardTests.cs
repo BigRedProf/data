@@ -318,14 +318,44 @@ namespace BigRedProf.Data.Tape.Test
 			TapeLabel label2 = tape2.ReadLabel();
 			Assert.Equal(seriesId, label2.SeriesId);
 			Assert.Equal(1, tape2.Position);
-			var cd = label2.ContentDigest.ToMultibaseString();
-			Debug.WriteLine($"***** cd = {cd}");
 			Assert.Equal("bciqc6d6r5cny3yovokjhilwdqdveobtogb5nmrpvxq5nvwfan72ymca", label2.ContentDigest.ToMultibaseString());
-			var pd = label2.SeriesParentDigest.ToMultibaseString();
-			Debug.WriteLine($"***** pd = {pd}");
 			Assert.Equal("bciqdcnjjjav5mjvkwssyczvz3azdlr2sb5rshlbyu4375k567gvgtoa", label2.SeriesParentDigest.ToMultibaseString());
 			latestCheckpoint = wizard.GetLatestCheckpoint();
 			Assert.Equal(new Code("0100"), latestCheckpoint);
+
+			// write another 1B bits to overflow to a 3rd tape
+			for(int i = 0; i < 10; ++i)
+				wizard.Record(oneHundredM1s);
+			wizard.SetLatestCheckpoint(new Code("0101"));
+
+			// assert state after writing 2B + 1 bits
+			tapes = librarian.FetchTapesInSeries(seriesId).ToList();
+			Assert.Equal(3, tapes.Count);
+			tape1 = tapes[0];
+			label1 = tape1.ReadLabel();
+			Assert.Equal(seriesId, label1.SeriesId);
+			Assert.Equal(1_000_000_000, tape1.Position);
+			Assert.Equal("bciqdcnjjjav5mjvkwssyczvz3azdlr2sb5rshlbyu4375k567gvgtoa", label1.ContentDigest.ToMultibaseString());
+			Assert.Equal("bciqcxqslpnvijoietip6m3ppy3wc7cxtzinxnxpgq57eatvxidtigfi", label1.SeriesParentDigest.ToMultibaseString());
+			tape2 = tapes[1];
+			label2 = tape2.ReadLabel();
+			Assert.Equal(seriesId, label2.SeriesId);
+			Assert.Equal(1_000_000_000, tape2.Position);
+			Assert.Equal("bciqc6d6r5cny3yovokjhilwdqdveobtogb5nmrpvxq5nvwfan72ymca", label2.ContentDigest.ToMultibaseString());
+			Assert.Equal("bciqdcnjjjav5mjvkwssyczvz3azdlr2sb5rshlbyu4375k567gvgtoa", label2.SeriesParentDigest.ToMultibaseString());
+			latestCheckpoint = wizard.GetLatestCheckpoint();
+			Tape tape3 = tapes[2];
+			TapeLabel label3 = tape3.ReadLabel();
+			Assert.Equal(seriesId, label3.SeriesId);
+			Assert.Equal(1, tape3.Position);
+			var cd = label3.ContentDigest.ToMultibaseString();
+			Debug.WriteLine($"***** cd = {cd}");
+			Assert.Equal("bciqc6d6r5cny3yovokjhilwdqdveobtogb5nmrpvxq5nvwfan72ymca", label3.ContentDigest.ToMultibaseString());
+			var pd = label3.SeriesParentDigest.ToMultibaseString();
+			Debug.WriteLine($"***** pd = {pd}");
+			Assert.Equal("bciqc6d6r5cny3yovokjhilwdqdveobtogb5nmrpvxq5nvwfan72ymca", label3.SeriesParentDigest.ToMultibaseString());
+			latestCheckpoint = wizard.GetLatestCheckpoint();
+			Assert.Equal(new Code("0101"), latestCheckpoint);
 		}
 		#endregion
 
