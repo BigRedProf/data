@@ -4,7 +4,7 @@ namespace BigRedProf.Data.Tape.Cli
 {
 	public static class CommandDispatcher
 	{
-		#region methods
+		#region functions
 		public static int Dispatch(string[] args)
 		{
 			if (args == null)

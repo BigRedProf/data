@@ -5,7 +5,7 @@ namespace BigRedProf.Data.Tape.Cli
 {
 	internal static class HelpWriter
 	{
-		#region methods
+		#region functions
 		internal static void WriteGeneralUsage()
 		{
 			Console.Error.WriteLine("Usage: tapelib <command> [options]");

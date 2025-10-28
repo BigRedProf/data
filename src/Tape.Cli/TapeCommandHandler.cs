@@ -10,7 +10,7 @@ namespace BigRedProf.Data.Tape.Cli
 {
 	public static class TapeCommandHandler
 	{
-		#region methods
+		#region functions
 		public static int Execute(string[] args)
 		{
 			if (args == null)
@@ -36,7 +36,9 @@ namespace BigRedProf.Data.Tape.Cli
 			HelpWriter.WriteUnknownTapeCommand(subcommand);
 			return 1;
 		}
+		#endregion
 
+		#region private functions
 		private static bool IsHelpOption(string value)
 		{
 			if (value == null)
