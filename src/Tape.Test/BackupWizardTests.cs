@@ -353,22 +353,57 @@ namespace BigRedProf.Data.Tape.Test
 			Assert.Equal("bciqenwzt5vo6tjb34lk7vxz74globvimn4svctk4mhmo5avkc53fsaa", label2.SeriesHeadDigest.ToMultibaseString());
 			latestCheckpoint = wizard.GetLatestCheckpoint();
 			Tape tape3 = tapes[2];
-			TapeLabel label3 = tape3.ReadLabel();
-			Assert.Equal(seriesId, label3.SeriesId);
-			Assert.Equal(1, tape3.Position);
-			var pd = label3.SeriesParentDigest.ToMultibaseString();
-			Debug.WriteLine($"***** pd = {pd}");
-			Assert.Equal("bciqc6d6r5cny3yovokjhilwdqdveobtogb5nmrpvxq5nvwfan72ymca", label3.SeriesParentDigest.ToMultibaseString());
-			var cd = label3.ContentDigest.ToMultibaseString();
-			Debug.WriteLine($"***** cd = {cd}");
-			Assert.Equal("bciqc6d6r5cny3yovokjhilwdqdveobtogb5nmrpvxq5nvwfan72ymca", label3.ContentDigest.ToMultibaseString());
-			var shd = label3.SeriesHeadDigest.ToMultibaseString();
-			Debug.WriteLine($"***** shd = {shd}");
-			Assert.Equal("bciqavv2rgxnspbqxe6mnvdxr3zqmdpkheftozcdckfqmkpe5iogzeri", label3.SeriesHeadDigest.ToMultibaseString());
-			latestCheckpoint = wizard.GetLatestCheckpoint();
-			Assert.Equal(new Code("0101"), latestCheckpoint);
-		}
-		#endregion
+                        TapeLabel label3 = tape3.ReadLabel();
+                        Assert.Equal(seriesId, label3.SeriesId);
+                        Assert.Equal(1, tape3.Position);
+                        var pd = label3.SeriesParentDigest.ToMultibaseString();
+                        Debug.WriteLine($"***** pd = {pd}");
+                        Assert.Equal("bciqc6d6r5cny3yovokjhilwdqdveobtogb5nmrpvxq5nvwfan72ymca", label3.SeriesParentDigest.ToMultibaseString());
+                        var cd = label3.ContentDigest.ToMultibaseString();
+                        Debug.WriteLine($"***** cd = {cd}");
+                        Assert.Equal("bciqc6d6r5cny3yovokjhilwdqdveobtogb5nmrpvxq5nvwfan72ymca", label3.ContentDigest.ToMultibaseString());
+                        var shd = label3.SeriesHeadDigest.ToMultibaseString();
+                        Debug.WriteLine($"***** shd = {shd}");
+                        Assert.Equal("bciqavv2rgxnspbqxe6mnvdxr3zqmdpkheftozcdckfqmkpe5iogzeri", label3.SeriesHeadDigest.ToMultibaseString());
+                        latestCheckpoint = wizard.GetLatestCheckpoint();
+                        Assert.Equal(new Code("0101"), latestCheckpoint);
+
+                        TapePlayer player = new TapePlayer();
+
+                        player.InsertTape(tape1);
+                        player.RewindOrFastForwardTo(0);
+                        Code tape1Start = player.Play(16);
+                        Assert.Equal(new Code("0000000000000000"), tape1Start);
+                        player.RewindOrFastForwardTo(100_000_000 - 8);
+                        Code tape1FirstBoundary = player.Play(16);
+                        Assert.Equal(new Code("0000000011111111"), tape1FirstBoundary);
+                        player.RewindOrFastForwardTo(200_000_000 - 8);
+                        Code tape1SecondBoundary = player.Play(16);
+                        Assert.Equal(new Code("1111111100000000"), tape1SecondBoundary);
+                        player.RewindOrFastForwardTo(900_000_000 - 8);
+                        Code tape1FinalBoundary = player.Play(16);
+                        Assert.Equal(new Code("0000000011111111"), tape1FinalBoundary);
+                        player.RewindOrFastForwardTo(Tape.MaxContentLength - 16);
+                        Code tape1End = player.Play(16);
+                        Assert.Equal(new Code("1111111111111111"), tape1End);
+                        player.EjectTape();
+
+                        player.InsertTape(tape2);
+                        player.RewindOrFastForwardTo(0);
+                        Code tape2Start = player.Play(16);
+                        Assert.Equal(new Code("1111111111111111"), tape2Start);
+                        player.RewindOrFastForwardTo(Tape.MaxContentLength - 16);
+                        Code tape2End = player.Play(16);
+                        Assert.Equal(new Code("1111111111111111"), tape2End);
+                        player.EjectTape();
+
+                        player.InsertTape(tape3);
+                        player.RewindOrFastForwardTo(0);
+                        Code tape3Start = player.Play(1);
+                        Assert.Equal(new Code("1"), tape3Start);
+                        player.EjectTape();
+                }
+                #endregion
 
 		#region private functions
 		private static Multihash ComputeContentDigest(Tape tape)
