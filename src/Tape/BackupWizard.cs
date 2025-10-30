@@ -1,5 +1,8 @@
 using BigRedProf.Data.Core;
 using BigRedProf.Data.Tape.Internal;
+using BigRedProf.Data.Core.Internal;
+using System.Diagnostics;
+using System.IO;
 using System;
 using System.Collections.Generic;
 
@@ -29,6 +32,8 @@ namespace BigRedProf.Data.Tape
 			private Multihash _currentSeriesHeadDigest;
 			private Multihash _currentTapeContentDigest;
 			private bool _isTapeContentDirty;
+			private TapeSeriesStream? _seriesStream;
+			private CodeWriter? _codeWriter;
 		#endregion
 
 		#region private constructors
@@ -65,6 +70,15 @@ namespace BigRedProf.Data.Tape
 				_currentTapeContentDigest = currentTapeContentDigest;
 				_isTapeContentDirty = false;
 			}
+		#region properties
+			public CodeWriter Writer
+			{
+				get
+				{
+					return EnsureCodeWriter();
+				}
+			}
+		#endregion
 		#endregion
 
 		#region functions
@@ -189,8 +203,10 @@ namespace BigRedProf.Data.Tape
 				if (clientCheckpointCode == null)
 					throw new ArgumentNullException(nameof(clientCheckpointCode));
 
-				// Write the checkpoint to the current (latest) tape only; do not
-				// rewrite older tapes when advancing the series.
+				FlushWriterStream();
+				EnsureWriterFlushed();
+				RefreshCurrentTapeState();
+
 				TapeLabel label = _currentTape.ReadLabel();
 				label = ApplySeriesMetadata(label);
 				Multihash contentDigest;
@@ -216,45 +232,6 @@ namespace BigRedProf.Data.Tape
 				_isTapeContentDirty = false;
 			}
 
-			public void Record(Code content)
-			{
-				if (content == null)
-					throw new ArgumentNullException(nameof(content));
-
-				if (content.Length == 0)
-					return;
-
-				int remainingBits = content.Length;
-				int contentOffset = 0;
-
-				while (remainingBits > 0)
-				{
-					int tapePosition = _currentTape.Position;
-					int availableBits = Tape.MaxContentLength - tapePosition;
-
-					if (availableBits <= 0)
-					{
-						FinalizeCurrentTape();
-						AdvanceToNextTape();
-						continue;
-					}
-
-					int bitsToWrite = remainingBits < availableBits ? remainingBits : availableBits;
-					TapeHelper.WriteContent(_currentTape, content, tapePosition, contentOffset, bitsToWrite);
-					_currentTape.Position = tapePosition + bitsToWrite;
-
-					contentOffset += bitsToWrite;
-					remainingBits -= bitsToWrite;
-					_isTapeContentDirty = true;
-
-					if (_currentTape.Position >= Tape.MaxContentLength)
-					{
-						FinalizeCurrentTape();
-						if (remainingBits > 0)
-							AdvanceToNextTape();
-					}
-				}
-			}
 
 				private TapeLabel ApplySeriesMetadata(TapeLabel label)
 			{
@@ -267,28 +244,74 @@ namespace BigRedProf.Data.Tape
 				return updatedLabel;
 			}
 
-			private void FinalizeCurrentTape()
+			private void FlushWriterStream()
 			{
+				if (_seriesStream != null)
+					_seriesStream.Flush();
+			}
+
+			private void EnsureWriterFlushed()
+			{
+				if (_codeWriter != null)
+					_codeWriter.Dispose();
+			}
+
+			private void EnsureLatestTapeMetadata()
+			{
+				IEnumerable<Tape> tapes = _librarian.FetchTapesInSeries(_seriesId);
+				Debug.Assert(tapes != null, "Fetched tapes collection must not be null.");
+				Tape latestTape = SelectLatestTape(tapes);
+				if (_currentTape.Id == latestTape.Id)
+					return;
+
 				_seriesParentDigest = _currentTapeContentDigest;
-			}
+				_currentTape = latestTape;
 
-			private void AdvanceToNextTape()
-			{
-				Guid tapeId = Guid.NewGuid();
-				Tape tape = Tape.CreateNew(_librarian.TapeProvider, tapeId);
+				TapeLabel label = latestTape.ReadLabel();
+				_currentSeriesNumber = label.SeriesNumber;
 
-				_currentSeriesNumber++;
-				_currentTape = tape;
+				TapeLabel updatedLabel = ApplySeriesMetadata(label);
+				updatedLabel = updatedLabel.WithContentMultihash(BaselineSeriesDigest);
+				updatedLabel = updatedLabel.WithSeriesParentMultihash(_seriesParentDigest);
+				updatedLabel = updatedLabel.WithSeriesHeadMultihash(_currentSeriesHeadDigest);
+				_currentTape.WriteLabel(updatedLabel);
+
 				_currentTapeContentDigest = BaselineSeriesDigest;
-				_isTapeContentDirty = false;
-
-				TapeLabel label = tape.ReadLabel();
-				label = ApplySeriesMetadata(label);
-				label = label.WithContentMultihash(BaselineSeriesDigest);
-				label = label.WithSeriesParentMultihash(_seriesParentDigest);
-				label = label.WithSeriesHeadMultihash(_currentSeriesHeadDigest);
-				_currentTape.WriteLabel(label);
+				_isTapeContentDirty = latestTape.Position > 0;
 			}
+
+			private void RefreshCurrentTapeState()
+			{
+				EnsureLatestTapeMetadata();
+			}
+
+			private CodeWriter EnsureCodeWriter()
+			{
+				if (_codeWriter != null)
+					return _codeWriter;
+
+				TapeSeriesStream stream = new TapeSeriesStream(_librarian, _seriesId, TapeSeriesStream.OpenMode.Append);
+				DirtyTrackingStream trackingStream = new DirtyTrackingStream(this, stream);
+				WizardCodeWriter writer = new WizardCodeWriter(this, trackingStream);
+				_seriesStream = stream;
+				_codeWriter = writer;
+				return writer;
+			}
+
+			private void MarkTapeContentDirty()
+			{
+				_isTapeContentDirty = true;
+				EnsureLatestTapeMetadata();
+			}
+
+			private void OnWriterDisposed()
+			{
+				_codeWriter = null;
+				_seriesStream = null;
+			}
+
+
+
 
 			private static Multihash ComputeContentDigest(Tape tape)
 			{
@@ -352,6 +375,155 @@ namespace BigRedProf.Data.Tape
 
 				return latestTape;
 			}
+
+		#region private classes
+			private sealed class DirtyTrackingStream : Stream, IBitAwareStream
+			{
+				private readonly BackupWizard _owner;
+				private readonly TapeSeriesStream _inner;
+
+				public DirtyTrackingStream(BackupWizard owner, TapeSeriesStream inner)
+				{
+					_owner = owner ?? throw new ArgumentNullException(nameof(owner));
+					_inner = inner ?? throw new ArgumentNullException(nameof(inner));
+				}
+
+				public override bool CanRead
+				{
+					get
+					{
+						return _inner.CanRead;
+					}
+				}
+
+				public override bool CanSeek
+				{
+					get
+					{
+						return _inner.CanSeek;
+					}
+				}
+
+				public override bool CanWrite
+				{
+					get
+					{
+						return _inner.CanWrite;
+					}
+				}
+
+				public override long Length
+				{
+					get
+					{
+						return _inner.Length;
+					}
+				}
+
+				public override long Position
+				{
+					get
+					{
+						return _inner.Position;
+					}
+					set
+					{
+						_inner.Position = value;
+					}
+				}
+
+				public override void Flush()
+				{
+					_inner.Flush();
+				}
+
+				public override int Read(byte[] buffer, int offset, int count)
+				{
+					return _inner.Read(buffer, offset, count);
+				}
+
+				public override long Seek(long offset, SeekOrigin origin)
+				{
+					return _inner.Seek(offset, origin);
+				}
+
+				public override void SetLength(long value)
+				{
+					_inner.SetLength(value);
+				}
+
+				public override void Write(byte[] buffer, int offset, int count)
+				{
+					_inner.Write(buffer, offset, count);
+					if (count > 0)
+						_owner.MarkTapeContentDirty();
+				}
+
+				protected override void Dispose(bool disposing)
+				{
+					if (disposing)
+						_inner.Dispose();
+					base.Dispose(disposing);
+				}
+
+				public byte CurrentByte
+				{
+					get
+					{
+						return ((IBitAwareStream)_inner).CurrentByte;
+					}
+					set
+					{
+						((IBitAwareStream)_inner).CurrentByte = value;
+					}
+				}
+
+				public int OffsetIntoCurrentByte
+				{
+					get
+					{
+						return ((IBitAwareStream)_inner).OffsetIntoCurrentByte;
+					}
+					set
+					{
+						((IBitAwareStream)_inner).OffsetIntoCurrentByte = value;
+					}
+				}
+			}
+
+			private sealed class WizardCodeWriter : CodeWriter
+			{
+				private readonly BackupWizard _owner;
+				private bool _isDisposed;
+
+				public WizardCodeWriter(BackupWizard owner, Stream stream)
+					: base(stream)
+				{
+					_owner = owner ?? throw new ArgumentNullException(nameof(owner));
+					_isDisposed = false;
+				}
+
+				protected override void Dispose(bool disposing)
+				{
+					if (_isDisposed)
+					{
+						base.Dispose(disposing);
+						return;
+					}
+
+					try
+					{
+						base.Dispose(disposing);
+					}
+					finally
+					{
+						_owner.OnWriterDisposed();
+						_isDisposed = true;
+					}
+				}
+			}
+		#endregion
+
 		#endregion
 	}
 }
