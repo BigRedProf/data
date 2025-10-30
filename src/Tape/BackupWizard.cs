@@ -256,31 +256,39 @@ namespace BigRedProf.Data.Tape
 					_codeWriter.Dispose();
 			}
 
-			private void EnsureLatestTapeMetadata()
+		private void EnsureLatestTapeMetadata()
+		{
+			IEnumerable<Tape> tapes = _librarian.FetchTapesInSeries(_seriesId);
+			Debug.Assert(tapes != null, "Fetched tapes collection must not be null.");
+			Tape latestTape = SelectLatestTape(tapes);
+			if (_currentTape.Id == latestTape.Id)
+				return;
+
+			// We are moving off the previous (now-finished) tape.
+			// Ensure _currentTapeContentDigest is accurate before using it as the parent.
+			if (_isTapeContentDirty)
 			{
-				IEnumerable<Tape> tapes = _librarian.FetchTapesInSeries(_seriesId);
-				Debug.Assert(tapes != null, "Fetched tapes collection must not be null.");
-				Tape latestTape = SelectLatestTape(tapes);
-				if (_currentTape.Id == latestTape.Id)
-					return;
-
-				_seriesParentDigest = _currentTapeContentDigest;
-				_currentTape = latestTape;
-
-				TapeLabel label = latestTape.ReadLabel();
-				_currentSeriesNumber = label.SeriesNumber;
-
-				TapeLabel updatedLabel = ApplySeriesMetadata(label);
-				updatedLabel = updatedLabel.WithContentMultihash(BaselineSeriesDigest);
-				updatedLabel = updatedLabel.WithSeriesParentMultihash(_seriesParentDigest);
-				updatedLabel = updatedLabel.WithSeriesHeadMultihash(_currentSeriesHeadDigest);
-				_currentTape.WriteLabel(updatedLabel);
-
-				_currentTapeContentDigest = BaselineSeriesDigest;
-				_isTapeContentDirty = latestTape.Position > 0;
+				_currentTapeContentDigest = ComputeContentDigest(_currentTape);
+				_isTapeContentDirty = false;
 			}
 
-			private void RefreshCurrentTapeState()
+			_seriesParentDigest = _currentTapeContentDigest;
+			_currentTape = latestTape;
+
+			TapeLabel label = latestTape.ReadLabel();
+			_currentSeriesNumber = label.SeriesNumber;
+
+			TapeLabel updatedLabel = ApplySeriesMetadata(label)
+				.WithContentMultihash(BaselineSeriesDigest)
+				.WithSeriesParentMultihash(_seriesParentDigest)
+				.WithSeriesHeadMultihash(_currentSeriesHeadDigest);
+			_currentTape.WriteLabel(updatedLabel);
+
+			_currentTapeContentDigest = BaselineSeriesDigest;
+			_isTapeContentDirty = latestTape.Position > 0;
+		}
+
+		private void RefreshCurrentTapeState()
 			{
 				EnsureLatestTapeMetadata();
 			}
