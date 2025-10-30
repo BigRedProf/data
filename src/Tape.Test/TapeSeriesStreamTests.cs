@@ -1,5 +1,6 @@
 ﻿using BigRedProf.Data.Core;
 using BigRedProf.Data.Tape.Providers.Memory;
+using System.Collections.Generic;
 using System.Reflection.PortableExecutable;
 
 namespace BigRedProf.Data.Tape.Test
@@ -175,6 +176,57 @@ namespace BigRedProf.Data.Tape.Test
 				Assert.Equal(0b11001101, buffer[0]);
 				Assert.Equal(0b00000100, buffer[1]);
 			}
+		}
+		#endregion
+
+		#region tape rollover regressions
+		[Fact]
+		public void Append_ShouldPreserveAllBits_WhenRollingOverToNewTape()
+		{
+			Librarian librarian = CreateLibrarian();
+			Guid seriesId = NewSeriesId();
+
+			BackupWizard wizard = BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Rollover bug repro");
+
+			Tape initialTape = GetLastTape(librarian, seriesId);
+			TapeLabel initialLabel = initialTape.ReadLabel();
+			initialLabel.AddTrait(new Trait<int>(TapeTrait.TapePosition, Tape.MaxContentLength - 4));
+			initialTape.WriteLabel(initialLabel);
+
+			byte[] bytes = new byte[2];
+			bytes[0] = 0b01010101;
+			bytes[1] = 0b11110000;
+
+			using (TapeSeriesStream writeStream = new TapeSeriesStream(librarian, seriesId, TapeSeriesStream.OpenMode.Append))
+			using (CodeWriter writer = new CodeWriter(writeStream))
+			{
+				writer.WriteCode(new Code(new byte[] { bytes[0] }));
+				writer.WriteCode(new Code(new byte[] { bytes[1] }));
+			}
+
+			List<Tape> tapes = new List<Tape>();
+			foreach (Tape tape in librarian.FetchTapesInSeries(seriesId))
+				tapes.Add(tape);
+
+			tapes.Sort(delegate (Tape left, Tape right)
+			{
+				TapeLabel leftLabel = left.ReadLabel();
+				TapeLabel rightLabel = right.ReadLabel();
+
+				if (leftLabel.SeriesNumber < rightLabel.SeriesNumber)
+					return -1;
+				if (leftLabel.SeriesNumber > rightLabel.SeriesNumber)
+					return 1;
+				return 0;
+			});
+
+			Assert.Equal(2, tapes.Count);
+
+			Tape firstTape = tapes[0];
+			Tape secondTape = tapes[1];
+
+			Assert.Equal(Tape.MaxContentLength, firstTape.Position);
+			Assert.Equal(12, secondTape.Position);
 		}
 		#endregion
 

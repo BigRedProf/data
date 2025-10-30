@@ -340,14 +340,14 @@ namespace BigRedProf.Data.Tape
 				// No whole bytes fit, but there are bits left and we still have buffer.
 				if (capacityBits > 0 && count > 0)
 				{
-					byte b = buffer[offset];
+					byte current = buffer[offset];
 					int bitsToWrite = capacityBits;
 
-					Code partial = UnpackPartialByteToCode(b, bitsToWrite);
+					Code partial = UnpackPartialByteToCode(current, bitsToWrite);
 					TapeHelper.WriteContent(_current.Tape, partial, _current.BitPosition, 0, bitsToWrite);
 
 					// Reflect current state for any readers (optional).
-					CurrentByte = b;
+					CurrentByte = current;
 					OffsetIntoCurrentByte = bitsToWrite;
 
 					_current.BitPosition += bitsToWrite;
@@ -355,6 +355,23 @@ namespace BigRedProf.Data.Tape
 
 					offset += 1;
 					count -= 1;
+
+					int remainingBits = 8 - bitsToWrite;
+					if (remainingBits > 0)
+					{
+						byte remainder = (byte)(current >> bitsToWrite);
+
+						RolloverAppendTape();
+
+						Code remainderCode = UnpackPartialByteToCode(remainder, remainingBits);
+						TapeHelper.WriteContent(_current.Tape, remainderCode, _current.BitPosition, 0, remainingBits);
+
+						CurrentByte = remainder;
+						OffsetIntoCurrentByte = remainingBits;
+
+						_current.BitPosition += remainingBits;
+						PersistTapePosition();
+					}
 
 					continue;
 				}
