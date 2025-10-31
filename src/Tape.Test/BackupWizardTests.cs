@@ -172,10 +172,21 @@ namespace BigRedProf.Data.Tape.Test
 			Assert.Equal(firstLabel.SeriesNumber + 1, secondLabel.SeriesNumber);
 			Assert.Equal(firstLabel.ContentDigest, secondLabel.SeriesParentDigest);
 
+			Multihash expectedFirstContent = ComputeContentDigest(firstTape);
+			Assert.Equal(expectedFirstContent, firstLabel.ContentDigest);
+
+			Multihash expectedFirstHead = ComputeSeriesHeadDigest(ComputeBaselineSeriesDigest(), expectedFirstContent);
+			Assert.Equal(expectedFirstHead, firstLabel.SeriesHeadDigest);
+
+			// Second tape should inherit parent from finalized firstContentDigest.
+			Assert.Equal(firstLabel.ContentDigest, secondLabel.SeriesParentDigest);
+
+			// Second tape just started; its content digest should still be baseline (we wrote only the *remainder* bits)
 			Multihash baselineDigest = ComputeBaselineSeriesDigest();
-			Assert.Equal(baselineDigest, firstLabel.ContentDigest);
 			Assert.Equal(baselineDigest, secondLabel.ContentDigest);
-			Assert.Equal(firstLabel.SeriesHeadDigest, secondLabel.SeriesHeadDigest);
+
+			// Its head, seeded from chain, should match the running head we carried forward:
+			Assert.Equal(expectedFirstHead, secondLabel.SeriesHeadDigest);
 		}
 
 		[Trait("Region", "BackupWizard factories")]

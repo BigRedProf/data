@@ -285,51 +285,69 @@ namespace BigRedProf.Data.Tape
 					_codeWriter.Dispose();
 			}
 
-		private void EnsureLatestTapeMetadata()
-		{
-			bool hasRollover = false;
-			if (_seriesStream != null)
-				hasRollover = _seriesStream.TryConsumeRolloverFlag();
-
-			if (_seriesStream != null && !hasRollover && _currentTape.Id == _latestTapeId)
-				return;
-
-			IEnumerable<Tape> tapes = _librarian.FetchTapesInSeries(_seriesId);
-			Debug.Assert(tapes != null, "Fetched tapes collection must not be null.");
-			Tape latestTape = SelectLatestTape(tapes);
-			if (!hasRollover && _currentTape.Id == latestTape.Id)
+			private void EnsureLatestTapeMetadata()
 			{
+				bool hasRollover = false;
+				if (_seriesStream != null)
+					hasRollover = _seriesStream.TryConsumeRolloverFlag();
+
+				// Fast path: no rollover and we’re already on the latest tape id we saw last time.
+				if (_seriesStream != null && !hasRollover && _currentTape.Id == _latestTapeId)
+					return;
+
+				// Always re-fetch latest to be safe.
+				IEnumerable<Tape> tapes = _librarian.FetchTapesInSeries(_seriesId);
+				Debug.Assert(tapes != null, "Fetched tapes collection must not be null.");
+				Tape latestTape = SelectLatestTape(tapes);
+
+				if (!hasRollover && _currentTape.Id == latestTape.Id)
+				{
+					_latestTapeId = latestTape.Id;
+					return;
+				}
+
+				// We *did* roll over (or otherwise advanced to a new tape).
+				// Finalize the *finished* tape first (the one we were just writing).
+				Tape finishedTape = _currentTape;
+
+				// Compute real content digest of the finished tape.
+				Multihash finishedContentDigest = ComputeContentDigest(finishedTape);
+
+				// Compute the head digest for the finished tape.
+				Multihash finishedHeadDigest = ComputeSeriesHeadDigest(_seriesParentDigest, finishedContentDigest);
+
+				// Persist those into the finished tape’s label.
+				{
+					TapeLabel finishedLabel = finishedTape.ReadLabel();
+					finishedLabel = ApplySeriesMetadata(finishedLabel)
+						.WithContentMultihash(finishedContentDigest)
+						.WithSeriesParentMultihash(_seriesParentDigest)
+						.WithSeriesHeadMultihash(finishedHeadDigest);
+					finishedTape.WriteLabel(finishedLabel);
+				}
+
+				// Update our running chain state for the *next* tape.
+				_seriesParentDigest = finishedContentDigest;
+				_currentSeriesHeadDigest = finishedHeadDigest;
+
+				// Now switch to the new latest tape and seed its label appropriately.
+				_currentTape = latestTape;
 				_latestTapeId = latestTape.Id;
-				return;
+
+				TapeLabel latestLabel = latestTape.ReadLabel();
+				_currentSeriesNumber = latestLabel.SeriesNumber;
+
+				TapeLabel seededLatest = ApplySeriesMetadata(latestLabel)
+					.WithContentMultihash(BaselineSeriesDigest)
+					.WithSeriesParentMultihash(_seriesParentDigest)
+					.WithSeriesHeadMultihash(_currentSeriesHeadDigest);
+				_currentTape.WriteLabel(seededLatest);
+
+				_currentTapeContentDigest = BaselineSeriesDigest;
+				_isTapeContentDirty = latestTape.Position > 0; // if something is already there
 			}
 
-
-			// We are moving off the previous (now-finished) tape.
-			// Ensure _currentTapeContentDigest is accurate before using it as the parent.
-			if (_isTapeContentDirty)
-			{
-				_currentTapeContentDigest = ComputeContentDigest(_currentTape);
-				_isTapeContentDirty = false;
-			}
-
-			_seriesParentDigest = _currentTapeContentDigest;
-			_currentTape = latestTape;
-			_latestTapeId = latestTape.Id;
-
-			TapeLabel label = latestTape.ReadLabel();
-			_currentSeriesNumber = label.SeriesNumber;
-
-			TapeLabel updatedLabel = ApplySeriesMetadata(label)
-				.WithContentMultihash(BaselineSeriesDigest)
-				.WithSeriesParentMultihash(_seriesParentDigest)
-				.WithSeriesHeadMultihash(_currentSeriesHeadDigest);
-			_currentTape.WriteLabel(updatedLabel);
-
-			_currentTapeContentDigest = BaselineSeriesDigest;
-			_isTapeContentDirty = latestTape.Position > 0;
-		}
-
-		private void RefreshCurrentTapeState()
+			private void RefreshCurrentTapeState()
 			{
 				EnsureLatestTapeMetadata();
 			}
