@@ -29,6 +29,7 @@ namespace BigRedProf.Data.Tape
 			private Tape _currentTape;
 			private int _currentSeriesNumber;
 			private Multihash _seriesParentDigest;
+			private Multihash _lastSeriesParentDigest;
 			private Multihash _currentSeriesHeadDigest;
 			private Multihash _currentTapeContentDigest;
 			private bool _isTapeContentDirty;
@@ -67,6 +68,7 @@ namespace BigRedProf.Data.Tape
 				_seriesDescription = seriesDescription ?? string.Empty;
 				_currentSeriesNumber = currentSeriesNumber;
 				_seriesParentDigest = seriesParentDigest;
+				_lastSeriesParentDigest = seriesParentDigest;
 				_currentSeriesHeadDigest = currentSeriesHeadDigest;
 				_currentTapeContentDigest = currentTapeContentDigest;
 				_isTapeContentDirty = false;
@@ -171,13 +173,15 @@ namespace BigRedProf.Data.Tape
 				if (!label.TryGetTrait<Multihash>(CoreTrait.SeriesParentDigest, out parentDigest))
 					parentDigest = BaselineSeriesDigest;
 
+				Multihash contentDigest;
+				if (!label.TryGetTrait<Multihash>(CoreTrait.ContentDigest, out contentDigest))
+					contentDigest = BaselineSeriesDigest;
+
 				Multihash headDigest;
 				if (!label.TryGetTrait<Multihash>(CoreTrait.SeriesHeadDigest, out headDigest))
 					headDigest = parentDigest;
 
-				Multihash contentDigest;
-				if (!label.TryGetTrait<Multihash>(CoreTrait.ContentDigest, out contentDigest))
-					contentDigest = BaselineSeriesDigest;
+				Multihash nextParentDigest = contentDigest;
 
 				int seriesNumber = label.SeriesNumber;
 
@@ -188,9 +192,10 @@ namespace BigRedProf.Data.Tape
 				seriesName,
 				seriesDescription,
 				seriesNumber,
-				parentDigest,
+				nextParentDigest,
 				headDigest,
 				contentDigest);
+				wizard.SetNextSeriesParentDigest(contentDigest);
 				return wizard;
 			}
 		#endregion
@@ -244,20 +249,23 @@ namespace BigRedProf.Data.Tape
 				else
 					contentDigest = _currentTapeContentDigest;
 
+				Multihash parentDigestForLabel = _seriesParentDigest;
 				Multihash seriesHeadDigest;
 				if (_isTapeContentDirty)
-					seriesHeadDigest = ComputeSeriesHeadDigest(_seriesParentDigest, contentDigest);
+					seriesHeadDigest = ComputeSeriesHeadDigest(parentDigestForLabel, contentDigest);
 				else
 					seriesHeadDigest = _currentSeriesHeadDigest;
 
 				label = label.WithContentMultihash(contentDigest);
-				label = label.WithSeriesParentMultihash(_seriesParentDigest);
+				label = label.WithSeriesParentMultihash(parentDigestForLabel);
 				label = label.WithSeriesHeadMultihash(seriesHeadDigest);
 				label = label.WithClientCheckpoint(clientCheckpointCode);
 				_currentTape.WriteLabel(label);
 
 				_currentTapeContentDigest = contentDigest;
 				_currentSeriesHeadDigest = seriesHeadDigest;
+				_lastSeriesParentDigest = parentDigestForLabel;
+				_seriesParentDigest = contentDigest;
 				_isTapeContentDirty = false;
 			}
 
@@ -291,8 +299,17 @@ namespace BigRedProf.Data.Tape
 				if (_seriesStream != null)
 					hasRollover = _seriesStream.TryConsumeRolloverFlag();
 
-				// Fast path: no rollover and we’re already on the latest tape id we saw last time.
-				if (_seriesStream != null && !hasRollover && _currentTape.Id == _latestTapeId)
+				Multihash finishedHeadDigest = ComputeSeriesHeadDigest(_lastSeriesParentDigest, finishedContentDigest);
+						.WithSeriesParentMultihash(_lastSeriesParentDigest)
+				_lastSeriesParentDigest = _seriesParentDigest;
+			private void SetNextSeriesParentDigest(Multihash nextParentDigest)
+			{
+				if (nextParentDigest == null)
+					throw new ArgumentNullException(nameof(nextParentDigest));
+
+				_seriesParentDigest = nextParentDigest;
+			}
+
 					return;
 
 				// Always re-fetch latest to be safe.
@@ -316,7 +333,7 @@ namespace BigRedProf.Data.Tape
 				// Compute the head digest for the finished tape.
 				Multihash finishedHeadDigest = ComputeSeriesHeadDigest(_seriesParentDigest, finishedContentDigest);
 
-				// Persist those into the finished tape’s label.
+				// Persist those into the finished tapeÂ’s label.
 				{
 					TapeLabel finishedLabel = finishedTape.ReadLabel();
 					finishedLabel = ApplySeriesMetadata(finishedLabel)

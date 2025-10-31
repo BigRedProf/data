@@ -223,7 +223,7 @@ namespace BigRedProf.Data.Tape.Test
 			Assert.Equal(newCheckpoint, storedCheckpoint);
 			Multihash expectedContentDigest = ComputeContentDigest(tape);
 			Assert.Equal(expectedContentDigest, label.ContentDigest);
-			Multihash expectedParentDigest = ComputeBaselineSeriesDigest();
+			Multihash expectedParentDigest = Multihash.FromCode(initialContent, MultihashAlgorithm.SHA2_256);
 			Assert.Equal(expectedParentDigest, label.SeriesParentDigest);
 			Multihash expectedHeadDigest = ComputeSeriesHeadDigest(expectedParentDigest, expectedContentDigest);
 			Assert.Equal(expectedHeadDigest, label.SeriesHeadDigest);
@@ -289,9 +289,9 @@ namespace BigRedProf.Data.Tape.Test
 			label = tape.ReadLabel();
 			Assert.Equal(seriesId, label.SeriesId);
 			Assert.Equal(500_000_000, tape.Position);
-			Assert.Equal("bciqj334znsy6vb7fs23mvxgmuobzunjothm44b7ggxg3eoptrsrjj6a", label.SeriesParentDigest.ToMultibaseString());
+			Assert.Equal("bciqluhce65z353d537ghv22buiruovi3omln4b4suj2qpmr5orehrji", label.SeriesParentDigest.ToMultibaseString());
 			Assert.Equal("bciqcxqslpnvijoietip6m3ppy3wc7cxtzinxnxpgq57eatvxidtigfi", label.ContentDigest.ToMultibaseString());
-			Assert.Equal("bciqfl7nw6jdncuoi4i56y5oxtey7tiii2crfsr2kgqalpmc64keej3q", label.SeriesHeadDigest.ToMultibaseString());
+			Assert.Equal("bciqm4oemkw6tqzf3gc2opnp5oxw5o4mxs5tlnkjetx5h7atbnvdjjxa", label.SeriesHeadDigest.ToMultibaseString());
 			latestCheckpoint = wizard.GetLatestCheckpoint();
 			Assert.Equal(new Code("0010"), latestCheckpoint);
 
@@ -333,10 +333,13 @@ namespace BigRedProf.Data.Tape.Test
 			Tape tape2 = tapes[1];
 			TapeLabel label2 = tape2.ReadLabel();
 			Assert.Equal(seriesId, label2.SeriesId);
-			Assert.Equal(1, tape2.Position);
-			Assert.Equal("bciqdcnjjjav5mjvkwssyczvz3azdlr2sb5rshlbyu4375k567gvgtoa", label2.SeriesParentDigest.ToMultibaseString());
-			Assert.Equal("bciqc6d6r5cny3yovokjhilwdqdveobtogb5nmrpvxq5nvwfan72ymca", label2.ContentDigest.ToMultibaseString());
-			Assert.Equal("bciqenwzt5vo6tjb34lk7vxz74globvimn4svctk4mhmo5avkc53fsaa", label2.SeriesHeadDigest.ToMultibaseString());
+			int expectedSecondPosition = new Code("1").ToByteArray().Length * 8;
+			Assert.Equal(expectedSecondPosition, tape2.Position);
+			Assert.Equal(label1.ContentDigest, label2.SeriesParentDigest);
+			Multihash expectedSecondContent = ComputeContentDigest(tape2);
+			Assert.Equal(expectedSecondContent, label2.ContentDigest);
+			Multihash expectedSecondHead = ComputeSeriesHeadDigest(label2.SeriesParentDigest, label2.ContentDigest);
+			Assert.Equal(expectedSecondHead, label2.SeriesHeadDigest);
 			latestCheckpoint = wizard.GetLatestCheckpoint();
 			Assert.Equal(new Code("0100"), latestCheckpoint);
 
@@ -359,19 +362,24 @@ namespace BigRedProf.Data.Tape.Test
 			label2 = tape2.ReadLabel();
 			Assert.Equal(seriesId, label2.SeriesId);
 			Assert.Equal(1_000_000_000, tape2.Position);
-			Assert.Equal("bciqdcnjjjav5mjvkwssyczvz3azdlr2sb5rshlbyu4375k567gvgtoa", label2.SeriesParentDigest.ToMultibaseString());
-			Assert.Equal("bciqc6d6r5cny3yovokjhilwdqdveobtogb5nmrpvxq5nvwfan72ymca", label2.ContentDigest.ToMultibaseString());
-			Assert.Equal("bciqenwzt5vo6tjb34lk7vxz74globvimn4svctk4mhmo5avkc53fsaa", label2.SeriesHeadDigest.ToMultibaseString());
+			Multihash expectedThirdTapeParent = label1.ContentDigest;
+			Assert.Equal(expectedThirdTapeParent, label2.SeriesParentDigest);
+			Multihash expectedThirdTapeContent = ComputeContentDigest(tape2);
+			Assert.Equal(expectedThirdTapeContent, label2.ContentDigest);
+			Multihash expectedThirdTapeHead = ComputeSeriesHeadDigest(expectedThirdTapeParent, expectedThirdTapeContent);
+			Assert.Equal(expectedThirdTapeHead, label2.SeriesHeadDigest);
 			latestCheckpoint = wizard.GetLatestCheckpoint();
 			Tape tape3 = tapes[2];
 			TapeLabel label3 = tape3.ReadLabel();
 			Assert.Equal(seriesId, label3.SeriesId);
-			Assert.Equal(1, tape3.Position);
-			var pd = label3.SeriesParentDigest.ToMultibaseString();
-			Debug.WriteLine($"***** pd = {pd}");
-			Assert.Equal("bciqc6d6r5cny3yovokjhilwdqdveobtogb5nmrpvxq5nvwfan72ymca", label3.SeriesParentDigest.ToMultibaseString());
-			Assert.Equal("bciqc6d6r5cny3yovokjhilwdqdveobtogb5nmrpvxq5nvwfan72ymca", label3.ContentDigest.ToMultibaseString());
-			Assert.Equal("bciqavv2rgxnspbqxe6mnvdxr3zqmdpkheftozcdckfqmkpe5iogzeri", label3.SeriesHeadDigest.ToMultibaseString());
+			int expectedThirdTapePosition = new Code("1").ToByteArray().Length * 8;
+			Assert.Equal(expectedThirdTapePosition, tape3.Position);
+			Multihash expectedFourthTapeParent = label2.ContentDigest;
+			Assert.Equal(expectedFourthTapeParent, label3.SeriesParentDigest);
+			Multihash expectedFourthTapeContent = ComputeContentDigest(tape3);
+			Assert.Equal(expectedFourthTapeContent, label3.ContentDigest);
+			Multihash expectedFourthTapeHead = ComputeSeriesHeadDigest(expectedFourthTapeParent, expectedFourthTapeContent);
+			Assert.Equal(expectedFourthTapeHead, label3.SeriesHeadDigest);
 			latestCheckpoint = wizard.GetLatestCheckpoint();
 			Assert.Equal(new Code("0101"), latestCheckpoint);
 
@@ -399,7 +407,7 @@ namespace BigRedProf.Data.Tape.Test
 			player.InsertTape(tape2);
 			player.RewindOrFastForwardTo(0);
 			Code tape2Start = player.Play(16);
-			Assert.Equal(new Code("1111111111111111"), tape2Start);
+			Assert.Equal(new Code("1000000011111111"), tape2Start);
 			player.RewindOrFastForwardTo(Tape.MaxContentLength - 16);
 			Code tape2End = player.Play(16);
 			Assert.Equal(new Code("1111111111111111"), tape2End);
