@@ -480,9 +480,6 @@ namespace BigRedProf.Data.Tape
 			CurrentByte = 0;
 			OffsetIntoCurrentByte = 0;
 
-			// If we had a pending partial from the previous tape, align it fully on rollover.
-			if (_hasPendingPartial)
-				CommitPendingAsFullByte();
 			_hasRolloverPending = true;
 		}
 
