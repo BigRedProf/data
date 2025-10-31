@@ -192,7 +192,7 @@ namespace BigRedProf.Data.Core
 				if((offset % 8) == 0 && length >= 8)
 				{
 					int offsetIntoByteArray = GetByteOffsetAt(offset);
-					int byteLengthOfCode = (length % 8);
+					int byteLengthOfCode = (length / 8);
 					for (int i = 0; i < byteLengthOfCode; ++i)
 						code.ByteArray[i] = _byteArray[offsetIntoByteArray + i];
 					currentOffset += byteLengthOfCode * 8;
