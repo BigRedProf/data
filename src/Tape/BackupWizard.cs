@@ -34,9 +34,10 @@ namespace BigRedProf.Data.Tape
 			private bool _isTapeContentDirty;
 			private TapeSeriesStream? _seriesStream;
 			private CodeWriter? _codeWriter;
+			private Guid _latestTapeId;
 		#endregion
 
-		#region private constructors
+		#region constructors
 			private BackupWizard(
 			Librarian librarian,
 			Guid seriesId,
@@ -69,8 +70,17 @@ namespace BigRedProf.Data.Tape
 				_currentSeriesHeadDigest = currentSeriesHeadDigest;
 				_currentTapeContentDigest = currentTapeContentDigest;
 				_isTapeContentDirty = false;
+				_latestTapeId = currentTape.Id;
 			}
+		#endregion
+
 		#region properties
+			/// <summary>
+			/// Gets a code writer for appending data to the series.
+			/// </summary>
+			/// <remarks>
+			/// Calling SetLatestCheckpoint() disposes the current writer and persists any partial byte state.
+			/// </remarks>
 			public CodeWriter Writer
 			{
 				get
@@ -78,7 +88,6 @@ namespace BigRedProf.Data.Tape
 					return EnsureCodeWriter();
 				}
 			}
-		#endregion
 		#endregion
 
 		#region functions
@@ -186,7 +195,20 @@ namespace BigRedProf.Data.Tape
 			}
 		#endregion
 
+
 		#region methods
+			/// <summary>
+			/// Appends code to the current tape series.
+			/// </summary>
+			/// <param name="code">The code to append.</param>
+			public void Append(Code code)
+			{
+				if (code == null)
+					throw new ArgumentNullException(nameof(code));
+
+				Writer.WriteCode(code);
+			}
+
 			public Code GetLatestCheckpoint()
 			{
 				// The latest checkpoint is stored on the current (latest) tape's label.
@@ -198,6 +220,13 @@ namespace BigRedProf.Data.Tape
 				return checkpoint;
 			}
 
+			/// <summary>
+			/// Sets the latest client checkpoint for the series.
+			/// </summary>
+			/// <param name="clientCheckpointCode">The checkpoint code to record.</param>
+			/// <remarks>
+			/// Calling SetLatestCheckpoint() disposes the current writer and persists any partial byte state.
+			/// </remarks>
 			public void SetLatestCheckpoint(Code clientCheckpointCode)
 			{
 				if (clientCheckpointCode == null)
@@ -258,11 +287,22 @@ namespace BigRedProf.Data.Tape
 
 		private void EnsureLatestTapeMetadata()
 		{
+			bool hasRollover = false;
+			if (_seriesStream != null)
+				hasRollover = _seriesStream.TryConsumeRolloverFlag();
+
+			if (_seriesStream != null && !hasRollover && _currentTape.Id == _latestTapeId)
+				return;
+
 			IEnumerable<Tape> tapes = _librarian.FetchTapesInSeries(_seriesId);
 			Debug.Assert(tapes != null, "Fetched tapes collection must not be null.");
 			Tape latestTape = SelectLatestTape(tapes);
-			if (_currentTape.Id == latestTape.Id)
+			if (!hasRollover && _currentTape.Id == latestTape.Id)
+			{
+				_latestTapeId = latestTape.Id;
 				return;
+			}
+
 
 			// We are moving off the previous (now-finished) tape.
 			// Ensure _currentTapeContentDigest is accurate before using it as the parent.
@@ -274,6 +314,7 @@ namespace BigRedProf.Data.Tape
 
 			_seriesParentDigest = _currentTapeContentDigest;
 			_currentTape = latestTape;
+			_latestTapeId = latestTape.Id;
 
 			TapeLabel label = latestTape.ReadLabel();
 			_currentSeriesNumber = label.SeriesNumber;

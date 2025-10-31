@@ -51,6 +51,7 @@ namespace BigRedProf.Data.Tape
 		private bool _hasPendingPartial;
 		private byte _pendingByte;
 		private int _pendingBits; // 1..7
+		private bool _hasRolloverPending;
 
 		private bool _isDisposed;
 		#endregion
@@ -482,6 +483,7 @@ namespace BigRedProf.Data.Tape
 			// If we had a pending partial from the previous tape, align it fully on rollover.
 			if (_hasPendingPartial)
 				CommitPendingAsFullByte();
+			_hasRolloverPending = true;
 		}
 
 		private void PersistTapePosition()
@@ -491,6 +493,17 @@ namespace BigRedProf.Data.Tape
 		}
 		#endregion
 
+
+		#region internal methods
+		internal bool TryConsumeRolloverFlag()
+		{
+			if (!_hasRolloverPending)
+				return false;
+
+			_hasRolloverPending = false;
+			return true;
+		}
+		#endregion
 		#region helpers (pending commit)
 		private void CommitPendingAsFullByte()
 		{
