@@ -310,9 +310,10 @@ namespace BigRedProf.Data.Tape.Test
 			label = tape.ReadLabel();
 			Assert.Equal(seriesId, label.SeriesId);
 			Assert.Equal(1_000_000_000, tape.Position);
-			Assert.Equal("bciqcxqslpnvijoietip6m3ppy3wc7cxtzinxnxpgq57eatvxidtigfi", label.SeriesParentDigest.ToMultibaseString());
+			// Still on tape 1 -> parent remains baseline
+			Assert.Equal("bciqj334znsy6vb7fs23mvxgmuobzunjothm44b7ggxg3eoptrsrjj6a", label.SeriesParentDigest.ToMultibaseString());
 			Assert.Equal("bciqdcnjjjav5mjvkwssyczvz3azdlr2sb5rshlbyu4375k567gvgtoa", label.ContentDigest.ToMultibaseString());
-			Assert.Equal("bciqolvdc75ftdkencrmy3zslcm4vpgfhawskli7vsf2yccdujxahfeq", label.SeriesHeadDigest.ToMultibaseString());
+			Assert.Equal("bciqcuiyind4myihgokvgotzmz6l3e5zdz3wnbxqjorbgogdhytusmhy", label.SeriesHeadDigest.ToMultibaseString());
 			latestCheckpoint = wizard.GetLatestCheckpoint();
 			Assert.Equal(new Code("0011"), latestCheckpoint);
 
@@ -327,9 +328,9 @@ namespace BigRedProf.Data.Tape.Test
 			TapeLabel label1 = tape1.ReadLabel();
 			Assert.Equal(seriesId, label1.SeriesId);
 			Assert.Equal(1_000_000_000, tape1.Position);
-			Assert.Equal("bciqcxqslpnvijoietip6m3ppy3wc7cxtzinxnxpgq57eatvxidtigfi", label1.SeriesParentDigest.ToMultibaseString());
-			Assert.Equal("bciqdcnjjjav5mjvkwssyczvz3azdlr2sb5rshlbyu4375k567gvgtoa", label1.ContentDigest.ToMultibaseString());
-			Assert.Equal("bciqolvdc75ftdkencrmy3zslcm4vpgfhawskli7vsf2yccdujxahfeq", label1.SeriesHeadDigest.ToMultibaseString());
+			Assert.Equal("bciqj334znsy6vb7fs23mvxgmuobzunjothm44b7ggxg3eoptrsrjj6a", label.SeriesParentDigest.ToMultibaseString());
+			Assert.Equal("bciqdcnjjjav5mjvkwssyczvz3azdlr2sb5rshlbyu4375k567gvgtoa", label.ContentDigest.ToMultibaseString());
+			Assert.Equal("bciqcuiyind4myihgokvgotzmz6l3e5zdz3wnbxqjorbgogdhytusmhy", label.SeriesHeadDigest.ToMultibaseString());
 			Tape tape2 = tapes[1];
 			TapeLabel label2 = tape2.ReadLabel();
 			Assert.Equal(seriesId, label2.SeriesId);
