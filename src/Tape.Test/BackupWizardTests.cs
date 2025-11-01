@@ -5,13 +5,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
-using System.Diagnostics;
-
 namespace BigRedProf.Data.Tape.Test
 {
-	public class BackupWizardTests
-	{
-		#region unit tests
+        public class BackupWizardTests
+        {
+                #region static fields
+                private static readonly ISeriesDigestEngine _digestEngine = new SeriesDigestEngine(MultihashAlgorithm.SHA2_256);
+                #endregion
+
+                #region unit tests
 		[Trait("Region", "BackupWizard factories")]
 		[Fact]
 		public void CreateNew_ShouldInitializeSeriesMetadata()
@@ -95,7 +97,7 @@ namespace BigRedProf.Data.Tape.Test
 			Assert.Equal(content.Length, tape.Position);
 
 			TapeLabel label = tape.ReadLabel();
-			Multihash baselineDigest = ComputeBaselineSeriesDigest();
+                        Multihash baselineDigest = _digestEngine.ComputeBaseline();
 			Assert.Equal(baselineDigest, label.ContentDigest);
 			Assert.Equal(baselineDigest, label.SeriesParentDigest);
 			Assert.Equal(baselineDigest, label.SeriesHeadDigest);
@@ -125,9 +127,9 @@ namespace BigRedProf.Data.Tape.Test
 			Assert.True(label.TryGetClientCheckpoint(out storedCheckpoint));
 			Assert.Equal(checkpoint, storedCheckpoint);
 
-			Multihash expectedParentDigest = ComputeBaselineSeriesDigest();
-			Multihash expectedContentDigest = ComputeContentDigest(tape);
-			Multihash expectedHeadDigest = ComputeSeriesHeadDigest(expectedParentDigest, expectedContentDigest);
+                        Multihash expectedParentDigest = _digestEngine.ComputeBaseline();
+                        Multihash expectedContentDigest = _digestEngine.ComputeContentDigest(tape);
+                        Multihash expectedHeadDigest = _digestEngine.ComputeSeriesHeadDigest(expectedParentDigest, expectedContentDigest);
 
 			Assert.Equal(expectedContentDigest, label.ContentDigest);
 			Assert.Equal(expectedParentDigest, label.SeriesParentDigest);
@@ -172,18 +174,18 @@ namespace BigRedProf.Data.Tape.Test
 			Assert.Equal(firstLabel.SeriesNumber + 1, secondLabel.SeriesNumber);
 			Assert.Equal(firstLabel.ContentDigest, secondLabel.SeriesParentDigest);
 
-			Multihash expectedFirstContent = ComputeContentDigest(firstTape);
-			Assert.Equal(expectedFirstContent, firstLabel.ContentDigest);
+                        Multihash expectedFirstContent = _digestEngine.ComputeContentDigest(firstTape);
+                        Assert.Equal(expectedFirstContent, firstLabel.ContentDigest);
 
-			Multihash expectedFirstHead = ComputeSeriesHeadDigest(ComputeBaselineSeriesDigest(), expectedFirstContent);
-			Assert.Equal(expectedFirstHead, firstLabel.SeriesHeadDigest);
+                        Multihash baselineDigest = _digestEngine.ComputeBaseline();
+                        Multihash expectedFirstHead = _digestEngine.ComputeSeriesHeadDigest(baselineDigest, expectedFirstContent);
+                        Assert.Equal(expectedFirstHead, firstLabel.SeriesHeadDigest);
 
 			// Second tape should inherit parent from finalized firstContentDigest.
 			Assert.Equal(firstLabel.ContentDigest, secondLabel.SeriesParentDigest);
 
 			// Second tape just started; its content digest should still be baseline (we wrote only the *remainder* bits)
-			Multihash baselineDigest = ComputeBaselineSeriesDigest();
-			Assert.Equal(baselineDigest, secondLabel.ContentDigest);
+                        Assert.Equal(baselineDigest, secondLabel.ContentDigest);
 
 			// Its head, seeded from chain, should match the running head we carried forward:
 			Assert.Equal(expectedFirstHead, secondLabel.SeriesHeadDigest);
@@ -221,11 +223,11 @@ namespace BigRedProf.Data.Tape.Test
 			Code storedCheckpoint;
 			Assert.True(label.TryGetClientCheckpoint(out storedCheckpoint));
 			Assert.Equal(newCheckpoint, storedCheckpoint);
-			Multihash expectedContentDigest = ComputeContentDigest(tape);
-			Assert.Equal(expectedContentDigest, label.ContentDigest);
-			Multihash expectedParentDigest = ComputeBaselineSeriesDigest();
-			Assert.Equal(expectedParentDigest, label.SeriesParentDigest);
-			Multihash expectedHeadDigest = ComputeSeriesHeadDigest(expectedParentDigest, expectedContentDigest);
+                        Multihash expectedContentDigest = _digestEngine.ComputeContentDigest(tape);
+                        Assert.Equal(expectedContentDigest, label.ContentDigest);
+                        Multihash expectedParentDigest = _digestEngine.ComputeBaseline();
+                        Assert.Equal(expectedParentDigest, label.SeriesParentDigest);
+                        Multihash expectedHeadDigest = _digestEngine.ComputeSeriesHeadDigest(expectedParentDigest, expectedContentDigest);
 			Assert.Equal(expectedHeadDigest, label.SeriesHeadDigest);
 			Code refreshedCheckpoint = reopened.GetLatestCheckpoint();
 			Assert.Equal(newCheckpoint, refreshedCheckpoint);
@@ -412,47 +414,6 @@ namespace BigRedProf.Data.Tape.Test
 		//	Assert.Equal(new Code("1"), tape3Start);
 		//	player.EjectTape();
 		//}
-		#endregion
-
-		#region private functions
-		private static Multihash ComputeContentDigest(Tape tape)
-		{
-			if (tape == null)
-				throw new ArgumentNullException(nameof(tape));
-
-			int contentLength = tape.Position;
-			if (contentLength == 0)
-				return ComputeBaselineSeriesDigest();
-
-			TapePlayer player = new TapePlayer();
-			player.InsertTape(tape);
-			player.RewindOrFastForwardTo(0);
-			Code content = player.Play(contentLength);
-			return Multihash.FromCode(content, MultihashAlgorithm.SHA2_256);
-		}
-
-		private static Multihash ComputeBaselineSeriesDigest()
-		{
-			byte[] zeroBytes = new byte[1];
-			Code zeroCode = new Code(zeroBytes, 8);
-			return Multihash.FromCode(zeroCode, MultihashAlgorithm.SHA2_256);
-		}
-
-		private static Multihash ComputeSeriesHeadDigest(Multihash parentDigest, Multihash contentDigest)
-		{
-			if (parentDigest == null)
-				throw new ArgumentNullException(nameof(parentDigest));
-			if (contentDigest == null)
-				throw new ArgumentNullException(nameof(contentDigest));
-
-			byte[] parentBytes = parentDigest.Digest;
-			byte[] contentBytes = contentDigest.Digest;
-			byte[] combined = new byte[parentBytes.Length + contentBytes.Length];
-			Array.Copy(parentBytes, 0, combined, 0, parentBytes.Length);
-			Array.Copy(contentBytes, 0, combined, parentBytes.Length, contentBytes.Length);
-			Code combinedCode = new Code(combined);
-			return Multihash.FromCode(combinedCode, MultihashAlgorithm.SHA2_256);
-		}
-		#endregion
-	}
+                #endregion
+        }
 }

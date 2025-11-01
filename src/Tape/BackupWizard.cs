@@ -16,11 +16,11 @@ namespace BigRedProf.Data.Tape
 	public class BackupWizard
 	{
 		#region static fields
-		private const MultihashAlgorithm SeriesDigestAlgorithm = MultihashAlgorithm.SHA2_256;
-		private static readonly Multihash BaselineSeriesDigest = Multihash.FromCode(new Code(new byte[1], 8), SeriesDigestAlgorithm);
+		private const MultihashAlgorithm DefaultSeriesDigestAlgorithm = MultihashAlgorithm.SHA2_256;
 		#endregion
 
 		#region fields
+		private readonly ISeriesDigestEngine _digests;
 		private readonly Librarian _librarian;
 		private readonly Guid _seriesId;
 		private readonly string _seriesName;
@@ -41,6 +41,7 @@ namespace BigRedProf.Data.Tape
 		private BackupWizard(
 			Librarian librarian,
 			Guid seriesId,
+			ISeriesDigestEngine digests,
 			Tape currentTape,
 			string seriesName,
 			string seriesDescription,
@@ -52,6 +53,7 @@ namespace BigRedProf.Data.Tape
 			_librarian = librarian ?? throw new ArgumentNullException(nameof(librarian));
 			if (seriesId == Guid.Empty)
 				throw new ArgumentException("Series identifier cannot be empty.", nameof(seriesId));
+			_digests = digests ?? throw new ArgumentNullException(nameof(digests));
 			_currentTape = currentTape ?? throw new ArgumentNullException(nameof(currentTape));
 			_seriesId = seriesId;
 			_seriesName = seriesName ?? throw new ArgumentNullException(nameof(seriesName));
@@ -70,15 +72,15 @@ namespace BigRedProf.Data.Tape
 		#endregion
 
 		#region functions
-		public static BackupWizard CreateNew(TapeLibrary library, Guid seriesId, string seriesName, string seriesDescription)
+		public static BackupWizard CreateNew(TapeLibrary library, Guid seriesId, string seriesName, string seriesDescription, ISeriesDigestEngine? digestEngine = null)
 		{
 			if (library == null)
 				throw new ArgumentNullException(nameof(library));
 
-			return CreateNew(library.Librarian, seriesId, seriesName, seriesDescription);
+			return CreateNew(library.Librarian, seriesId, seriesName, seriesDescription, digestEngine);
 		}
 
-		public static BackupWizard CreateNew(Librarian librarian, Guid seriesId, string seriesName, string seriesDescription)
+		public static BackupWizard CreateNew(Librarian librarian, Guid seriesId, string seriesName, string seriesDescription, ISeriesDigestEngine? digestEngine = null)
 		{
 			if (librarian == null)
 				throw new ArgumentNullException(nameof(librarian));
@@ -91,36 +93,40 @@ namespace BigRedProf.Data.Tape
 			Guid tapeId = Guid.NewGuid();
 			Tape tape = Tape.CreateNew(librarian.TapeProvider, tapeId);
 
+			ISeriesDigestEngine engine = digestEngine ?? new SeriesDigestEngine(DefaultSeriesDigestAlgorithm);
+			Multihash baselineDigest = engine.ComputeBaseline();
+
 			TapeLabel label = tape.ReadLabel();
 			label = label.WithSeriesInfo(seriesId, seriesName, 1)
 				.WithName(seriesName)
 				.WithSeriesDescription(actualDescription)
-				.WithContentMultihash(BaselineSeriesDigest)
-				.WithSeriesParentMultihash(BaselineSeriesDigest)
-				.WithSeriesHeadMultihash(BaselineSeriesDigest);
+				.WithContentMultihash(baselineDigest)
+				.WithSeriesParentMultihash(baselineDigest)
+				.WithSeriesHeadMultihash(baselineDigest);
 			tape.WriteLabel(label);
 
 			return new BackupWizard(
 				librarian,
 				seriesId,
+				engine,
 				tape,
 				seriesName,
 				actualDescription,
 				1,
-				BaselineSeriesDigest,
-				BaselineSeriesDigest,
-				BaselineSeriesDigest);
+				baselineDigest,
+				baselineDigest,
+				baselineDigest);
 		}
 
-		public static BackupWizard OpenExisting(TapeLibrary library, Guid seriesId)
+		public static BackupWizard OpenExisting(TapeLibrary library, Guid seriesId, ISeriesDigestEngine? digestEngine = null)
 		{
 			if (library == null)
 				throw new ArgumentNullException(nameof(library));
 
-			return OpenExisting(library.Librarian, seriesId);
+			return OpenExisting(library.Librarian, seriesId, digestEngine);
 		}
 
-		public static BackupWizard OpenExisting(Librarian librarian, Guid seriesId)
+		public static BackupWizard OpenExisting(Librarian librarian, Guid seriesId, ISeriesDigestEngine? digestEngine = null)
 		{
 			if (librarian == null)
 				throw new ArgumentNullException(nameof(librarian));
@@ -131,6 +137,9 @@ namespace BigRedProf.Data.Tape
 			Tape latestTape = SelectLatestTape(tapes);
 			TapeLabel label = latestTape.ReadLabel();
 
+			ISeriesDigestEngine engine = digestEngine ?? new SeriesDigestEngine(DefaultSeriesDigestAlgorithm);
+			Multihash baselineDigest = engine.ComputeBaseline();
+
 			string seriesName = label.SeriesName;
 			string seriesDescription;
 			if (!label.TryGetSeriesDescription(out seriesDescription))
@@ -138,7 +147,7 @@ namespace BigRedProf.Data.Tape
 
 			Multihash parentDigest;
 			if (!label.TryGetTrait<Multihash>(CoreTrait.SeriesParentDigest, out parentDigest))
-				parentDigest = BaselineSeriesDigest;
+				parentDigest = baselineDigest;
 
 			Multihash headDigest;
 			if (!label.TryGetTrait<Multihash>(CoreTrait.SeriesHeadDigest, out headDigest))
@@ -146,13 +155,14 @@ namespace BigRedProf.Data.Tape
 
 			Multihash contentDigest;
 			if (!label.TryGetTrait<Multihash>(CoreTrait.ContentDigest, out contentDigest))
-				contentDigest = BaselineSeriesDigest;
+				contentDigest = baselineDigest;
 
 			int seriesNumber = label.SeriesNumber;
 
 			return new BackupWizard(
 				librarian,
 				seriesId,
+				engine,
 				latestTape,
 				seriesName,
 				seriesDescription,
@@ -196,11 +206,11 @@ namespace BigRedProf.Data.Tape
 			label = ApplySeriesMetadata(label);
 
 			Multihash contentDigest = _isTapeContentDirty
-				? ComputeContentDigest(_currentTape)
+				? _digests.ComputeContentDigest(_currentTape)
 				: _currentTapeContentDigest;
 
 			Multihash seriesHeadDigest = _isTapeContentDirty
-				? ComputeSeriesHeadDigest(_seriesParentDigest, contentDigest)
+				? _digests.ComputeSeriesHeadDigest(_seriesParentDigest, contentDigest)
 				: _currentSeriesHeadDigest;
 
 			label = label
@@ -243,12 +253,12 @@ namespace BigRedProf.Data.Tape
 			if (_codeWriter != null)
 				return _codeWriter;
 
-			var stream = new TapeSeriesStream(_librarian, _seriesId, TapeSeriesStream.OpenMode.Append);
+			TapeSeriesStream stream = new TapeSeriesStream(_librarian, _seriesId, TapeSeriesStream.OpenMode.Append);
 			// Subscribe to tape changes and reactively finalize/seed labels.
 			stream.CurrentTapeChanged += OnCurrentTapeChanged;
 
-			var trackingStream = new DirtyTrackingStream(this, stream);
-			var writer = new WizardCodeWriter(this, trackingStream);
+			DirtyTrackingStream trackingStream = new DirtyTrackingStream(this, stream);
+			WizardCodeWriter writer = new WizardCodeWriter(this, trackingStream);
 			_seriesStream = stream;
 			_codeWriter = writer;
 			return writer;
@@ -260,43 +270,11 @@ namespace BigRedProf.Data.Tape
 			// but in practice rollover only fires after we had a current tape.
 			if (e.FinishedTape != null)
 			{
-				// Finalize finished tape’s digests
-				Multihash finishedContent = ComputeContentDigest(e.FinishedTape);
-				Multihash finishedHead = ComputeSeriesHeadDigest(_seriesParentDigest, finishedContent);
+				Multihash finishedContent = _digests.ComputeContentDigest(e.FinishedTape);
+				Multihash finishedHead = _digests.ComputeSeriesHeadDigest(_seriesParentDigest, finishedContent);
+				.WithContentMultihash(_digests.ComputeBaseline())
 
-				TapeLabel finishedLabel = e.FinishedTape.ReadLabel();
-				finishedLabel = ApplySeriesMetadata(finishedLabel)
-					.WithContentMultihash(finishedContent)
-					.WithSeriesParentMultihash(_seriesParentDigest)
-					.WithSeriesHeadMultihash(finishedHead);
-				e.FinishedTape.WriteLabel(finishedLabel);
-
-				// Advance chain state for the new tape
-				_seriesParentDigest = finishedContent;
-				_currentSeriesHeadDigest = finishedHead;
-			}
-
-			// Switch to new tape and seed its label
-			_currentTape = e.NewTape;
-			TapeLabel newLabel = e.NewTape.ReadLabel();
-			_currentSeriesNumber = newLabel.SeriesNumber;
-
-			TapeLabel seeded = ApplySeriesMetadata(newLabel)
-				.WithContentMultihash(BaselineSeriesDigest)
-				.WithSeriesParentMultihash(_seriesParentDigest)
-				.WithSeriesHeadMultihash(_currentSeriesHeadDigest);
-			_currentTape.WriteLabel(seeded);
-
-			_currentTapeContentDigest = BaselineSeriesDigest;
-			_isTapeContentDirty = false;
-		}
-
-		private void MarkTapeContentDirty()
-		{
-			_isTapeContentDirty = true;
-			// No polling here; rollover handled by event.
-		}
-
+			_currentTapeContentDigest = _digests.ComputeBaseline();
 		private void OnWriterDisposed()
 		{
 			if (_seriesStream != null)
