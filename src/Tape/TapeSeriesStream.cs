@@ -45,7 +45,7 @@ namespace BigRedProf.Data.Tape
 
 		private readonly List<Tape> _orderedTapes;
 		private int _currentIndex;
-		private TapeCursor _current;
+		private TapeCursor _current = null!;
 
 		// Pending partial-byte flush buffering (to disambiguate Align vs Dispose semantics)
 		private bool _hasPendingPartial;
@@ -292,8 +292,19 @@ namespace BigRedProf.Data.Tape
 				}
 
 				int capacityBits = Tape.MaxContentLength - _current.BitPosition;
+				bool writerFlushingPartial = OffsetIntoCurrentByte > 0 && OffsetIntoCurrentByte < 8;
 				if (capacityBits <= 0)
 				{
+					if (writerFlushingPartial && count > 0)
+					{
+						_pendingByte = buffer[offset];
+						_pendingBits = OffsetIntoCurrentByte;
+						_hasPendingPartial = true;
+
+						offset += 1;
+						count -= 1;
+					}
+
 					RolloverAppendTape();
 					continue;
 				}
@@ -302,10 +313,9 @@ namespace BigRedProf.Data.Tape
 				int bytesToWrite = count < capacityBytes ? count : capacityBytes;
 
 				// Detect CodeWriter single-byte *partial* flush (1..7 bits).
-				bool isSingleByte = bytesToWrite == 1;
-				bool writerFlushingPartial = OffsetIntoCurrentByte > 0 && OffsetIntoCurrentByte < 8;
+				bool isSingleByteBuffer = count == 1;
 
-				if (isSingleByte && writerFlushingPartial)
+				if (isSingleByteBuffer && writerFlushingPartial)
 				{
 					// Buffer; don't advance tape yet. We'll decide later:
 					//  - Next Write() => treat as Align and commit as FULL BYTE.

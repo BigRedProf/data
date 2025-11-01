@@ -167,6 +167,14 @@ namespace BigRedProf.Data.Core
 		#region private methods
 		private void WriteCurrentByte()
 		{
+			IBitAwareStream bitAwareStream = _stream as IBitAwareStream;
+			if (bitAwareStream != null)
+			{
+				bitAwareStream.CurrentByte = _currentByte;
+				int meaningfulBits = _offsetIntoCurrentByte == 0 ? 8 : _offsetIntoCurrentByte;
+				bitAwareStream.OffsetIntoCurrentByte = meaningfulBits;
+			}
+
 			_stream.WriteByte(_currentByte);
 			_currentByte = 0;
 			_offsetIntoCurrentByte = 0;
