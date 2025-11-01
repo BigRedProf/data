@@ -1,5 +1,4 @@
-﻿// File: TapeSeriesStream.cs
-using BigRedProf.Data.Core;
+﻿using BigRedProf.Data.Core;
 using BigRedProf.Data.Core.Internal;
 using BigRedProf.Data.Tape.Internal;
 using System;
@@ -36,6 +35,18 @@ namespace BigRedProf.Data.Tape
 				BitPosition = bitPosition;
 			}
 		}
+
+		public sealed class RolloverEventArgs : EventArgs
+		{
+			public Tape FinishedTape { get; }
+			public Tape NewTape { get; }
+
+			public RolloverEventArgs(Tape finishedTape, Tape newTape)
+			{
+				FinishedTape = finishedTape ?? throw new ArgumentNullException(nameof(finishedTape));
+				NewTape = newTape ?? throw new ArgumentNullException(nameof(newTape));
+			}
+		}
 		#endregion
 
 		#region fields
@@ -56,18 +67,16 @@ namespace BigRedProf.Data.Tape
 		private bool _isDisposed;
 		#endregion
 
-		#region IBitAwareStream (maintained by CodeWriter during partial-byte writes)
-		public byte CurrentByte
-		{
-			get;
-			set;
-		}
+		#region events
+		/// <summary>
+		/// Raised after the stream rolls from the finished tape to a new current tape.
+		/// </summary>
+		public event EventHandler<RolloverEventArgs> CurrentTapeChanged;
+		#endregion
 
-		public int OffsetIntoCurrentByte
-		{
-			get;
-			set;
-		}
+		#region IBitAwareStream (maintained by CodeWriter during partial-byte writes)
+		public byte CurrentByte { get; set; }
+		public int OffsetIntoCurrentByte { get; set; }
 		#endregion
 
 		#region construction
@@ -90,13 +99,7 @@ namespace BigRedProf.Data.Tape
 			{
 				TapeLabel la = a.ReadLabel();
 				TapeLabel lb = b.ReadLabel();
-				int na = la.SeriesNumber;
-				int nb = lb.SeriesNumber;
-				if (na < nb)
-					return -1;
-				if (na > nb)
-					return 1;
-				return 0;
+				return la.SeriesNumber.CompareTo(lb.SeriesNumber);
 			});
 
 			switch (mode)
@@ -154,48 +157,16 @@ namespace BigRedProf.Data.Tape
 		#endregion
 
 		#region Stream capability properties
-		public override bool CanRead
-		{
-			get
-			{
-				return _mode == OpenMode.Read;
-			}
-		}
+		public override bool CanRead => _mode == OpenMode.Read;
+		public override bool CanSeek => false;
+		public override bool CanWrite => _mode == OpenMode.Append;
 
-		public override bool CanSeek
-		{
-			get
-			{
-				return false;
-			}
-		}
-
-		public override bool CanWrite
-		{
-			get
-			{
-				return _mode == OpenMode.Append;
-			}
-		}
-
-		public override long Length
-		{
-			get
-			{
-				throw new NotSupportedException();
-			}
-		}
+		public override long Length => throw new NotSupportedException();
 
 		public override long Position
 		{
-			get
-			{
-				throw new NotSupportedException();
-			}
-			set
-			{
-				throw new NotSupportedException();
-			}
+			get => throw new NotSupportedException();
+			set => throw new NotSupportedException();
 		}
 		#endregion
 
@@ -228,7 +199,7 @@ namespace BigRedProf.Data.Tape
 				int maxBytesFromBits = bitsRemaining / 8;
 				bool hasPartialTail = (bitsRemaining % 8) != 0;
 
-				int bytesToRead = count < maxBytesFromBits ? count : maxBytesFromBits;
+				int bytesToRead = Math.Min(count, maxBytesFromBits);
 				if (bytesToRead > 0)
 				{
 					Code code = TapeHelper.ReadContent(_current.Tape, _current.BitPosition, bytesToRead * 8);
@@ -283,9 +254,8 @@ namespace BigRedProf.Data.Tape
 			{
 				EnsureWritableTape();
 
-				// If we have a pending partial byte (from a prior Align/Dispose-triggered flush),
-				// and new data is now being written, treat the pending as an ALIGNMENT:
-				// finalize it as a FULL BYTE (pad zeros) before handling the new bytes.
+				// If we have a pending partial byte and new data arrives, treat the pending as ALIGN:
+				// commit as a FULL BYTE (pad zeros) before proceeding.
 				if (_hasPendingPartial)
 				{
 					CommitPendingAsFullByte();
@@ -299,7 +269,7 @@ namespace BigRedProf.Data.Tape
 				}
 
 				int capacityBytes = capacityBits / 8;
-				int bytesToWrite = count < capacityBytes ? count : capacityBytes;
+				int bytesToWrite = Math.Min(count, capacityBytes);
 
 				// Detect CodeWriter single-byte *partial* flush (1..7 bits).
 				bool isSingleByte = bytesToWrite == 1;
@@ -307,17 +277,15 @@ namespace BigRedProf.Data.Tape
 
 				if (isSingleByte && writerFlushingPartial)
 				{
-					// Buffer; don't advance tape yet. We'll decide later:
-					//  - Next Write() => treat as Align and commit as FULL BYTE.
-					//  - Dispose() with no further writes => commit only the meaningful bits.
+					// Buffer; don't advance tape yet.
+					// Next Write() => treat as Align and commit as FULL BYTE.
+					// Dispose() with no further writes => commit only meaningful bits.
 					_pendingByte = buffer[offset];
 					_pendingBits = OffsetIntoCurrentByte;
 					_hasPendingPartial = true;
 
 					offset += 1;
 					count -= 1;
-
-					// Do not PersistTapePosition() here (nothing committed yet).
 					continue;
 				}
 
@@ -338,7 +306,7 @@ namespace BigRedProf.Data.Tape
 					continue;
 				}
 
-				// No whole bytes fit, but there are bits left and we still have buffer.
+				// No whole bytes fit, but we still have bits to write.
 				if (capacityBits > 0 && count > 0)
 				{
 					byte current = buffer[offset];
@@ -362,7 +330,8 @@ namespace BigRedProf.Data.Tape
 					{
 						byte remainder = (byte)(current >> bitsToWrite);
 
-						RolloverAppendTape();
+						Tape finished = _current.Tape;
+						RolloverAppendTape(); // raises event after we switch
 
 						Code remainderCode = UnpackPartialByteToCode(remainder, remainingBits);
 						TapeHelper.WriteContent(_current.Tape, remainderCode, _current.BitPosition, 0, remainingBits);
@@ -393,15 +362,8 @@ namespace BigRedProf.Data.Tape
 		#endregion
 
 		#region Seek/SetLength not supported
-		public override long Seek(long offset, SeekOrigin origin)
-		{
-			throw new NotSupportedException();
-		}
-
-		public override void SetLength(long value)
-		{
-			throw new NotSupportedException();
-		}
+		public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+		public override void SetLength(long value) => throw new NotSupportedException();
 		#endregion
 
 		#region disposal
@@ -458,6 +420,8 @@ namespace BigRedProf.Data.Tape
 
 		private void RolloverAppendTape()
 		{
+			Tape finished = _current?.Tape;
+
 			Guid newId = Guid.NewGuid();
 			Tape newTape = Tape.CreateNew(_librarian.TapeProvider, newId);
 
@@ -481,6 +445,9 @@ namespace BigRedProf.Data.Tape
 			OffsetIntoCurrentByte = 0;
 
 			_hasRolloverPending = true;
+
+			// Notify listeners that we moved to a new tape.
+			CurrentTapeChanged?.Invoke(this, new RolloverEventArgs(finished, newTape));
 		}
 
 		private void PersistTapePosition()
@@ -490,8 +457,8 @@ namespace BigRedProf.Data.Tape
 		}
 		#endregion
 
-
 		#region internal methods
+		[Obsolete("Use CurrentTapeChanged event instead.")]
 		internal bool TryConsumeRolloverFlag()
 		{
 			if (!_hasRolloverPending)
@@ -501,13 +468,13 @@ namespace BigRedProf.Data.Tape
 			return true;
 		}
 		#endregion
+
 		#region helpers (pending commit)
 		private void CommitPendingAsFullByte()
 		{
 			if (!_hasPendingPartial)
 				return;
 
-			// Commit the byte as a full 8-bit (pad zeros for the high bits).
 			Code full = new Code(new byte[] { _pendingByte });
 			TapeHelper.WriteContent(_current.Tape, full, _current.BitPosition, 0, 8);
 
@@ -537,9 +504,6 @@ namespace BigRedProf.Data.Tape
 		#endregion
 
 		#region helpers (byte/bit pack/unpack)
-		private static CopyCodeToBufferDelegate _copyCodeToBufferDelegate = CopyCodeToBuffer;
-		private delegate void CopyCodeToBufferDelegate(Code code, byte[] buffer, int offset, int byteCount);
-
 		private static void CopyCodeToBuffer(Code code, byte[] buffer, int offset, int byteCount)
 		{
 			byte[] bytes = code.ToByteArray();
