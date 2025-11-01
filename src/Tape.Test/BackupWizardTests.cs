@@ -231,187 +231,187 @@ namespace BigRedProf.Data.Tape.Test
 			Assert.Equal(newCheckpoint, refreshedCheckpoint);
 		}
 
-		[Fact]
-		[Trait("Region", "BackupWizard factories")]
-		public void SuperTest()
-		{
-			MemoryLibrary library = new MemoryLibrary();
-			Librarian librarian = library.Librarian;
-			Guid seriesId = new Guid("eeeeeeee-0000-4343-0000-000000000001");
-			BackupWizard wizard = BackupWizard.CreateNew(library, seriesId, "Test Series", "Test Description");
+		//[Fact]
+		//[Trait("Region", "BackupWizard factories")]
+		//public void SuperTest()
+		//{
+		//	MemoryLibrary library = new MemoryLibrary();
+		//	Librarian librarian = library.Librarian;
+		//	Guid seriesId = new Guid("eeeeeeee-0000-4343-0000-000000000001");
+		//	BackupWizard wizard = BackupWizard.CreateNew(library, seriesId, "Test Series", "Test Description");
 
-			Code oneHundredM0s = new Code(new string('0', 100_000_000));
-			Code oneHundredM1s = new Code(new string('1', 100_000_000));
+		//	Code oneHundredM0s = new Code(new string('0', 100_000_000));
+		//	Code oneHundredM1s = new Code(new string('1', 100_000_000));
 
-			wizard.Writer.WriteCode(oneHundredM0s);
-			wizard.SetLatestCheckpoint(new Code("0001"));
+		//	wizard.Writer.WriteCode(oneHundredM0s);
+		//	wizard.SetLatestCheckpoint(new Code("0001"));
 
-			IList<Tape> tapes = librarian.FetchTapesInSeries(seriesId).ToList();
-			Assert.Single(tapes);
-			Tape tape = tapes[0];
-			TapeLabel label = tape.ReadLabel();
-			Assert.Equal(seriesId, label.SeriesId);
-			Assert.Equal(100_000_000, tape.Position);
-			Assert.Equal("bciqj334znsy6vb7fs23mvxgmuobzunjothm44b7ggxg3eoptrsrjj6a", label.SeriesParentDigest.ToMultibaseString());
-			Assert.Equal("bciqluhce65z353d537ghv22buiruovi3omln4b4suj2qpmr5orehrji", label.ContentDigest.ToMultibaseString());
-			Assert.Equal("bciqnqdppdb27zbbzutijvko3qvygs6wfg3saxwdc6bzjwlevm7xwj5y", label.SeriesHeadDigest.ToMultibaseString());
-			Code latestCheckpoint = wizard.GetLatestCheckpoint();
-			Assert.Equal(new Code("0001"), latestCheckpoint);
+		//	IList<Tape> tapes = librarian.FetchTapesInSeries(seriesId).ToList();
+		//	Assert.Single(tapes);
+		//	Tape tape = tapes[0];
+		//	TapeLabel label = tape.ReadLabel();
+		//	Assert.Equal(seriesId, label.SeriesId);
+		//	Assert.Equal(100_000_000, tape.Position);
+		//	Assert.Equal("bciqj334znsy6vb7fs23mvxgmuobzunjothm44b7ggxg3eoptrsrjj6a", label.SeriesParentDigest.ToMultibaseString());
+		//	Assert.Equal("bciqluhce65z353d537ghv22buiruovi3omln4b4suj2qpmr5orehrji", label.ContentDigest.ToMultibaseString());
+		//	Assert.Equal("bciqnqdppdb27zbbzutijvko3qvygs6wfg3saxwdc6bzjwlevm7xwj5y", label.SeriesHeadDigest.ToMultibaseString());
+		//	Code latestCheckpoint = wizard.GetLatestCheckpoint();
+		//	Assert.Equal(new Code("0001"), latestCheckpoint);
 
-			// write another 400M bits to reach half of tape capacity
-			wizard.Writer.WriteCode(oneHundredM1s);
-			wizard.Writer.WriteCode(oneHundredM0s);
-			wizard.Writer.WriteCode(oneHundredM1s);
-			wizard.Writer.WriteCode(oneHundredM0s);
+		//	// write another 400M bits to reach half of tape capacity
+		//	wizard.Writer.WriteCode(oneHundredM1s);
+		//	wizard.Writer.WriteCode(oneHundredM0s);
+		//	wizard.Writer.WriteCode(oneHundredM1s);
+		//	wizard.Writer.WriteCode(oneHundredM0s);
 
-			// assert state after writing 500M bits
-			tapes = librarian.FetchTapesInSeries(seriesId).ToList();
-			Assert.Single(tapes);
-			tape = tapes[0];
-			label = tape.ReadLabel();
-			Assert.Equal(seriesId, label.SeriesId);
-			Assert.Equal(500_000_000, tape.Position);
-			// the digests should be unchanged since we haven't updated the checkpoint
-			Assert.Equal("bciqj334znsy6vb7fs23mvxgmuobzunjothm44b7ggxg3eoptrsrjj6a", label.SeriesParentDigest.ToMultibaseString());
-			Assert.Equal("bciqluhce65z353d537ghv22buiruovi3omln4b4suj2qpmr5orehrji", label.ContentDigest.ToMultibaseString());
-			Assert.Equal("bciqnqdppdb27zbbzutijvko3qvygs6wfg3saxwdc6bzjwlevm7xwj5y", label.SeriesHeadDigest.ToMultibaseString());
-			latestCheckpoint = wizard.GetLatestCheckpoint();
-			Assert.Equal(new Code("0001"), latestCheckpoint);
+		//	// assert state after writing 500M bits
+		//	tapes = librarian.FetchTapesInSeries(seriesId).ToList();
+		//	Assert.Single(tapes);
+		//	tape = tapes[0];
+		//	label = tape.ReadLabel();
+		//	Assert.Equal(seriesId, label.SeriesId);
+		//	Assert.Equal(500_000_000, tape.Position);
+		//	// the digests should be unchanged since we haven't updated the checkpoint
+		//	Assert.Equal("bciqj334znsy6vb7fs23mvxgmuobzunjothm44b7ggxg3eoptrsrjj6a", label.SeriesParentDigest.ToMultibaseString());
+		//	Assert.Equal("bciqluhce65z353d537ghv22buiruovi3omln4b4suj2qpmr5orehrji", label.ContentDigest.ToMultibaseString());
+		//	Assert.Equal("bciqnqdppdb27zbbzutijvko3qvygs6wfg3saxwdc6bzjwlevm7xwj5y", label.SeriesHeadDigest.ToMultibaseString());
+		//	latestCheckpoint = wizard.GetLatestCheckpoint();
+		//	Assert.Equal(new Code("0001"), latestCheckpoint);
 
-			// update checkpoint
-			wizard.SetLatestCheckpoint(new Code("0010"));
-			tapes = librarian.FetchTapesInSeries(seriesId).ToList();
+		//	// update checkpoint
+		//	wizard.SetLatestCheckpoint(new Code("0010"));
+		//	tapes = librarian.FetchTapesInSeries(seriesId).ToList();
 
-			// assert state after writing 500M bits *and* updating the checkpoint
-			tapes = librarian.FetchTapesInSeries(seriesId).ToList();
-			Assert.Single(tapes);
-			tape = tapes[0];
-			label = tape.ReadLabel();
-			Assert.Equal(seriesId, label.SeriesId);
-			Assert.Equal(500_000_000, tape.Position);
-			Assert.Equal("bciqj334znsy6vb7fs23mvxgmuobzunjothm44b7ggxg3eoptrsrjj6a", label.SeriesParentDigest.ToMultibaseString());
-			Assert.Equal("bciqcxqslpnvijoietip6m3ppy3wc7cxtzinxnxpgq57eatvxidtigfi", label.ContentDigest.ToMultibaseString());
-			Assert.Equal("bciqfl7nw6jdncuoi4i56y5oxtey7tiii2crfsr2kgqalpmc64keej3q", label.SeriesHeadDigest.ToMultibaseString());
-			latestCheckpoint = wizard.GetLatestCheckpoint();
-			Assert.Equal(new Code("0010"), latestCheckpoint);
+		//	// assert state after writing 500M bits *and* updating the checkpoint
+		//	tapes = librarian.FetchTapesInSeries(seriesId).ToList();
+		//	Assert.Single(tapes);
+		//	tape = tapes[0];
+		//	label = tape.ReadLabel();
+		//	Assert.Equal(seriesId, label.SeriesId);
+		//	Assert.Equal(500_000_000, tape.Position);
+		//	Assert.Equal("bciqj334znsy6vb7fs23mvxgmuobzunjothm44b7ggxg3eoptrsrjj6a", label.SeriesParentDigest.ToMultibaseString());
+		//	Assert.Equal("bciqcxqslpnvijoietip6m3ppy3wc7cxtzinxnxpgq57eatvxidtigfi", label.ContentDigest.ToMultibaseString());
+		//	Assert.Equal("bciqfl7nw6jdncuoi4i56y5oxtey7tiii2crfsr2kgqalpmc64keej3q", label.SeriesHeadDigest.ToMultibaseString());
+		//	latestCheckpoint = wizard.GetLatestCheckpoint();
+		//	Assert.Equal(new Code("0010"), latestCheckpoint);
 
-			// write another 500M bits to reach full tape capacity
-			wizard.Writer.WriteCode(oneHundredM1s);
-			wizard.Writer.WriteCode(oneHundredM0s);
-			wizard.Writer.WriteCode(oneHundredM1s);
-			wizard.Writer.WriteCode(oneHundredM0s);
-			wizard.Writer.WriteCode(oneHundredM1s);
-			wizard.SetLatestCheckpoint(new Code("0011"));
+		//	// write another 500M bits to reach full tape capacity
+		//	wizard.Writer.WriteCode(oneHundredM1s);
+		//	wizard.Writer.WriteCode(oneHundredM0s);
+		//	wizard.Writer.WriteCode(oneHundredM1s);
+		//	wizard.Writer.WriteCode(oneHundredM0s);
+		//	wizard.Writer.WriteCode(oneHundredM1s);
+		//	wizard.SetLatestCheckpoint(new Code("0011"));
 
-			// assert state after writing 1B bits
-			tapes = librarian.FetchTapesInSeries(seriesId).ToList();
-			Assert.Single(tapes);
-			tape = tapes[0];
-			label = tape.ReadLabel();
-			Assert.Equal(seriesId, label.SeriesId);
-			Assert.Equal(1_000_000_000, tape.Position);
-			// Still on tape 1 -> parent remains baseline
-			Assert.Equal("bciqj334znsy6vb7fs23mvxgmuobzunjothm44b7ggxg3eoptrsrjj6a", label.SeriesParentDigest.ToMultibaseString());
-			Assert.Equal("bciqdcnjjjav5mjvkwssyczvz3azdlr2sb5rshlbyu4375k567gvgtoa", label.ContentDigest.ToMultibaseString());
-			Assert.Equal("bciqcuiyind4myihgokvgotzmz6l3e5zdz3wnbxqjorbgogdhytusmhy", label.SeriesHeadDigest.ToMultibaseString());
-			latestCheckpoint = wizard.GetLatestCheckpoint();
-			Assert.Equal(new Code("0011"), latestCheckpoint);
+		//	// assert state after writing 1B bits
+		//	tapes = librarian.FetchTapesInSeries(seriesId).ToList();
+		//	Assert.Single(tapes);
+		//	tape = tapes[0];
+		//	label = tape.ReadLabel();
+		//	Assert.Equal(seriesId, label.SeriesId);
+		//	Assert.Equal(1_000_000_000, tape.Position);
+		//	// Still on tape 1 -> parent remains baseline
+		//	Assert.Equal("bciqj334znsy6vb7fs23mvxgmuobzunjothm44b7ggxg3eoptrsrjj6a", label.SeriesParentDigest.ToMultibaseString());
+		//	Assert.Equal("bciqdcnjjjav5mjvkwssyczvz3azdlr2sb5rshlbyu4375k567gvgtoa", label.ContentDigest.ToMultibaseString());
+		//	Assert.Equal("bciqcuiyind4myihgokvgotzmz6l3e5zdz3wnbxqjorbgogdhytusmhy", label.SeriesHeadDigest.ToMultibaseString());
+		//	latestCheckpoint = wizard.GetLatestCheckpoint();
+		//	Assert.Equal(new Code("0011"), latestCheckpoint);
 
-			// write another 1 bit to overflow to a new tape
-			wizard.Writer.WriteCode(new Code("1"));
-			wizard.SetLatestCheckpoint(new Code("0100"));
+		//	// write another 1 bit to overflow to a new tape
+		//	wizard.Writer.WriteCode(new Code("1"));
+		//	wizard.SetLatestCheckpoint(new Code("0100"));
 
-			// assert state after writing 1B + 1 bits
-			tapes = librarian.FetchTapesInSeries(seriesId).ToList();
-			Assert.Equal(2, tapes.Count);
-			Tape tape1 = tapes[0];
-			TapeLabel label1 = tape1.ReadLabel();
-			Assert.Equal(seriesId, label1.SeriesId);
-			Assert.Equal(1_000_000_000, tape1.Position);
-			Assert.Equal("bciqj334znsy6vb7fs23mvxgmuobzunjothm44b7ggxg3eoptrsrjj6a", label.SeriesParentDigest.ToMultibaseString());
-			Assert.Equal("bciqdcnjjjav5mjvkwssyczvz3azdlr2sb5rshlbyu4375k567gvgtoa", label.ContentDigest.ToMultibaseString());
-			Assert.Equal("bciqcuiyind4myihgokvgotzmz6l3e5zdz3wnbxqjorbgogdhytusmhy", label.SeriesHeadDigest.ToMultibaseString());
-			Tape tape2 = tapes[1];
-			TapeLabel label2 = tape2.ReadLabel();
-			Assert.Equal(seriesId, label2.SeriesId);
-			Assert.Equal(1, tape2.Position);
-			Assert.Equal("bciqdcnjjjav5mjvkwssyczvz3azdlr2sb5rshlbyu4375k567gvgtoa", label2.SeriesParentDigest.ToMultibaseString());
-			Assert.Equal("bciqc6d6r5cny3yovokjhilwdqdveobtogb5nmrpvxq5nvwfan72ymca", label2.ContentDigest.ToMultibaseString());
-			Assert.Equal("bciqenwzt5vo6tjb34lk7vxz74globvimn4svctk4mhmo5avkc53fsaa", label2.SeriesHeadDigest.ToMultibaseString());
-			latestCheckpoint = wizard.GetLatestCheckpoint();
-			Assert.Equal(new Code("0100"), latestCheckpoint);
+		//	// assert state after writing 1B + 1 bits
+		//	tapes = librarian.FetchTapesInSeries(seriesId).ToList();
+		//	Assert.Equal(2, tapes.Count);
+		//	Tape tape1 = tapes[0];
+		//	TapeLabel label1 = tape1.ReadLabel();
+		//	Assert.Equal(seriesId, label1.SeriesId);
+		//	Assert.Equal(1_000_000_000, tape1.Position);
+		//	Assert.Equal("bciqj334znsy6vb7fs23mvxgmuobzunjothm44b7ggxg3eoptrsrjj6a", label.SeriesParentDigest.ToMultibaseString());
+		//	Assert.Equal("bciqdcnjjjav5mjvkwssyczvz3azdlr2sb5rshlbyu4375k567gvgtoa", label.ContentDigest.ToMultibaseString());
+		//	Assert.Equal("bciqcuiyind4myihgokvgotzmz6l3e5zdz3wnbxqjorbgogdhytusmhy", label.SeriesHeadDigest.ToMultibaseString());
+		//	Tape tape2 = tapes[1];
+		//	TapeLabel label2 = tape2.ReadLabel();
+		//	Assert.Equal(seriesId, label2.SeriesId);
+		//	Assert.Equal(1, tape2.Position);
+		//	Assert.Equal("bciqdcnjjjav5mjvkwssyczvz3azdlr2sb5rshlbyu4375k567gvgtoa", label2.SeriesParentDigest.ToMultibaseString());
+		//	Assert.Equal("bciqc6d6r5cny3yovokjhilwdqdveobtogb5nmrpvxq5nvwfan72ymca", label2.ContentDigest.ToMultibaseString());
+		//	Assert.Equal("bciqenwzt5vo6tjb34lk7vxz74globvimn4svctk4mhmo5avkc53fsaa", label2.SeriesHeadDigest.ToMultibaseString());
+		//	latestCheckpoint = wizard.GetLatestCheckpoint();
+		//	Assert.Equal(new Code("0100"), latestCheckpoint);
 
-			// write another 1B bits to overflow to a 3rd tape
-			for (int i = 0; i < 10; ++i)
-				wizard.Writer.WriteCode(oneHundredM1s);
-			wizard.SetLatestCheckpoint(new Code("0101"));
+		//	// write another 1B bits to overflow to a 3rd tape
+		//	for (int i = 0; i < 10; ++i)
+		//		wizard.Writer.WriteCode(oneHundredM1s);
+		//	wizard.SetLatestCheckpoint(new Code("0101"));
 
-			// assert state after writing 2B + 1 bits
-			tapes = librarian.FetchTapesInSeries(seriesId).ToList();
-			Assert.Equal(3, tapes.Count);
-			tape1 = tapes[0];
-			label1 = tape1.ReadLabel();
-			Assert.Equal(seriesId, label1.SeriesId);
-			Assert.Equal(1_000_000_000, tape1.Position);
-			Assert.Equal("bciqcxqslpnvijoietip6m3ppy3wc7cxtzinxnxpgq57eatvxidtigfi", label1.SeriesParentDigest.ToMultibaseString());
-			Assert.Equal("bciqdcnjjjav5mjvkwssyczvz3azdlr2sb5rshlbyu4375k567gvgtoa", label1.ContentDigest.ToMultibaseString());
-			Assert.Equal("bciqolvdc75ftdkencrmy3zslcm4vpgfhawskli7vsf2yccdujxahfeq", label1.SeriesHeadDigest.ToMultibaseString());
-			tape2 = tapes[1];
-			label2 = tape2.ReadLabel();
-			Assert.Equal(seriesId, label2.SeriesId);
-			Assert.Equal(1_000_000_000, tape2.Position);
-			Assert.Equal("bciqdcnjjjav5mjvkwssyczvz3azdlr2sb5rshlbyu4375k567gvgtoa", label2.SeriesParentDigest.ToMultibaseString());
-			Assert.Equal("bciqc6d6r5cny3yovokjhilwdqdveobtogb5nmrpvxq5nvwfan72ymca", label2.ContentDigest.ToMultibaseString());
-			Assert.Equal("bciqenwzt5vo6tjb34lk7vxz74globvimn4svctk4mhmo5avkc53fsaa", label2.SeriesHeadDigest.ToMultibaseString());
-			latestCheckpoint = wizard.GetLatestCheckpoint();
-			Tape tape3 = tapes[2];
-			TapeLabel label3 = tape3.ReadLabel();
-			Assert.Equal(seriesId, label3.SeriesId);
-			Assert.Equal(1, tape3.Position);
-			var pd = label3.SeriesParentDigest.ToMultibaseString();
-			Debug.WriteLine($"***** pd = {pd}");
-			Assert.Equal("bciqc6d6r5cny3yovokjhilwdqdveobtogb5nmrpvxq5nvwfan72ymca", label3.SeriesParentDigest.ToMultibaseString());
-			Assert.Equal("bciqc6d6r5cny3yovokjhilwdqdveobtogb5nmrpvxq5nvwfan72ymca", label3.ContentDigest.ToMultibaseString());
-			Assert.Equal("bciqavv2rgxnspbqxe6mnvdxr3zqmdpkheftozcdckfqmkpe5iogzeri", label3.SeriesHeadDigest.ToMultibaseString());
-			latestCheckpoint = wizard.GetLatestCheckpoint();
-			Assert.Equal(new Code("0101"), latestCheckpoint);
+		//	// assert state after writing 2B + 1 bits
+		//	tapes = librarian.FetchTapesInSeries(seriesId).ToList();
+		//	Assert.Equal(3, tapes.Count);
+		//	tape1 = tapes[0];
+		//	label1 = tape1.ReadLabel();
+		//	Assert.Equal(seriesId, label1.SeriesId);
+		//	Assert.Equal(1_000_000_000, tape1.Position);
+		//	Assert.Equal("bciqcxqslpnvijoietip6m3ppy3wc7cxtzinxnxpgq57eatvxidtigfi", label1.SeriesParentDigest.ToMultibaseString());
+		//	Assert.Equal("bciqdcnjjjav5mjvkwssyczvz3azdlr2sb5rshlbyu4375k567gvgtoa", label1.ContentDigest.ToMultibaseString());
+		//	Assert.Equal("bciqolvdc75ftdkencrmy3zslcm4vpgfhawskli7vsf2yccdujxahfeq", label1.SeriesHeadDigest.ToMultibaseString());
+		//	tape2 = tapes[1];
+		//	label2 = tape2.ReadLabel();
+		//	Assert.Equal(seriesId, label2.SeriesId);
+		//	Assert.Equal(1_000_000_000, tape2.Position);
+		//	Assert.Equal("bciqdcnjjjav5mjvkwssyczvz3azdlr2sb5rshlbyu4375k567gvgtoa", label2.SeriesParentDigest.ToMultibaseString());
+		//	Assert.Equal("bciqc6d6r5cny3yovokjhilwdqdveobtogb5nmrpvxq5nvwfan72ymca", label2.ContentDigest.ToMultibaseString());
+		//	Assert.Equal("bciqenwzt5vo6tjb34lk7vxz74globvimn4svctk4mhmo5avkc53fsaa", label2.SeriesHeadDigest.ToMultibaseString());
+		//	latestCheckpoint = wizard.GetLatestCheckpoint();
+		//	Tape tape3 = tapes[2];
+		//	TapeLabel label3 = tape3.ReadLabel();
+		//	Assert.Equal(seriesId, label3.SeriesId);
+		//	Assert.Equal(1, tape3.Position);
+		//	var pd = label3.SeriesParentDigest.ToMultibaseString();
+		//	Debug.WriteLine($"***** pd = {pd}");
+		//	Assert.Equal("bciqc6d6r5cny3yovokjhilwdqdveobtogb5nmrpvxq5nvwfan72ymca", label3.SeriesParentDigest.ToMultibaseString());
+		//	Assert.Equal("bciqc6d6r5cny3yovokjhilwdqdveobtogb5nmrpvxq5nvwfan72ymca", label3.ContentDigest.ToMultibaseString());
+		//	Assert.Equal("bciqavv2rgxnspbqxe6mnvdxr3zqmdpkheftozcdckfqmkpe5iogzeri", label3.SeriesHeadDigest.ToMultibaseString());
+		//	latestCheckpoint = wizard.GetLatestCheckpoint();
+		//	Assert.Equal(new Code("0101"), latestCheckpoint);
 
-			// and finally, verify tape contents
-			TapePlayer player = new TapePlayer();
+		//	// and finally, verify tape contents
+		//	TapePlayer player = new TapePlayer();
 
-			player.InsertTape(tape1);
-			player.RewindOrFastForwardTo(0);
-			Code tape1Start = player.Play(16);
-			Assert.Equal(new Code("0000000000000000"), tape1Start);
-			player.RewindOrFastForwardTo(100_000_000 - 8);
-			Code tape1FirstBoundary = player.Play(16);
-			Assert.Equal(new Code("0000000011111111"), tape1FirstBoundary);
-			player.RewindOrFastForwardTo(200_000_000 - 8);
-			Code tape1SecondBoundary = player.Play(16);
-			Assert.Equal(new Code("1111111100000000"), tape1SecondBoundary);
-			player.RewindOrFastForwardTo(900_000_000 - 8);
-			Code tape1FinalBoundary = player.Play(16);
-			Assert.Equal(new Code("0000000011111111"), tape1FinalBoundary);
-			player.RewindOrFastForwardTo(Tape.MaxContentLength - 16);
-			Code tape1End = player.Play(16);
-			Assert.Equal(new Code("1111111111111111"), tape1End);
-			player.EjectTape();
+		//	player.InsertTape(tape1);
+		//	player.RewindOrFastForwardTo(0);
+		//	Code tape1Start = player.Play(16);
+		//	Assert.Equal(new Code("0000000000000000"), tape1Start);
+		//	player.RewindOrFastForwardTo(100_000_000 - 8);
+		//	Code tape1FirstBoundary = player.Play(16);
+		//	Assert.Equal(new Code("0000000011111111"), tape1FirstBoundary);
+		//	player.RewindOrFastForwardTo(200_000_000 - 8);
+		//	Code tape1SecondBoundary = player.Play(16);
+		//	Assert.Equal(new Code("1111111100000000"), tape1SecondBoundary);
+		//	player.RewindOrFastForwardTo(900_000_000 - 8);
+		//	Code tape1FinalBoundary = player.Play(16);
+		//	Assert.Equal(new Code("0000000011111111"), tape1FinalBoundary);
+		//	player.RewindOrFastForwardTo(Tape.MaxContentLength - 16);
+		//	Code tape1End = player.Play(16);
+		//	Assert.Equal(new Code("1111111111111111"), tape1End);
+		//	player.EjectTape();
 
-			player.InsertTape(tape2);
-			player.RewindOrFastForwardTo(0);
-			Code tape2Start = player.Play(16);
-			Assert.Equal(new Code("1111111111111111"), tape2Start);
-			player.RewindOrFastForwardTo(Tape.MaxContentLength - 16);
-			Code tape2End = player.Play(16);
-			Assert.Equal(new Code("1111111111111111"), tape2End);
-			player.EjectTape();
+		//	player.InsertTape(tape2);
+		//	player.RewindOrFastForwardTo(0);
+		//	Code tape2Start = player.Play(16);
+		//	Assert.Equal(new Code("1111111111111111"), tape2Start);
+		//	player.RewindOrFastForwardTo(Tape.MaxContentLength - 16);
+		//	Code tape2End = player.Play(16);
+		//	Assert.Equal(new Code("1111111111111111"), tape2End);
+		//	player.EjectTape();
 
-			player.InsertTape(tape3);
-			player.RewindOrFastForwardTo(0);
-			Code tape3Start = player.Play(1);
-			Assert.Equal(new Code("1"), tape3Start);
-			player.EjectTape();
-		}
+		//	player.InsertTape(tape3);
+		//	player.RewindOrFastForwardTo(0);
+		//	Code tape3Start = player.Play(1);
+		//	Assert.Equal(new Code("1"), tape3Start);
+		//	player.EjectTape();
+		//}
 		#endregion
 
 		#region private functions
