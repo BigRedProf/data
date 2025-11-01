@@ -11,6 +11,10 @@ namespace BigRedProf.Data.Tape.Test
 {
 	public class BackupWizardTests
 	{
+		#region static fields
+		private static readonly ISeriesDigestEngine DigestEngine = new SeriesDigestEngine(MultihashAlgorithm.SHA2_256);
+		#endregion
+
 		#region unit tests
 		[Trait("Region", "BackupWizard factories")]
 		[Fact]
@@ -420,22 +424,12 @@ namespace BigRedProf.Data.Tape.Test
 			if (tape == null)
 				throw new ArgumentNullException(nameof(tape));
 
-			int contentLength = tape.Position;
-			if (contentLength == 0)
-				return ComputeBaselineSeriesDigest();
-
-			TapePlayer player = new TapePlayer();
-			player.InsertTape(tape);
-			player.RewindOrFastForwardTo(0);
-			Code content = player.Play(contentLength);
-			return Multihash.FromCode(content, MultihashAlgorithm.SHA2_256);
+			return DigestEngine.ComputeContentDigest(tape);
 		}
 
 		private static Multihash ComputeBaselineSeriesDigest()
 		{
-			byte[] zeroBytes = new byte[1];
-			Code zeroCode = new Code(zeroBytes, 8);
-			return Multihash.FromCode(zeroCode, MultihashAlgorithm.SHA2_256);
+			return DigestEngine.ComputeBaseline();
 		}
 
 		private static Multihash ComputeSeriesHeadDigest(Multihash parentDigest, Multihash contentDigest)
@@ -445,13 +439,7 @@ namespace BigRedProf.Data.Tape.Test
 			if (contentDigest == null)
 				throw new ArgumentNullException(nameof(contentDigest));
 
-			byte[] parentBytes = parentDigest.Digest;
-			byte[] contentBytes = contentDigest.Digest;
-			byte[] combined = new byte[parentBytes.Length + contentBytes.Length];
-			Array.Copy(parentBytes, 0, combined, 0, parentBytes.Length);
-			Array.Copy(contentBytes, 0, combined, parentBytes.Length, contentBytes.Length);
-			Code combinedCode = new Code(combined);
-			return Multihash.FromCode(combinedCode, MultihashAlgorithm.SHA2_256);
+			return DigestEngine.ComputeSeriesHeadDigest(parentDigest, contentDigest);
 		}
 		#endregion
 	}
