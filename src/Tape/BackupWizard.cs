@@ -31,6 +31,7 @@ namespace BigRedProf.Data.Tape
 			private Multihash _seriesParentDigest;
 			private Multihash _currentSeriesHeadDigest;
 			private Multihash _currentTapeContentDigest;
+			private Multihash _previousTapeContentDigest;
 			private bool _isTapeContentDirty;
 			private TapeSeriesStream? _seriesStream;
 			private CodeWriter? _codeWriter;
@@ -69,6 +70,7 @@ namespace BigRedProf.Data.Tape
 				_seriesParentDigest = seriesParentDigest;
 				_currentSeriesHeadDigest = currentSeriesHeadDigest;
 				_currentTapeContentDigest = currentTapeContentDigest;
+                                _previousTapeContentDigest = currentTapeContentDigest;
 				_isTapeContentDirty = false;
 				_latestTapeId = currentTape.Id;
 			}
@@ -238,6 +240,7 @@ namespace BigRedProf.Data.Tape
 
 				TapeLabel label = _currentTape.ReadLabel();
 				label = ApplySeriesMetadata(label);
+				_previousTapeContentDigest = _currentTapeContentDigest;
 				Multihash contentDigest;
 				if (_isTapeContentDirty)
 					contentDigest = ComputeContentDigest(_currentTape);
@@ -291,32 +294,35 @@ namespace BigRedProf.Data.Tape
 				if (_seriesStream != null)
 					hasRollover = _seriesStream.TryConsumeRolloverFlag();
 
-				// Fast path: no rollover and we’re already on the latest tape id we saw last time.
-				if (_seriesStream != null && !hasRollover && _currentTape.Id == _latestTapeId)
-					return;
+                                // We *did* roll over (or otherwise advanced to a new tape).
+                                // Finalize the *finished* tape first (the one we were just writing).
+                                Tape finishedTape = _currentTape;
 
-				// Always re-fetch latest to be safe.
-				IEnumerable<Tape> tapes = _librarian.FetchTapesInSeries(_seriesId);
-				Debug.Assert(tapes != null, "Fetched tapes collection must not be null.");
-				Tape latestTape = SelectLatestTape(tapes);
+				Multihash finishedContentDigest = _currentTapeContentDigest;
+				Debug.Assert(_previousTapeContentDigest != null, "Previous tape content digest must not be null.");
+				Multihash parentForFinished;
+				if (_currentSeriesNumber <= 1)
+					parentForFinished = _previousTapeContentDigest;
+				else
+					parentForFinished = _seriesParentDigest;
+				Multihash finishedHeadDigest = ComputeSeriesHeadDigest(parentForFinished, finishedContentDigest);
+                                // Persist those into the finished tape's label.
+                                {
+                                        TapeLabel finishedLabel = finishedTape.ReadLabel();
+                                        finishedLabel = ApplySeriesMetadata(finishedLabel)
+                                                .WithContentMultihash(finishedContentDigest)
+                                                .WithSeriesParentMultihash(parentForFinished)
+                                                .WithSeriesHeadMultihash(finishedHeadDigest);
+                                        finishedTape.WriteLabel(finishedLabel);
+                                }
 
-				if (!hasRollover && _currentTape.Id == latestTape.Id)
-				{
-					_latestTapeId = latestTape.Id;
-					return;
-				}
+                                _seriesParentDigest = finishedContentDigest;
+                                _previousTapeContentDigest = finishedContentDigest;
+                                _currentSeriesHeadDigest = finishedHeadDigest;
+				_previousTapeContentDigest = BaselineSeriesDigest;
+				_isTapeContentDirty = hasRollover || latestTape.Position > 0;
 
-				// We *did* roll over (or otherwise advanced to a new tape).
-				// Finalize the *finished* tape first (the one we were just writing).
-				Tape finishedTape = _currentTape;
-
-				// Compute real content digest of the finished tape.
-				Multihash finishedContentDigest = ComputeContentDigest(finishedTape);
-
-				// Compute the head digest for the finished tape.
-				Multihash finishedHeadDigest = ComputeSeriesHeadDigest(_seriesParentDigest, finishedContentDigest);
-
-				// Persist those into the finished tape’s label.
+				// Persist those into the finished tapeÂ’s label.
 				{
 					TapeLabel finishedLabel = finishedTape.ReadLabel();
 					finishedLabel = ApplySeriesMetadata(finishedLabel)
