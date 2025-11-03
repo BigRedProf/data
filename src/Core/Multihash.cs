@@ -1,4 +1,3 @@
-using BigRedProf.Data.Core.Internal.PackRats;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,10 +13,10 @@ namespace BigRedProf.Data.Core
 		HexLower
 	}
 
-	public class Multihash
+	[DebuggerDisplay("{_algorithm}:{DigestLength}b")]
+	public sealed class Multihash : IEquatable<Multihash>
 	{
 		#region static fields
-		private static readonly IPiedPiper _piedPiper = CreatePiedPiper();
 		private static readonly Dictionary<MultihashAlgorithm, uint> _algoToCode = new Dictionary<MultihashAlgorithm, uint>
 		{
 			{ MultihashAlgorithm.SHA2_256, Sha2_256Code }
@@ -37,13 +36,19 @@ namespace BigRedProf.Data.Core
 		#region constructors
 		internal Multihash(byte[] digest, MultihashAlgorithm algorithm)
 		{
-			_digest = digest ?? throw new ArgumentNullException(nameof(digest));
+			if (digest == null)
+				throw new ArgumentNullException(nameof(digest));
+
+			// defensive copy so callers can't mutate our internal state
+			_digest = (byte[])digest.Clone();
+
 			_algorithm = algorithm;
 		}
 		#endregion
 
 		#region properties
 		public byte[] Digest => (byte[])_digest.Clone();
+		public int DigestLength => _digest.Length;
 		public MultihashAlgorithm Algorithm => _algorithm;
 		#endregion
 
@@ -72,11 +77,11 @@ namespace BigRedProf.Data.Core
 		}
 		#endregion
 
-		#region object methdso
-		public override bool Equals(object obj) =>
-			obj is Multihash other &&
-			Algorithm == other.Algorithm &&
-			_digest.SequenceEqual(other._digest);
+		#region object methods
+		public override bool Equals(object obj)
+		{
+			return Equals(obj as Multihash);
+		}
 
 		public override int GetHashCode()
 		{
@@ -105,6 +110,33 @@ namespace BigRedProf.Data.Core
 				c[i * 2 + 1] = GetHexChar(b & 0xF);
 			}
 			return new string(c);
+		}
+		#endregion
+
+		#region IEquatable<Multihash> methods
+		public bool Equals(Multihash other)
+		{
+			if (ReferenceEquals(other, null)) return false;
+			if (ReferenceEquals(this, other)) return true;
+			return _algorithm == other._algorithm && _digest.SequenceEqual(other._digest);
+		}
+		#endregion
+
+		#region operator overloads
+		public static bool operator ==(Multihash a, Multihash b)
+		{
+			if (ReferenceEquals(a, b))
+				return true;
+
+			if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
+				return false;
+
+			return a.Equals(b);
+		}
+
+		public static bool operator !=(Multihash a, Multihash b)
+		{
+			return !(a == b);
 		}
 		#endregion
 
@@ -151,10 +183,10 @@ namespace BigRedProf.Data.Core
 		{
 			if (bytes1 == null)
 				throw new ArgumentNullException(nameof(bytes1));
-			
+
 			if (bytes2 == null)
 				throw new ArgumentNullException(nameof(bytes2));
-			
+
 			byte[] combined = new byte[bytes1.Length + bytes2.Length];
 			Buffer.BlockCopy(bytes1, 0, combined, 0, bytes1.Length);
 			Buffer.BlockCopy(bytes2, 0, combined, bytes1.Length, bytes2.Length);
@@ -227,7 +259,10 @@ namespace BigRedProf.Data.Core
 		public static bool TryParse(string text, out Multihash value)
 		{
 			if (text == null)
-				throw new ArgumentNullException(nameof(text));
+			{
+				value = null;
+				return false;
+			}
 
 			try
 			{
@@ -276,13 +311,6 @@ namespace BigRedProf.Data.Core
 		#endregion
 
 		#region private functions
-		private static IPiedPiper CreatePiedPiper()
-                {
-                        PiedPiper piper = new PiedPiper();
-                        piper.RegisterCorePackRats();
-                        return piper;
-                }
-
 		private static char GetHexChar(int val)
 		{
 			return (char)(val < 10 ? '0' + val : 'a' + (val - 10));
