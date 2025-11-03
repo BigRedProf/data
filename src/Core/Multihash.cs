@@ -1,3 +1,4 @@
+using BigRedProf.Data.Core.Internal.PackRats;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -110,13 +111,58 @@ namespace BigRedProf.Data.Core
 		#region functions
 		public static Multihash FromCode(Code code, MultihashAlgorithm algorithm)
 		{
+			// For byte-aligned codes, consider the hash of the raw bytes to be the hash. This is
+			// both elegant and efficient.
+			//
+			// For non-byte-aligned codes, we need to make sure to disambiguate codes with
+			// the same raw bytes by including the length but also make sure collisions aren't
+			// easy to manufacture. One way to do this is to hash the hash of the raw bytes
+			// with the hash of the length.
+
 			if (code == null)
 				throw new ArgumentNullException(nameof(code));
 
-			byte[] packedBytes = _piedPiper.SaveCodeToByteArray(code);
+			// Hash of raw packed bytes
+			byte[] rawBytes = code.ToByteArray();
+			byte[] digest = HashBytes(rawBytes, algorithm);
 
-			byte[] digest = HashBytes(packedBytes, algorithm);
-			return new Multihash(digest, algorithm);
+			// Byte-aligned: H(rawBytes)
+			if (code.Length % 8 == 0)
+				return new Multihash(digest, algorithm);
+
+			// Non-byte-aligned: H( H(rawBytes) || H(length_be_64) )
+			byte[] lengthBe = UInt64ToBigEndian((ulong)code.Length);
+			byte[] lengthDigest = HashBytes(lengthBe, algorithm);
+
+			return Combine(digest, lengthDigest, algorithm);
+		}
+
+		public static Multihash FromBytes(byte[] bytes, MultihashAlgorithm algorithm)
+		{
+			if (bytes == null)
+				throw new ArgumentNullException(nameof(bytes));
+
+			byte[] digest = HashBytes(bytes, algorithm);
+			Multihash result = new Multihash(digest, algorithm);
+			return result;
+		}
+
+		public static Multihash Combine(byte[] bytes1, byte[] bytes2, MultihashAlgorithm algorithm)
+		{
+			if (bytes1 == null)
+				throw new ArgumentNullException(nameof(bytes1));
+			
+			if (bytes2 == null)
+				throw new ArgumentNullException(nameof(bytes2));
+			
+			byte[] combined = new byte[bytes1.Length + bytes2.Length];
+			Buffer.BlockCopy(bytes1, 0, combined, 0, bytes1.Length);
+			Buffer.BlockCopy(bytes2, 0, combined, bytes1.Length, bytes2.Length);
+
+			byte[] digest = HashBytes(combined, algorithm);
+			Multihash result = new Multihash(digest, algorithm);
+
+			return result;
 		}
 
 		public static Multihash Parse(string text)
@@ -212,10 +258,25 @@ namespace BigRedProf.Data.Core
 					throw new NotImplementedException($"Algorithm '{algorithm}' is not implemented.");
 			}
 		}
+
+		private static byte[] UInt64ToBigEndian(ulong value)
+		{
+			// This method is a handy alternative to BitConverter.GetBytes because BitConverter
+			// returns little-endian byte arrays on little-endian systems but big-endian on 
+			// big-endian systems. We need a consistent representation across all systems.
+
+			byte[] bytes = new byte[8];
+			for (int i = 7; i >= 0; i--)
+			{
+				bytes[i] = (byte)(value & 0xFF);
+				value >>= 8;
+			}
+			return bytes;
+		}
 		#endregion
 
 		#region private functions
-                private static IPiedPiper CreatePiedPiper()
+		private static IPiedPiper CreatePiedPiper()
                 {
                         PiedPiper piper = new PiedPiper();
                         piper.RegisterCorePackRats();

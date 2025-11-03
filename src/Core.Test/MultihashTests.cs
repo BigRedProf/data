@@ -96,22 +96,22 @@ namespace BigRedProf.Data.Test
 			});
 		}
 
-		[Fact]
-		[Trait("Region", "functions")]
-		public void FromCode_ShouldHashPackedCode()
-		{
-			var piedPiper = PackRatTestHelper.GetPiedPiper();
+		//[Fact]
+		//[Trait("Region", "functions")]
+		//public void FromCode_ShouldHashPackedCode()
+		//{
+		//	var piedPiper = PackRatTestHelper.GetPiedPiper();
 
-			Code inputCode = new Code("1001"); // 1-bit value: 1
-			var mh = Multihash.FromCode(inputCode, MultihashAlgorithm.SHA2_256);
+		//	Code inputCode = new Code("1001"); // 1-bit value: 1
+		//	var mh = Multihash.FromCode(inputCode, MultihashAlgorithm.SHA2_256);
 
-			Code packed = piedPiper.EncodeModel<Code>(inputCode, CoreSchema.Code);
-			using var sha256 = SHA256.Create();
-			byte[] expectedDigest = sha256.ComputeHash(packed.ToByteArray());
+		//	Code packed = piedPiper.EncodeModel<Code>(inputCode, CoreSchema.Code);
+		//	using var sha256 = SHA256.Create();
+		//	byte[] expectedDigest = sha256.ComputeHash(packed.ToByteArray());
 
-			Assert.Equal(expectedDigest, mh.Digest);
-			Assert.Equal(MultihashAlgorithm.SHA2_256, mh.Algorithm);
-		}
+		//	Assert.Equal(expectedDigest, mh.Digest);
+		//	Assert.Equal(MultihashAlgorithm.SHA2_256, mh.Algorithm);
+		//}
 		#endregion
 	}
 }

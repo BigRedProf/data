@@ -33,7 +33,7 @@ namespace BigRedProf.Data.Tape.Test
 			string baselineText = baseline.ToMultibaseString();
 			_output.WriteLine($"Baseline: {baselineText}");
 
-			Assert.Equal("bciqj334znsy6vb7fs23mvxgmuobzunjothm44b7ggxg3eoptrsrjj6a", baselineText);
+			Assert.Equal("bciqg4naltt73g6uytssujzv3pafcy6eqdu73gnzyo2crdiygc6x2ahi", baselineText);
 		}
 
 		[Fact]
@@ -51,10 +51,10 @@ namespace BigRedProf.Data.Tape.Test
 
 			string[] expected = new string[]
 			{
-				"bciqj334znsy6vb7fs23mvxgmuobzunjothm44b7ggxg3eoptrsrjj6a",
-				"bciqk52a5kqrghxruwklls23ej2y4jl5fs6ui7yr4jka3ddrs3cs7toa",
-				"bciqfokszkl5fd2sfii2i2qo74354ut46br43tebvalvk4duuhxvinnq",
-				"bciqo7c4ag2piqmidcmkzuof3suvogwvk7xjwd7xvaqdsrihm4uaddqa"
+				"bciqg4naltt73g6uytssujzv3pafcy6eqdu73gnzyo2crdiygc6x2ahi",
+				"bciqkqeak42vbsqgqwzr3wmonizquf255xviyoey3slmtqgeypazoxci",
+				"bciqgjcvmlrrtf45gbmefbmla5i5srqusyhcvf57bhnbrtqq6ecuprgy",
+				"bciqcbjmcxoww3x3jtaaqbtxptnhk3lyjbdl7wf5pnqoxpolmjnm72lq"
 			};
 
 			for (int i = 0; i < codes.Length; i++)
@@ -131,7 +131,7 @@ namespace BigRedProf.Data.Tape.Test
 			string headText = head.ToMultibaseString();
 			_output.WriteLine($"SeriesHead: {headText}");
 
-			Assert.Equal("bciqdlhogcra4p2pgpx6a2jcwybz6i2yfk3l3opczi7lngoo7zm4un5q", headText);
+			Assert.Equal("bciqi7q345es2gjpkz6cjn47az32yaima7nd56eytw4xxwbyvafw77ii", headText);
 		}
 
 		[Fact]
@@ -164,7 +164,7 @@ namespace BigRedProf.Data.Tape.Test
 
 			Assert.Equal(expectedFirst, firstDigest);
 			Assert.Equal(expectedSecond, secondDigest);
-			Assert.Equal("bciqeebxb6w62di5szxw4ynn44ejh4ft2czcdpxwzp6hjnat65b2atti", headText);
+			Assert.Equal("bciqetwxbjvld7fjoahyr4wf37q6eitouicdpu7hbaoqyjtxz3gnl3wi", headText);
 		}
 		#endregion
 	}
