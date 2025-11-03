@@ -19,12 +19,12 @@ namespace BigRedProf.Data.Core
 		#region static fields
 		private static readonly Dictionary<MultihashAlgorithm, uint> _algoToCode = new Dictionary<MultihashAlgorithm, uint>
 		{
-			{ MultihashAlgorithm.SHA2_256, Sha2_256Code }
+			{ MultihashAlgorithm.Sha256, Sha256Code }
 		};
 
 		private static readonly Dictionary<uint, MultihashAlgorithm> _codeToAlgo = new Dictionary<uint, MultihashAlgorithm>
 		{
-			{ Sha2_256Code, MultihashAlgorithm.SHA2_256 }
+			{ Sha256Code, MultihashAlgorithm.Sha256 }
 		};
 		#endregion
 
@@ -243,8 +243,8 @@ namespace BigRedProf.Data.Core
 				throw new FormatException("Digest length exceeds maximum supported size.");
 
 			int digestLength = (int)digestLengthValue;
-			if (algorithm == MultihashAlgorithm.SHA2_256 && digestLength != Sha2_256DigestLength)
-				throw new FormatException("Digest length does not match SHA2_256 requirements.");
+			if (algorithm == MultihashAlgorithm.Sha256 && digestLength != Sha256DigestLength)
+				throw new FormatException("Digest length does not match SHA-256 requirements.");
 
 			if (binary.Length - offset != digestLength)
 				throw new FormatException("Digest length does not match payload size.");
@@ -285,7 +285,7 @@ namespace BigRedProf.Data.Core
 		{
 			switch (algorithm)
 			{
-				case MultihashAlgorithm.SHA2_256:
+				case MultihashAlgorithm.Sha256:
 					using (SHA256 sha256 = SHA256.Create())
 						return sha256.ComputeHash(bytes);
 
@@ -324,8 +324,8 @@ namespace BigRedProf.Data.Core
 			if (!_algoToCode.TryGetValue(algorithm, out code))
 				throw new NotSupportedException(string.Format("Algorithm '{0}' is not supported for multibase encoding.", algorithm));
 
-			if (algorithm == MultihashAlgorithm.SHA2_256 && digest.Length != Sha2_256DigestLength)
-				throw new InvalidOperationException("Digest length does not match SHA2_256 requirements.");
+			if (algorithm == MultihashAlgorithm.Sha256 && digest.Length != Sha256DigestLength)
+				throw new InvalidOperationException("Digest length does not match SHA-256 requirements.");
 
 			byte[] codeBytes = WriteUVarInt(code);
 			byte[] lengthBytes = WriteUVarInt((uint)digest.Length);
@@ -504,8 +504,8 @@ namespace BigRedProf.Data.Core
 		#endregion
 
 		#region constants
-		private const uint Sha2_256Code = 0x12;
-		private const int Sha2_256DigestLength = 32;
+		private const uint Sha256Code = 0x12;
+		private const int Sha256DigestLength = 32;
 		private const string Base32AlphabetLower = "abcdefghijklmnopqrstuvwxyz234567";
 		#endregion
 	}

@@ -17,7 +17,7 @@ namespace BigRedProf.Data.Tape
 	public class BackupWizard
 	{
 		#region static fields
-		private const MultihashAlgorithm SeriesDigestAlgorithm = MultihashAlgorithm.SHA2_256;
+		private const MultihashAlgorithm SeriesDigestAlgorithm = MultihashAlgorithm.Sha256;
 		private static readonly ISeriesDigestEngine DefaultDigestEngine = new SeriesDigestEngine(SeriesDigestAlgorithm);
 		#endregion
 

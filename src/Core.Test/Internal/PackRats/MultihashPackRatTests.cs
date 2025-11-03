@@ -19,7 +19,7 @@ namespace BigRedProf.Data.Test
 			var packRat = new MultihashPackRat(piedPiper);
 
 			var digest = new byte[32];
-			var multihash = new Multihash(digest, MultihashAlgorithm.SHA2_256);
+			var multihash = new Multihash(digest, MultihashAlgorithm.Sha256);
 
 			Assert.Throws<ArgumentNullException>(() =>
 			{
@@ -64,7 +64,7 @@ namespace BigRedProf.Data.Test
 
 			// Multihash: 0x12 (SHA2-256), length: 32, digest: 32 zero bytes
 			byte[] digest = new byte[32];
-			var multihash = new Multihash(digest, MultihashAlgorithm.SHA2_256);
+			var multihash = new Multihash(digest, MultihashAlgorithm.Sha256);
 
 			// Expected code: varint 0x12 = "00010010", varint 0x20 = "00100000", 32 zero bytes
 			IEnumerable<string> repeatedStrings = PackRatTestHelper.RepeatString(new string('0', 8), 32);
@@ -85,7 +85,7 @@ namespace BigRedProf.Data.Test
 			for (int i = 0; i < digest.Length; i++)
 				digest[i] = (byte)i;
 
-			var original = new Multihash(digest, MultihashAlgorithm.SHA2_256);
+			var original = new Multihash(digest, MultihashAlgorithm.Sha256);
 			PackRatTestHelper.TestPackUnpackModel<Multihash>(packRat, original);
 		}
 		#endregion

@@ -12,7 +12,7 @@ namespace BigRedProf.Data.Tape.Test
 	public class BackupWizardTests
 	{
 		#region static fields
-		private static readonly ISeriesDigestEngine DigestEngine = new SeriesDigestEngine(MultihashAlgorithm.SHA2_256);
+		private static readonly ISeriesDigestEngine DigestEngine = new SeriesDigestEngine(MultihashAlgorithm.Sha256);
 		#endregion
 
 		#region unit tests

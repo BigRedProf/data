@@ -28,7 +28,7 @@ namespace BigRedProf.Data.Tape
 		#endregion
 
 		#region constructors
-		public SeriesDigestEngine(MultihashAlgorithm algorithm = MultihashAlgorithm.SHA2_256)
+		public SeriesDigestEngine(MultihashAlgorithm algorithm = MultihashAlgorithm.Sha256)
 		{
 			_algorithm = algorithm;
 			_baseline = CreateBaseline(_algorithm);

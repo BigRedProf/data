@@ -27,7 +27,7 @@ namespace BigRedProf.Data.Tape.Test
 		[Fact]
 		public void ComputeBaseline_ShouldMatchKnownVector()
 		{
-			SeriesDigestEngine engine = new SeriesDigestEngine(MultihashAlgorithm.SHA2_256);
+			SeriesDigestEngine engine = new SeriesDigestEngine(MultihashAlgorithm.Sha256);
 
 			Multihash baseline = engine.ComputeBaseline();
 			string baselineText = baseline.ToMultibaseString();
@@ -39,7 +39,7 @@ namespace BigRedProf.Data.Tape.Test
 		[Fact]
 		public void FromCode_ShouldMatchKnownVectors()
 		{
-			SeriesDigestEngine engine = new SeriesDigestEngine(MultihashAlgorithm.SHA2_256);
+			SeriesDigestEngine engine = new SeriesDigestEngine(MultihashAlgorithm.Sha256);
 
 			Code[] codes = new Code[]
 			{
@@ -69,7 +69,7 @@ namespace BigRedProf.Data.Tape.Test
 		[Fact]
 		public void ComputeContentDigest_ShouldReturnBaselineForZeroLengthTape()
 		{
-			SeriesDigestEngine engine = new SeriesDigestEngine(MultihashAlgorithm.SHA2_256);
+			SeriesDigestEngine engine = new SeriesDigestEngine(MultihashAlgorithm.Sha256);
 			MemoryTapeProvider provider = new MemoryTapeProvider();
 			Guid tapeId = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
 			Tape tape = Tape.CreateNew(provider, tapeId);
@@ -83,7 +83,7 @@ namespace BigRedProf.Data.Tape.Test
 		[Fact]
 		public void ComputeContentDigest_ShouldMatchWrittenContent()
 		{
-			SeriesDigestEngine engine = new SeriesDigestEngine(MultihashAlgorithm.SHA2_256);
+			SeriesDigestEngine engine = new SeriesDigestEngine(MultihashAlgorithm.Sha256);
 			MemoryTapeProvider provider = new MemoryTapeProvider();
 			Guid tapeId = new Guid("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
 			Tape tape = Tape.CreateNew(provider, tapeId);
@@ -102,7 +102,7 @@ namespace BigRedProf.Data.Tape.Test
 		[Fact]
 		public void ComputeContentDigest_ShouldHandlePartialByteContent()
 		{
-			SeriesDigestEngine engine = new SeriesDigestEngine(MultihashAlgorithm.SHA2_256);
+			SeriesDigestEngine engine = new SeriesDigestEngine(MultihashAlgorithm.Sha256);
 			MemoryTapeProvider provider = new MemoryTapeProvider();
 			Guid tapeId = new Guid("cccccccc-cccc-cccc-cccc-cccccccccccc");
 			Tape tape = Tape.CreateNew(provider, tapeId);
@@ -121,7 +121,7 @@ namespace BigRedProf.Data.Tape.Test
 		[Fact]
 		public void ComputeSeriesHeadDigest_ShouldComposeParentAndContent()
 		{
-			SeriesDigestEngine engine = new SeriesDigestEngine(MultihashAlgorithm.SHA2_256);
+			SeriesDigestEngine engine = new SeriesDigestEngine(MultihashAlgorithm.Sha256);
 			Code parentCode = new Code("01010101 10101010");
 			Code contentCode = new Code("11110000 00001111");
 			Multihash parentDigest = engine.FromCode(parentCode);
@@ -137,7 +137,7 @@ namespace BigRedProf.Data.Tape.Test
 		[Fact]
 		public void MultiTapeBoundary_PartialByteThenRollover()
 		{
-			SeriesDigestEngine engine = new SeriesDigestEngine(MultihashAlgorithm.SHA2_256);
+			SeriesDigestEngine engine = new SeriesDigestEngine(MultihashAlgorithm.Sha256);
 			MemoryTapeProvider provider = new MemoryTapeProvider();
 
 			Guid firstTapeId = new Guid("dddddddd-dddd-dddd-dddd-dddddddddddd");

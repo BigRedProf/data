@@ -13,17 +13,17 @@ namespace BigRedProf.Data.Test
 		public void ToMultibaseString_ShouldEncodeBase32LowerKnownVector()
 		{
 			byte[] digest = new byte[32];
-			Multihash multihash = new Multihash(digest, MultihashAlgorithm.SHA2_256);
+			Multihash multihash = new Multihash(digest, MultihashAlgorithm.Sha256);
 			string expected = "bciqaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 			string actual = multihash.ToMultibaseString();
 			Assert.Equal(expected, actual);
 			Multihash parsed = Multihash.Parse(expected);
-			Assert.Equal(MultihashAlgorithm.SHA2_256, parsed.Algorithm);
+			Assert.Equal(MultihashAlgorithm.Sha256, parsed.Algorithm);
 			Assert.Equal(digest, parsed.Digest);
 			bool success = Multihash.TryParse(expected, out Multihash parsedTry);
 			Assert.True(success);
 			Assert.NotNull(parsedTry);
-			Assert.Equal(MultihashAlgorithm.SHA2_256, parsedTry.Algorithm);
+			Assert.Equal(MultihashAlgorithm.Sha256, parsedTry.Algorithm);
 			Assert.Equal(digest, parsedTry.Digest);
 		}
 
@@ -32,12 +32,12 @@ namespace BigRedProf.Data.Test
 		public void ToMultibaseString_ShouldEncodeHexLowerKnownVector()
 		{
 			byte[] digest = new byte[32];
-			Multihash multihash = new Multihash(digest, MultihashAlgorithm.SHA2_256);
+			Multihash multihash = new Multihash(digest, MultihashAlgorithm.Sha256);
 			string expected = "f1220" + new string('0', 64);
 			string actual = multihash.ToMultibaseString(MultibaseEncoding.HexLower);
 			Assert.Equal(expected, actual);
 			Multihash parsed = Multihash.Parse(expected);
-			Assert.Equal(MultihashAlgorithm.SHA2_256, parsed.Algorithm);
+			Assert.Equal(MultihashAlgorithm.Sha256, parsed.Algorithm);
 			Assert.Equal(digest, parsed.Digest);
 		}
 		#endregion
@@ -56,7 +56,7 @@ namespace BigRedProf.Data.Test
 		public void TryParse_ShouldFailWhenTrailingGarbagePresent()
 		{
 			byte[] digest = new byte[32];
-			Multihash mh = new Multihash(digest, MultihashAlgorithm.SHA2_256);
+			Multihash mh = new Multihash(digest, MultihashAlgorithm.Sha256);
 			string s = mh.ToMultibaseString(); // 'b...'
 											   // Append a harmless base32 char
 			bool ok = Multihash.TryParse(s + "a", out _);
@@ -87,7 +87,7 @@ namespace BigRedProf.Data.Test
 			{
 				byte[] digest = new byte[32];
 				rng.NextBytes(digest);
-				Multihash m = new Multihash(digest, MultihashAlgorithm.SHA2_256);
+				Multihash m = new Multihash(digest, MultihashAlgorithm.Sha256);
 
 				string b32 = m.ToMultibaseString();
 				Assert.Equal(m, Multihash.Parse(b32));
@@ -101,7 +101,7 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "ToMultibaseString")]
 		public void ToMultibaseString_DefaultIsBase32Lower()
 		{
-			var m = new Multihash(new byte[32], MultihashAlgorithm.SHA2_256);
+			var m = new Multihash(new byte[32], MultihashAlgorithm.Sha256);
 			Assert.Equal(m.ToMultibaseString(MultibaseEncoding.Base32Lower), m.ToMultibaseString());
 		}
 
@@ -118,14 +118,14 @@ namespace BigRedProf.Data.Test
 
 			foreach (byte[] digest in digests)
 			{
-				Multihash multihash = new Multihash(digest, MultihashAlgorithm.SHA2_256);
+				Multihash multihash = new Multihash(digest, MultihashAlgorithm.Sha256);
 				string base32 = multihash.ToMultibaseString();
 				Multihash parsedBase32 = Multihash.Parse(base32);
-				Assert.Equal(MultihashAlgorithm.SHA2_256, parsedBase32.Algorithm);
+				Assert.Equal(MultihashAlgorithm.Sha256, parsedBase32.Algorithm);
 				Assert.Equal(digest, parsedBase32.Digest);
 				string hex = multihash.ToMultibaseString(MultibaseEncoding.HexLower);
 				Multihash parsedHex = Multihash.Parse(hex);
-				Assert.Equal(MultihashAlgorithm.SHA2_256, parsedHex.Algorithm);
+				Assert.Equal(MultihashAlgorithm.Sha256, parsedHex.Algorithm);
 				Assert.Equal(digest, parsedHex.Digest);
 			}
 		}

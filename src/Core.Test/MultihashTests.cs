@@ -17,7 +17,7 @@ namespace BigRedProf.Data.Test
 		{
 			Assert.Throws<ArgumentNullException>(() =>
 			{
-				new Multihash(null, MultihashAlgorithm.SHA2_256);
+				new Multihash(null, MultihashAlgorithm.Sha256);
 			});
 		}
 		#endregion
@@ -28,8 +28,8 @@ namespace BigRedProf.Data.Test
 		public void Equals_ShouldReturnTrueForIdenticalMultihashes()
 		{
 			byte[] digest = Enumerable.Range(0, 32).Select(i => (byte)i).ToArray();
-			var a = new Multihash(digest, MultihashAlgorithm.SHA2_256);
-			var b = new Multihash(digest.ToArray(), MultihashAlgorithm.SHA2_256);
+			var a = new Multihash(digest, MultihashAlgorithm.Sha256);
+			var b = new Multihash(digest.ToArray(), MultihashAlgorithm.Sha256);
 
 			Assert.Equal(a, b);
 			Assert.True(a.Equals(b));
@@ -41,7 +41,7 @@ namespace BigRedProf.Data.Test
 		public void Equals_ShouldReturnFalseForDifferentAlgorithms()
 		{
 			byte[] digest = new byte[32];
-			var a = new Multihash(digest, MultihashAlgorithm.SHA2_256);
+			var a = new Multihash(digest, MultihashAlgorithm.Sha256);
 			var b = new Multihash(digest, (MultihashAlgorithm)0x13); // hypothetical SHA2-512
 
 			Assert.NotEqual(a, b);
@@ -51,8 +51,8 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "object methods")]
 		public void Equals_ShouldReturnFalseForDifferentDigests()
 		{
-			var a = new Multihash(new byte[] { 1, 2, 3 }, MultihashAlgorithm.SHA2_256);
-			var b = new Multihash(new byte[] { 1, 2, 4 }, MultihashAlgorithm.SHA2_256);
+			var a = new Multihash(new byte[] { 1, 2, 3 }, MultihashAlgorithm.Sha256);
+			var b = new Multihash(new byte[] { 1, 2, 4 }, MultihashAlgorithm.Sha256);
 
 			Assert.NotEqual(a, b);
 		}
@@ -64,7 +64,7 @@ namespace BigRedProf.Data.Test
 		public void Digest_ShouldBeClonedOnAccess()
 		{
 			byte[] digest = { 1, 2, 3 };
-			var m = new Multihash(digest, MultihashAlgorithm.SHA2_256);
+			var m = new Multihash(digest, MultihashAlgorithm.Sha256);
 
 			byte[] clone = m.Digest;
 			clone[0] = 42;
@@ -79,9 +79,9 @@ namespace BigRedProf.Data.Test
 		public void ToString_ShouldReturnAlgorithmAndHex()
 		{
 			byte[] digest = { 0xAB, 0xCD, 0xEF };
-			var m = new Multihash(digest, MultihashAlgorithm.SHA2_256);
+			var m = new Multihash(digest, MultihashAlgorithm.Sha256);
 
-			Assert.Equal("SHA2_256:abcdef", m.ToString());
+			Assert.Equal("Sha256:abcdef", m.ToString());
 		}
 		#endregion
 
@@ -92,7 +92,7 @@ namespace BigRedProf.Data.Test
 		{
 			Assert.Throws<ArgumentNullException>(() =>
 			{
-				Multihash.FromCode(null, MultihashAlgorithm.SHA2_256);
+				Multihash.FromCode(null, MultihashAlgorithm.Sha256);
 			});
 		}
 
