@@ -1,5 +1,8 @@
 using BigRedProf.Data.Core;
 using BigRedProf.Data.Tape.Libraries;
+using System;
+using System.Linq;
+using Xunit;
 
 namespace BigRedProf.Data.Tape.Test
 {
@@ -31,12 +34,13 @@ namespace BigRedProf.Data.Tape.Test
 			var library = NewLibrary();
 			var seriesId = Guid.NewGuid();
 
-			// Create a small series with 128 bits of data.
+			// Create exactly 128 bits of data (16 * "10110011" = 128 bits).
+			string bits128 = string.Concat(Enumerable.Repeat("10110011", 16)); // 128 bits
+
 			var bw = BackupWizard.CreateNew(library, seriesId, "s", "d");
-			var bytes = Enumerable.Range(0, 16).Select(i => (byte)i).ToArray(); // 16*8 = 128 bits
 			using (var writer = bw.Writer)
-				writer.WriteCode(new Code(bytes));
-			bw.SetLatestCheckpoint(new Code("0"));
+				writer.WriteCode(bits128);
+			bw.SetLatestCheckpoint("0");
 
 			// Negative
 			Assert.Throws<ArgumentOutOfRangeException>(() =>
@@ -54,42 +58,34 @@ namespace BigRedProf.Data.Tape.Test
 			var library = NewLibrary();
 			var seriesId = Guid.NewGuid();
 
-			// Write a known 3-byte pattern so shifts are checkable.
-			byte[] payload = new byte[] { 0b_1010_1100, 0b_0110_1001, 0b_1111_0000 }; // 0xAC, 0x69, 0xF0
+			// 24-bit payload (easy to visualize): 10101100 01101001 11110000
+			// Keep it as one contiguous bit string.
+			string payload = "101011000110100111110000"; // 24 bits
 
 			var bw = BackupWizard.CreateNew(library, seriesId, "series", "desc");
 			using (var w = bw.Writer)
-				w.WriteCode(new Code(payload));
-			bw.SetLatestCheckpoint(new Code("0"));
+				w.WriteCode(payload);
+			bw.SetLatestCheckpoint("0");
 
-			// Seek to 1 bit; read 16 bits; compare to the 2 expected bytes
+			// Seek to bit 1 (0-based), read 16 bits
 			using (var rw = RestorationWizard.OpenExistingTapeSeries(library, seriesId, 1))
 			{
 				var reader = rw.CodeReader;
-				Code twoBytes = reader.Read(16);
+				Code sixteen = reader.Read(16);
+				string expected = payload.Substring(1, 16);
 
-				byte b0 = (byte)((payload[0] >> 1) | ((payload[1] & 0x01) << 7));
-				byte b1 = (byte)((payload[1] >> 1) | ((payload[2] & 0x01) << 7));
-				var expected = new Code(new byte[] { b0, b1 });
-
-				Assert.Equal(expected, twoBytes);
+				Assert.Equal((Code)expected, sixteen);
 				Assert.Equal(1, rw.Bookmark);
 			}
 
-			// Seek to 13 bits; read 16 bits.
+			// Seek to bit 13, read 8 bits
 			using (var rw2 = RestorationWizard.OpenExistingTapeSeries(library, seriesId, 13))
 			{
 				var reader2 = rw2.CodeReader;
-				Code twoBytes = reader2.Read(16);
+				Code eight = reader2.Read(8);
+				string expected = payload.Substring(13, 8);
 
-				// Build expected by slicing the concatenated bitstream
-				int acc = (payload[0]) | (payload[1] << 8) | (payload[2] << 16);
-				int bitStart = 13;
-				byte e0 = (byte)((acc >> bitStart) & 0xFF);
-				byte e1 = (byte)((acc >> (bitStart + 8)) & 0xFF);
-				var expected = new Code(new byte[] { e0, e1 });
-
-				Assert.Equal(expected, twoBytes);
+				Assert.Equal((Code)expected, eight);
 				Assert.Equal(13, rw2.Bookmark);
 			}
 		}
