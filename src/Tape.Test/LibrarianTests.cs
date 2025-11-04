@@ -222,6 +222,48 @@ namespace BigRedProf.Data.Tape.Test
 			}
 
 			[Trait("Region", "Librarian methods")]
+			[Theory]
+			[MemberData(nameof(TapeProviderHelper.TapeProviders), MemberType = typeof(TapeProviderHelper))]
+			public void FetchTapesInSeries_ShouldReturnTapesOrderedBySeriesNumber(TapeProvider tapeProvider)
+			{
+				Librarian librarian = new Librarian(tapeProvider);
+				Guid seriesId = new Guid("00000000-4343-0000-0000-0000053c1352");
+
+				Guid tapeAId = new Guid("00000000-4343-0000-0000-000000000010");
+				Tape tapeA = Tape.CreateNew(tapeProvider, tapeAId);
+				TapeLabel tapeALabel = tapeA.ReadLabel()
+					.WithSeriesInfo(seriesId, "Ordered Series", 2);
+				tapeA.WriteLabel(tapeALabel);
+				librarian.AddTape(tapeA);
+
+				Guid tapeBId = new Guid("00000000-4343-0000-0000-000000000011");
+				Tape tapeB = Tape.CreateNew(tapeProvider, tapeBId);
+				TapeLabel tapeBLabel = tapeB.ReadLabel()
+					.WithSeriesInfo(seriesId, "Ordered Series", 1);
+				tapeB.WriteLabel(tapeBLabel);
+				librarian.AddTape(tapeB);
+
+				Guid tapeCId = new Guid("00000000-4343-0000-0000-000000000012");
+				Tape tapeC = Tape.CreateNew(tapeProvider, tapeCId);
+				TapeLabel tapeCLabel = tapeC.ReadLabel()
+					.WithSeriesInfo(seriesId, "Ordered Series", 3);
+				tapeC.WriteLabel(tapeCLabel);
+				librarian.AddTape(tapeC);
+
+				IList<Tape> tapes = librarian.FetchTapesInSeries(seriesId);
+
+				Assert.Equal(3, tapes.Count);
+
+				TapeLabel firstLabel = tapes[0].ReadLabel();
+				TapeLabel secondLabel = tapes[1].ReadLabel();
+				TapeLabel thirdLabel = tapes[2].ReadLabel();
+
+				Assert.Equal(1, firstLabel.SeriesNumber);
+				Assert.Equal(2, secondLabel.SeriesNumber);
+				Assert.Equal(3, thirdLabel.SeriesNumber);
+			}
+
+			[Trait("Region", "Librarian methods")]
 			[Fact]
 			public void AddTape_ShouldThrow_WhenTapeIsNull()
 			{
