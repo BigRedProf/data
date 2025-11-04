@@ -8,21 +8,21 @@ namespace BigRedProf.Data.Tape.Test
 {
 	public class RestorationWizardTests
 	{
-		private static TapeLibrary NewLibrary() => new MemoryLibrary();
+		private static TapeLibrary NewLibrary() { return new MemoryLibrary(); }
 
 		[Trait("Region", "RestorationWizard functions")]
 		[Fact]
 		public void OpenExistingTapeSeries_ShouldThrow_WhenLibraryIsNull()
 		{
 			Assert.Throws<ArgumentNullException>(() =>
-				RestorationWizard.OpenExistingTapeSeries(null!, Guid.NewGuid(), 0));
+				RestorationWizard.OpenExistingTapeSeries((TapeLibrary)null, Guid.Parse("11111111-1111-1111-1111-111111111111"), 0));
 		}
 
 		[Trait("Region", "RestorationWizard functions")]
 		[Fact]
 		public void OpenExistingTapeSeries_ShouldThrow_WhenSeriesIdIsEmpty()
 		{
-			var lib = NewLibrary();
+			TapeLibrary lib = NewLibrary();
 			Assert.Throws<ArgumentException>(() =>
 				RestorationWizard.OpenExistingTapeSeries(lib, Guid.Empty, 0));
 		}
@@ -31,15 +31,17 @@ namespace BigRedProf.Data.Tape.Test
 		[Fact]
 		public void OpenExistingTapeSeries_ShouldThrow_WhenOffsetIsOutOfRange()
 		{
-			var library = NewLibrary();
-			var seriesId = Guid.NewGuid();
+			TapeLibrary library = NewLibrary();
+			Guid seriesId = Guid.Parse("22222222-2222-2222-2222-222222222222");
 
 			// Create exactly 128 bits of data (16 * "10110011" = 128 bits).
-			string bits128 = string.Concat(Enumerable.Repeat("10110011", 16)); // 128 bits
+			Code bits128 = string.Concat(Enumerable.Repeat("10110011", 16)); // 128 bits
 
-			var bw = BackupWizard.CreateNew(library, seriesId, "s", "d");
-			using (var writer = bw.Writer)
+			BackupWizard bw = BackupWizard.CreateNew(library, seriesId, "s", "d");
+			using (CodeWriter writer = bw.Writer)
+			{
 				writer.WriteCode(bits128);
+			}
 			bw.SetLatestCheckpoint("0");
 
 			// Negative
@@ -55,37 +57,39 @@ namespace BigRedProf.Data.Tape.Test
 		[Fact]
 		public void OpenExistingTapeSeries_ShouldSupportBitLevelBookmark()
 		{
-			var library = NewLibrary();
-			var seriesId = Guid.NewGuid();
+			TapeLibrary library = NewLibrary();
+			Guid seriesId = Guid.Parse("33333333-3333-3333-3333-333333333333");
 
 			// 24-bit payload (easy to visualize): 10101100 01101001 11110000
 			// Keep it as one contiguous bit string.
-			string payload = "101011000110100111110000"; // 24 bits
+			Code payload = "101011000110100111110000"; // 24 bits
 
-			var bw = BackupWizard.CreateNew(library, seriesId, "series", "desc");
-			using (var w = bw.Writer)
+			BackupWizard bw = BackupWizard.CreateNew(library, seriesId, "series", "desc");
+			using (CodeWriter w = bw.Writer)
+			{
 				w.WriteCode(payload);
+			}
 			bw.SetLatestCheckpoint("0");
 
 			// Seek to bit 1 (0-based), read 16 bits
-			using (var rw = RestorationWizard.OpenExistingTapeSeries(library, seriesId, 1))
+			using (RestorationWizard rw = RestorationWizard.OpenExistingTapeSeries(library, seriesId, 1))
 			{
-				var reader = rw.CodeReader;
+				CodeReader reader = rw.CodeReader;
 				Code sixteen = reader.Read(16);
-				string expected = payload.Substring(1, 16);
+				Code expected = "0101100011010011";
 
-				Assert.Equal((Code)expected, sixteen);
+				Assert.Equal(expected, sixteen);
 				Assert.Equal(1, rw.Bookmark);
 			}
 
 			// Seek to bit 13, read 8 bits
-			using (var rw2 = RestorationWizard.OpenExistingTapeSeries(library, seriesId, 13))
+			using (RestorationWizard rw2 = RestorationWizard.OpenExistingTapeSeries(library, seriesId, 13))
 			{
-				var reader2 = rw2.CodeReader;
+				CodeReader reader2 = rw2.CodeReader;
 				Code eight = reader2.Read(8);
-				string expected = payload.Substring(13, 8);
+				Code expected = "00111110";
 
-				Assert.Equal((Code)expected, eight);
+				Assert.Equal(expected, eight);
 				Assert.Equal(13, rw2.Bookmark);
 			}
 		}
