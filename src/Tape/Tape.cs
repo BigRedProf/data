@@ -1,4 +1,4 @@
-﻿using BigRedProf.Data.Core;
+using BigRedProf.Data.Core;
 using BigRedProf.Data.Tape.Internal;
 using System;
 
@@ -47,6 +47,10 @@ namespace BigRedProf.Data.Tape
 			{
 				FlexModel label = ReadLabel();
 				label.AddTrait(new Trait<int>(TapeTrait.TapePosition, value));
+				int existingContentLength;
+				bool hasContentLength = label.TryGetTrait<int>(CoreTrait.ContentLength, out existingContentLength);
+				if (!hasContentLength || value > existingContentLength)
+					label.AddTrait(new Trait<int>(CoreTrait.ContentLength, value));
 				WriteLabel(label);
 			}
 		}

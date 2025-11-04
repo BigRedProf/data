@@ -1,8 +1,9 @@
-﻿using BigRedProf.Data.Core;
+using BigRedProf.Data.Core;
 using BigRedProf.Data.Core.Internal;
 using BigRedProf.Data.Tape.Internal;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 namespace BigRedProf.Data.Tape
@@ -55,6 +56,7 @@ namespace BigRedProf.Data.Tape
 		private readonly OpenMode _mode;
 
 		private readonly List<Tape> _orderedTapes;
+		private readonly List<int> _tapeContentLengths;
 		private int _currentIndex;
 		private TapeCursor _current;
 		private long _totalSeriesBits;
@@ -93,6 +95,7 @@ namespace BigRedProf.Data.Tape
 			_mode = mode;
 
 			_orderedTapes = new List<Tape>(_librarian.FetchTapesInSeries(seriesId) ?? Array.Empty<Tape>());
+			_tapeContentLengths = new List<int>(_orderedTapes.Count);
 			if (_orderedTapes.Count == 0)
 				throw new InvalidOperationException("No tapes found in the requested series.");
 
@@ -123,14 +126,25 @@ namespace BigRedProf.Data.Tape
 		private void InitializeForRead()
 		{
 			_currentIndex = 0;
+			_tapeContentLengths.Clear();
 			_current = MakeReadCursor(_orderedTapes[_currentIndex]);
 			_totalSeriesBits = 0;
 
-			// TODO: This is dumb. We can't assume a tape position indicates its full content length. But since
-			// we don't store it elsewehere, we have no choice for now. We need to add something like a
-			// ContentLength field to TapeLabel in the future.
-			foreach (Tape tape in _orderedTapes)
-				_totalSeriesBits += tape.Position;
+			for (int i = 0; i < _orderedTapes.Count; i++)
+			{
+				int tapeBits;
+				if (i == _currentIndex)
+				{
+					tapeBits = _current.ContentBitLength;
+				}
+				else
+				{
+					tapeBits = GetTapeContentBitLength(_orderedTapes[i]);
+				}
+
+				_tapeContentLengths.Add(tapeBits);
+				_totalSeriesBits += tapeBits;
+			}
 
 			CurrentByte = 0;
 			OffsetIntoCurrentByte = 0;
@@ -159,8 +173,21 @@ namespace BigRedProf.Data.Tape
 
 		private static TapeCursor MakeReadCursor(Tape tape)
 		{
-			int contentBits = tape.Position;
+			int contentBits = GetTapeContentBitLength(tape);
 			return new TapeCursor(tape, contentBits, 0);
+		}
+
+		private static int GetTapeContentBitLength(Tape tape)
+		{
+			Debug.Assert(tape != null, "Tape cannot be null when calculating content length.");
+
+			TapeLabel label = tape.ReadLabel();
+			int contentLength;
+
+			if (!label.TryGetContentLength(out contentLength))
+				contentLength = label.TapePosition;
+
+			return contentLength;
 		}
 		#endregion
 
@@ -388,7 +415,7 @@ namespace BigRedProf.Data.Tape
 					// current absolute bit position = sum(bits of earlier tapes) _current.BitPosition
 					long prefix = 0;
 					for (int i = 0; i < _currentIndex; i++)
-						prefix += _orderedTapes[i].Position;
+						prefix += _tapeContentLengths[i];
 					target = prefix + _current.BitPosition + offset;
 				}
 				break;
@@ -407,7 +434,7 @@ namespace BigRedProf.Data.Tape
 			int idx = 0;
 			while (idx < _orderedTapes.Count)
 			{
-				int tapeBits = _orderedTapes[idx].Position;
+				int tapeBits = _tapeContentLengths[idx];
 				if (target <= running + tapeBits) break;
 				running += tapeBits;
 				idx++;
@@ -417,8 +444,8 @@ namespace BigRedProf.Data.Tape
 			{
 				// target == _totalSeriesBits: position to logical EOF (at last tape's end)
 				idx = _orderedTapes.Count - 1;
-				running -= _orderedTapes[idx].Position; // back to start of last tape
-				target = running + _orderedTapes[idx].Position;
+				running -= _tapeContentLengths[idx]; // back to start of last tape
+				target = running + _tapeContentLengths[idx];
 			}
 
 			_currentIndex = idx;

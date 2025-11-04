@@ -1,4 +1,4 @@
-﻿using BigRedProf.Data.Core;
+using BigRedProf.Data.Core;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -129,6 +129,11 @@ namespace BigRedProf.Data.Tape
 		public bool TryGetSeriesDescription(out string description)
 		{
 			return this.TryGetTrait<string>(TapeTrait.SeriesDescription, out description);
+		}
+
+		public bool TryGetContentLength(out int contentLength)
+		{
+			return this.TryGetTrait<int>(CoreTrait.ContentLength, out contentLength);
 		}
 
 		public bool TryGetClientCheckpoint(out Code checkpoint)
