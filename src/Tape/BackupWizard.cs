@@ -33,7 +33,6 @@ namespace BigRedProf.Data.Tape
 		private Multihash _seriesParentDigest;
 		private Multihash _currentSeriesHeadDigest;
 		private Multihash _currentTapeContentDigest;
-		private bool _isTapeContentDirty;
 
 		private TapeSeriesStream? _seriesStream;
 		private CodeWriter? _codeWriter;
@@ -65,7 +64,6 @@ namespace BigRedProf.Data.Tape
 			_seriesParentDigest = seriesParentDigest ?? throw new ArgumentNullException(nameof(seriesParentDigest));
 			_currentSeriesHeadDigest = currentSeriesHeadDigest ?? throw new ArgumentNullException(nameof(currentSeriesHeadDigest));
 			_currentTapeContentDigest = currentTapeContentDigest ?? throw new ArgumentNullException(nameof(currentTapeContentDigest));
-			_isTapeContentDirty = false;
 		}
 		#endregion
 
@@ -213,14 +211,9 @@ namespace BigRedProf.Data.Tape
 			TapeLabel label = _currentTape.ReadLabel();
 			label = ApplySeriesMetadata(label);
 
-			Multihash contentDigest = _isTapeContentDirty
-				? _digestEngine.ComputeContentDigest(_currentTape)
-				: _currentTapeContentDigest;
-
-			Multihash seriesHeadDigest = _isTapeContentDirty
-				? _digestEngine.ComputeSeriesHeadDigest(_seriesParentDigest, contentDigest)
-				: _currentSeriesHeadDigest;
-
+			Multihash contentDigest = _digestEngine.ComputeContentDigest(_currentTape);
+			Multihash seriesHeadDigest = _digestEngine.ComputeSeriesHeadDigest(_seriesParentDigest, contentDigest);
+			
 			label = label
 				.WithContentMultihash(contentDigest)
 				.WithSeriesParentMultihash(_seriesParentDigest)
@@ -230,7 +223,6 @@ namespace BigRedProf.Data.Tape
 
 			_currentTapeContentDigest = contentDigest;
 			_currentSeriesHeadDigest = seriesHeadDigest;
-			_isTapeContentDirty = false;
 		}
 		#endregion
 
@@ -273,8 +265,7 @@ namespace BigRedProf.Data.Tape
 			// Subscribe to tape changes and reactively finalize/seed labels.
 			stream.CurrentTapeChanged += OnCurrentTapeChanged;
 
-			DirtyTrackingStream trackingStream = new DirtyTrackingStream(this, stream);
-			WizardCodeWriter writer = new WizardCodeWriter(this, trackingStream);
+			WizardCodeWriter writer = new WizardCodeWriter(this, stream);
 			_seriesStream = stream;
 			_codeWriter = writer;
 			return writer;
@@ -315,13 +306,6 @@ namespace BigRedProf.Data.Tape
 			_currentTape.WriteLabel(seeded);
 
 			_currentTapeContentDigest = baselineDigest;
-			_isTapeContentDirty = false;
-		}
-
-		private void MarkTapeContentDirty()
-		{
-			_isTapeContentDirty = true;
-			// No polling here; rollover handled by event.
 		}
 
 		private void OnWriterDisposed()
@@ -366,120 +350,6 @@ namespace BigRedProf.Data.Tape
 		#endregion
 
 		#region private classes
-		private sealed class DirtyTrackingStream : Stream, IBitAwareStream
-		{
-			private readonly BackupWizard _owner;
-			private readonly TapeSeriesStream _inner;
-
-			public DirtyTrackingStream(BackupWizard owner, TapeSeriesStream inner)
-			{
-				_owner = owner ?? throw new ArgumentNullException(nameof(owner));
-				_inner = inner ?? throw new ArgumentNullException(nameof(inner));
-			}
-
-			public override bool CanRead
-			{
-				get
-				{
-					return _inner.CanRead;
-				}
-			}
-
-			public override bool CanSeek
-			{
-				get
-				{
-					return _inner.CanSeek;
-				}
-			}
-
-			public override bool CanWrite
-			{
-				get
-				{
-					return _inner.CanWrite;
-				}
-			}
-
-			public override long Length
-			{
-				get
-				{
-					return _inner.Length;
-				}
-			}
-
-			public override long Position
-			{
-				get
-				{
-					return _inner.Position;
-				}
-				set
-				{
-					_inner.Position = value;
-				}
-			}
-
-			public override void Flush()
-			{
-				_inner.Flush();
-			}
-
-			public override int Read(byte[] buffer, int offset, int count)
-			{
-				return _inner.Read(buffer, offset, count);
-			}
-
-			public override long Seek(long offset, SeekOrigin origin)
-			{
-				return _inner.Seek(offset, origin);
-			}
-
-			public override void SetLength(long value)
-			{
-				_inner.SetLength(value);
-			}
-
-			public override void Write(byte[] buffer, int offset, int count)
-			{
-				_inner.Write(buffer, offset, count);
-				if (count > 0)
-					_owner.MarkTapeContentDirty();
-			}
-
-			protected override void Dispose(bool disposing)
-			{
-				if (disposing)
-					_inner.Dispose();
-				base.Dispose(disposing);
-			}
-
-			public byte CurrentByte
-			{
-				get
-				{
-					return ((IBitAwareStream)_inner).CurrentByte;
-				}
-				set
-				{
-					((IBitAwareStream)_inner).CurrentByte = value;
-				}
-			}
-
-			public int OffsetIntoCurrentByte
-			{
-				get
-				{
-					return ((IBitAwareStream)_inner).OffsetIntoCurrentByte;
-				}
-				set
-				{
-					((IBitAwareStream)_inner).OffsetIntoCurrentByte = value;
-				}
-			}
-		}
-
 		private sealed class WizardCodeWriter : CodeWriter
 		{
 			private readonly BackupWizard _owner;
