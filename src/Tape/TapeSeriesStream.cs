@@ -57,6 +57,7 @@ namespace BigRedProf.Data.Tape
 		private readonly List<Tape> _orderedTapes;
 		private int _currentIndex;
 		private TapeCursor _current;
+		private long _totalSeriesBits;
 
 		// Pending partial-byte flush buffering (to disambiguate Align vs Dispose semantics)
 		private bool _hasPendingPartial;
@@ -123,6 +124,13 @@ namespace BigRedProf.Data.Tape
 		{
 			_currentIndex = 0;
 			_current = MakeReadCursor(_orderedTapes[_currentIndex]);
+			_totalSeriesBits = 0;
+
+			// TODO: This is dumb. We can't assume a tape position indicates its full content length. But since
+			// we don't store it elsewehere, we have no choice for now. We need to add something like a
+			// ContentLength field to TapeLabel in the future.
+			foreach (Tape tape in _orderedTapes)
+				_totalSeriesBits += tape.Position;
 
 			CurrentByte = 0;
 			OffsetIntoCurrentByte = 0;
@@ -158,7 +166,7 @@ namespace BigRedProf.Data.Tape
 
 		#region Stream capability properties
 		public override bool CanRead => _mode == OpenMode.Read;
-		public override bool CanSeek => false;
+		public override bool CanSeek => true;
 		public override bool CanWrite => _mode == OpenMode.Append;
 
 		public override long Length => throw new NotSupportedException();
@@ -362,7 +370,68 @@ namespace BigRedProf.Data.Tape
 		#endregion
 
 		#region Seek/SetLength not supported
-		public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+		public override long Seek(long offset, SeekOrigin origin)
+		{
+			if (!CanSeek)
+				throw new NotSupportedException("Seeking is only supported in Read mode.");
+			if (_isDisposed)
+				throw new ObjectDisposedException(nameof(TapeSeriesStream));
+
+			long target;
+			switch (origin)
+			{
+				case SeekOrigin.Begin:
+					target = offset;
+					break;
+				case SeekOrigin.Current:
+				{
+					// current absolute bit position = sum(bits of earlier tapes) _current.BitPosition
+					long prefix = 0;
+					for (int i = 0; i < _currentIndex; i++)
+						prefix += _orderedTapes[i].Position;
+					target = prefix + _current.BitPosition + offset;
+				}
+				break;
+				case SeekOrigin.End:
+					target = (_totalSeriesBits) + offset; // offset may be negative
+					break;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(origin));
+			}
+
+			if (target < 0 || target > _totalSeriesBits)
+				throw new ArgumentOutOfRangeException(nameof(offset), "Bit offset is out of range for the series.");
+
+			// Find the tape that contains 'target' and set per-tape cursor
+			long running = 0;
+			int idx = 0;
+			while (idx < _orderedTapes.Count)
+			{
+				int tapeBits = _orderedTapes[idx].Position;
+				if (target <= running + tapeBits) break;
+				running += tapeBits;
+				idx++;
+			}
+
+			if (idx >= _orderedTapes.Count)
+			{
+				// target == _totalSeriesBits: position to logical EOF (at last tape's end)
+				idx = _orderedTapes.Count - 1;
+				running -= _orderedTapes[idx].Position; // back to start of last tape
+				target = running + _orderedTapes[idx].Position;
+			}
+
+			_currentIndex = idx;
+			_current = MakeReadCursor(_orderedTapes[idx]);
+			_current.BitPosition = (int)(target - running); // 0..tapeBits
+
+			// clear partial-byte state; reading resumes cleanly at this bit
+			CurrentByte = 0;
+			OffsetIntoCurrentByte = 0;
+
+			return target; // return absolute bit position
+		}
+
 		public override void SetLength(long value) => throw new NotSupportedException();
 		#endregion
 
