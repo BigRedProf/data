@@ -309,6 +309,45 @@ namespace BigRedProf.Data.Tape.Test
 		}
 		#endregion
 
+		#region x
+		[Fact]
+		public void Read_ShouldRespectContentLength_WhenTapePositionIsRewound()
+		{
+			Librarian librarian = CreateLibrarian();
+			Guid seriesId = NewSeriesId();
+
+			BackupWizard wizard = BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Content length test");
+
+			byte[] data = new byte[2];
+			data[0] = 0xAA;
+			data[1] = 0x55;
+
+			using (TapeSeriesStream writeStream = new TapeSeriesStream(librarian, seriesId, TapeSeriesStream.OpenMode.Append))
+			using (CodeWriter writer = new CodeWriter(writeStream))
+			{
+				writer.AlignToNextByteBoundary();
+				writer.WriteCode(new Code(data));
+			}
+
+			Tape tape = GetLastTape(librarian, seriesId);
+			TapeLabel label = tape.ReadLabel();
+			label.AddTrait(new Trait<int>(TapeTrait.TapePosition, 0));
+			tape.WriteLabel(label);
+
+			using (TapeSeriesStream readStream = new TapeSeriesStream(librarian, seriesId, TapeSeriesStream.OpenMode.Read))
+			{
+				byte[] buffer = new byte[data.Length];
+				int read = readStream.Read(buffer, 0, buffer.Length);
+
+				Assert.Equal(data.Length, read);
+				for (int i = 0; i < data.Length; ++i)
+				{
+					Assert.Equal(data[i], buffer[i]);
+				}
+			}
+		}
+		#endregion
+
 		#region negative capability tests
 		[Fact]
 		public void Read_ShouldThrow_WhenOpenedInAppendMode()
