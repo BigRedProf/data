@@ -204,21 +204,7 @@ namespace BigRedProf.Data.Tape.Test
 				writer.WriteCode(new Code(new byte[] { bytes[1] }));
 			}
 
-			List<Tape> tapes = new List<Tape>();
-			foreach (Tape tape in librarian.FetchTapesInSeries(seriesId))
-				tapes.Add(tape);
-
-			tapes.Sort(delegate (Tape left, Tape right)
-			{
-				TapeLabel leftLabel = left.ReadLabel();
-				TapeLabel rightLabel = right.ReadLabel();
-
-				if (leftLabel.SeriesNumber < rightLabel.SeriesNumber)
-					return -1;
-				if (leftLabel.SeriesNumber > rightLabel.SeriesNumber)
-					return 1;
-				return 0;
-			});
+			IList<Tape> tapes = librarian.FetchTapesInSeries(seriesId);
 
 			Assert.Equal(2, tapes.Count);
 

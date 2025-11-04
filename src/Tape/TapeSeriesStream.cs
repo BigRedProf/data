@@ -99,13 +99,6 @@ namespace BigRedProf.Data.Tape
 			if (_orderedTapes.Count == 0)
 				throw new InvalidOperationException("No tapes found in the requested series.");
 
-			_orderedTapes.Sort((a, b) =>
-			{
-				TapeLabel la = a.ReadLabel();
-				TapeLabel lb = b.ReadLabel();
-				return la.SeriesNumber.CompareTo(lb.SeriesNumber);
-			});
-
 			switch (mode)
 			{
 				case OpenMode.Read:

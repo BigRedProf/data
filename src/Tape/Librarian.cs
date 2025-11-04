@@ -1,7 +1,6 @@
 using BigRedProf.Data.Core;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace BigRedProf.Data.Tape
 {
@@ -52,23 +51,38 @@ namespace BigRedProf.Data.Tape
 				return _tapeProvider.FetchAllTapesInternal();
 			}
 
-			public IEnumerable<Tape> FetchTapesInSeries(Guid seriesId)
+			public IList<Tape> FetchTapesInSeries(Guid seriesId)
 			{
 				if (seriesId == Guid.Empty)
 					throw new ArgumentException("Series ID cannot be empty.", nameof(seriesId));
 
-				return _tapeProvider.FetchAllTapesInternal()
-				.Where(tape =>
+				IEnumerable<Tape> allTapes = _tapeProvider.FetchAllTapesInternal();
+				List<Tape> tapesInSeries = new List<Tape>();
+
+				foreach (Tape tape in allTapes)
 				{
-					if (!tape.ReadLabel().TryGetTrait<Guid>(CoreTrait.SeriesId, out Guid tapeSeriesId))
-						return false;
+					if (tape == null)
+						continue;
+
+					TapeLabel label = tape.ReadLabel();
+					Guid tapeSeriesId;
+					if (!label.TryGetTrait<Guid>(CoreTrait.SeriesId, out tapeSeriesId))
+						continue;
 
 					if (tapeSeriesId != seriesId)
-						return false;
+						continue;
 
-					return true;
+					tapesInSeries.Add(tape);
 				}
-				);
+
+				tapesInSeries.Sort((left, right) =>
+				{
+					TapeLabel leftLabel = left.ReadLabel();
+					TapeLabel rightLabel = right.ReadLabel();
+					return leftLabel.SeriesNumber.CompareTo(rightLabel.SeriesNumber);
+				});
+
+				return tapesInSeries;
 			}
 
 			public void AddTape(Tape tape)
