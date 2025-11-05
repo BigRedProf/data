@@ -34,6 +34,7 @@ namespace BigRedProf.Data.Core
 				throw new ArgumentNullException(nameof(stream));
 
 			_stream = stream;
+			// BUGBUG: Pretty sure we need to read the current byte if this stream is readable and/or not at the end.
 			_currentByte = 0;
 			_offsetIntoCurrentByte = 0;
 			_isDisposed = false;
@@ -167,6 +168,7 @@ namespace BigRedProf.Data.Core
 		private void WriteCurrentByte()
 		{
 			_stream.WriteByte(_currentByte);
+			// BUGBUG: Pretty sure we need to read the current byte if this stream is readable and/or not at the end.
 			_currentByte = 0;
 			_offsetIntoCurrentByte = 0;
 
