@@ -6,7 +6,7 @@ using System.Text;
 
 namespace BigRedProf.Data.Core.Internal
 {
-	internal class CodeStream : Stream, IBitAwareStream, IDisposable
+	internal class CodeStream : BitAwareStream, IDisposable
 	{
 		#region fields
 		private MemoryStream _memoryStream;
@@ -41,11 +41,6 @@ namespace BigRedProf.Data.Core.Internal
 				_memoryStream.Position = value;
 			}
 		}
-		#endregion
-
-		#region IBitAwareStream properties
-		public byte CurrentByte { get; set; }
-		public int OffsetIntoCurrentByte { get; set; }
 		#endregion
 
 		#region methods

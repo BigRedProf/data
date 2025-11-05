@@ -1,5 +1,4 @@
 using BigRedProf.Data.Core;
-using BigRedProf.Data.Core.Internal;
 using BigRedProf.Data.Tape.Internal;
 using System;
 using System.Collections.Generic;
@@ -14,7 +13,7 @@ namespace BigRedProf.Data.Tape
 	/// - Append mode: appends content at series tail; auto-rolls to a new tape when full.
 	/// Designed to be used with CodeReader/CodeWriter.
 	/// </summary>
-	public sealed class TapeSeriesStream : Stream, IBitAwareStream
+	public sealed class TapeSeriesStream : BitAwareStream
 	{
 		#region nested types
 		public enum OpenMode
@@ -75,11 +74,6 @@ namespace BigRedProf.Data.Tape
 		/// Raised after the stream rolls from the finished tape to a new current tape.
 		/// </summary>
 		public event EventHandler<RolloverEventArgs> CurrentTapeChanged;
-		#endregion
-
-		#region IBitAwareStream (maintained by CodeWriter during partial-byte writes)
-		public byte CurrentByte { get; set; }
-		public int OffsetIntoCurrentByte { get; set; }
 		#endregion
 
 		#region construction

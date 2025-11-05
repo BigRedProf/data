@@ -1,4 +1,3 @@
-using BigRedProf.Data.Core.Internal;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -217,7 +216,7 @@ namespace BigRedProf.Data.Core
 
 		private void UpdateBitAwareStream()
 		{
-			IBitAwareStream bitAwareStream = _stream as IBitAwareStream;
+			BitAwareStream bitAwareStream = _stream as BitAwareStream;
 			if (bitAwareStream != null)
 			{
 				bitAwareStream.CurrentByte = _currentByte;
