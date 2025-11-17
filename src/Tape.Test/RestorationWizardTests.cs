@@ -15,7 +15,7 @@ namespace BigRedProf.Data.Tape.Test
 		public void OpenExistingTapeSeries_ShouldThrow_WhenLibraryIsNull()
 		{
 			Assert.Throws<ArgumentNullException>(() =>
-				RestorationWizard.OpenExistingTapeSeries((TapeLibrary)null, Guid.Parse("11111111-1111-1111-1111-111111111111"), 0));
+				RestorationWizard.OpenExistingTapeSeries((TapeLibrary)null!, Guid.Parse("11111111-1111-1111-1111-111111111111"), 0));
 		}
 
 		[Trait("Region", "RestorationWizard functions")]

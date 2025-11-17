@@ -46,7 +46,7 @@ public sealed class RestorationWizard : IDisposable
 		var tapes = librarian.FetchTapesInSeries(seriesId);
 		if (tapes == null) throw new InvalidOperationException("No tapes found in the requested series.");
 
-		Tape first = null;
+		Tape? first = null;
 		foreach (var t in tapes) { if (t != null) { first = t; break; } }
 		if (first == null) throw new InvalidOperationException("No tapes found in the requested series.");
 		var firstLabel = first.ReadLabel();
@@ -65,9 +65,7 @@ public sealed class RestorationWizard : IDisposable
 
 	public void Dispose()
 	{
-		_codeReader?.Dispose();
-		_seriesStream?.Dispose();
-		_codeReader = null;
-		_seriesStream = null;
+		_codeReader.Dispose();
+		_seriesStream.Dispose();
 	}
 }

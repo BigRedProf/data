@@ -57,7 +57,7 @@ namespace BigRedProf.Data.Tape
 		private readonly List<Tape> _orderedTapes;
 		private readonly List<int> _tapeContentLengths;
 		private int _currentIndex;
-		private TapeCursor _current;
+		private TapeCursor? _current;
 		private long _totalSeriesBits;
 
 		// Pending partial-byte flush buffering (to disambiguate Align vs Dispose semantics)
@@ -73,7 +73,7 @@ namespace BigRedProf.Data.Tape
 		/// <summary>
 		/// Raised after the stream rolls from the finished tape to a new current tape.
 		/// </summary>
-		public event EventHandler<RolloverEventArgs> CurrentTapeChanged;
+		public event EventHandler<RolloverEventArgs>? CurrentTapeChanged;
 		#endregion
 
 		#region construction
@@ -204,6 +204,9 @@ namespace BigRedProf.Data.Tape
 			if (offset < 0 || count < 0 || offset + count > buffer.Length)
 				throw new ArgumentOutOfRangeException("Invalid buffer range.");
 
+			if(_current == null)
+				throw new InvalidOperationException("_current is null. This should NEVER happen.");
+
 			int totalRead = 0;
 
 			while (count > 0)
@@ -271,6 +274,9 @@ namespace BigRedProf.Data.Tape
 				throw new ArgumentNullException(nameof(buffer));
 			if (offset < 0 || count < 0 || offset + count > buffer.Length)
 				throw new ArgumentOutOfRangeException("Invalid buffer range.");
+
+			if (_current == null)
+				throw new InvalidOperationException("_current is null. This should NEVER happen.");
 
 			while (count > 0)
 			{
@@ -391,6 +397,9 @@ namespace BigRedProf.Data.Tape
 			if (_isDisposed)
 				throw new ObjectDisposedException(nameof(TapeSeriesStream));
 
+			if (_current == null)
+				throw new InvalidOperationException("_current is null. This should NEVER happen.");
+
 			long target;
 			switch (origin)
 			{
@@ -503,7 +512,10 @@ namespace BigRedProf.Data.Tape
 
 		private void RolloverAppendTape()
 		{
-			Tape finished = _current?.Tape;
+			if (_current == null)
+				throw new InvalidOperationException("_current is null. This should NEVER happen.");
+
+			Tape finished = _current.Tape;
 
 			Guid newId = Guid.NewGuid();
 			Tape newTape = Tape.CreateNew(_librarian.TapeProvider, newId);
@@ -535,6 +547,9 @@ namespace BigRedProf.Data.Tape
 
 		private void PersistTapePosition()
 		{
+			if (_current == null)
+				throw new InvalidOperationException("_current is null. This should NEVER happen.");
+
 			_current.Tape.Position = _current.BitPosition;
 			_current.ContentBitLength = _current.BitPosition;
 		}
@@ -555,6 +570,9 @@ namespace BigRedProf.Data.Tape
 		#region helpers (pending commit)
 		private void CommitPendingAsFullByte()
 		{
+			if (_current == null)
+				throw new InvalidOperationException("_current is null. This should NEVER happen.");
+
 			if (!_hasPendingPartial)
 				return;
 
@@ -571,6 +589,9 @@ namespace BigRedProf.Data.Tape
 
 		private void CommitPendingAsMeaningfulBits()
 		{
+			if (_current == null)
+				throw new InvalidOperationException("_current is null. This should NEVER happen.");
+
 			if (!_hasPendingPartial)
 				return;
 
