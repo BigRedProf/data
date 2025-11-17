@@ -65,6 +65,10 @@ namespace BigRedProf.Data.PackRatCompiler
 			if (_compilation == null)
 			{
 				Project project = _msBuildWorkspace.OpenProjectAsync(projectFile.FullName).Result;
+				CSharpParseOptions parseOptions = (CSharpParseOptions)project.ParseOptions!;
+				if (parseOptions.LanguageVersion < LanguageVersion.CSharp8)
+						parseOptions = parseOptions.WithLanguageVersion(LanguageVersion.CSharp8);
+				project = project.WithParseOptions(parseOptions);
 				_compilation = (CSharpCompilation)project.GetCompilationAsync().Result!;
 				ReportCompilationDiagnostics(_compilation);
 			}
@@ -86,15 +90,18 @@ namespace BigRedProf.Data.PackRatCompiler
 			else
 			{
 				LanguageVersion languageVersion = _compilation.LanguageVersion;
+				if (languageVersion < LanguageVersion.CSharp8)
+						languageVersion = LanguageVersion.CSharp8;
 				CSharpParseOptions parseOptions = CSharpParseOptions.Default.WithLanguageVersion(languageVersion);
-				CSharpSyntaxTree syntaxTree = (CSharpSyntaxTree) CSharpSyntaxTree.ParseText(cSharpText, parseOptions);
+				CSharpSyntaxTree syntaxTree = (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(cSharpText, parseOptions);
+				CSharpCompilationOptions compilationOptions = _compilation.Options;
 				_compilation = CSharpCompilation.Create(
-					"FooSembly",
-					_compilation.SyntaxTrees.Append(syntaxTree),
-					_compilation.References,
-					null);
+						"FooSembly",
+						_compilation.SyntaxTrees.Append(syntaxTree),
+						_compilation.References,
+						compilationOptions);
 				ReportCompilationDiagnostics(_compilation);
-				
+
 				return syntaxTree;
 			}
 		}
