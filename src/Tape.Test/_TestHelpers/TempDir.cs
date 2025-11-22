@@ -1,5 +1,7 @@
-using System;
-using System.IO;
+// HACKHACK: This class is shared between multiple test projects:
+// - BigRedProf.Data.Tape.Test
+// - BigRedProf.Stories.StoriesCli.Test
+// BE SURE TO KEEP IN SYNC!
 
 namespace BigRedProf.Data.Tape.Test._TestHelpers
 {
