@@ -167,6 +167,7 @@ namespace BigRedProf.Data.Core
 		#region private methods
 		private void WriteCurrentByte()
 		{
+			UpdateBitAwareStream();
 			_stream.WriteByte(_currentByte);
 			// BUGBUG: Pretty sure we need to read the current byte if this stream is readable and/or not at the end.
 			_currentByte = 0;
