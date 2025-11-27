@@ -4,12 +4,12 @@ using System.Text;
 
 namespace BigRedProf.Data.Core
 {
-	/// <summary>
-	/// Instructs the pack rat compiler to pack this list field in the specified order using the specified
-	/// schema for each element.
-	/// </summary>
-	[AttributeUsage(AttributeTargets.Field)]
-	public class PackListFieldAttribute : Attribute
+		/// <summary>
+		/// Instructs the pack rat compiler to pack this list field in the specified order using the specified
+		/// schema for each element.
+		/// </summary>
+		[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+		public class PackListFieldAttribute : Attribute
 	{
 		#region constructors
 		/// <summary>
