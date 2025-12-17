@@ -147,10 +147,19 @@ namespace BigRedProf.Data.Core
 			if (_isDisposed)
 				return;
 
-			if(disposing)
+			if (disposing)
 			{
 				if (_offsetIntoCurrentByte != 0)
+				{
+					byte finalByte = _currentByte;
+					int finalOffset = _offsetIntoCurrentByte;
+
 					WriteCurrentByte();
+
+					_currentByte = finalByte;
+					_offsetIntoCurrentByte = finalOffset;
+					UpdateBitAwareStream();
+				}
 
 				_stream.Dispose();
 			}

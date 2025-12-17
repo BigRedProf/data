@@ -59,7 +59,10 @@ namespace BigRedProf.Data.Core.Internal
 			if (OffsetIntoCurrentByte == 0)
 				_code = new Code(_memoryStream.ToArray(), (int) Length * 8);
 			else
-				_code = new Code(_memoryStream.ToArray(), (int) Length * 8 + OffsetIntoCurrentByte, CurrentByte);
+			{
+				int meaningfulBits = ((int)Length - 1) * 8 + OffsetIntoCurrentByte;
+				_code = new Code(_memoryStream.ToArray(), meaningfulBits, CurrentByte);
+			}
 		}
 
 		public override int Read(byte[] buffer, int offset, int count)
