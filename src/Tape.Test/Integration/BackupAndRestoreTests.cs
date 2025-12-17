@@ -1,9 +1,5 @@
-﻿using BigRedProf.Data.Tape.Libraries;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using BigRedProf.Data.Core;
+using BigRedProf.Data.Tape.Libraries;
 
 namespace BigRedProf.Data.Tape.Test.Integration
 {
@@ -70,6 +66,33 @@ namespace BigRedProf.Data.Tape.Test.Integration
 			Assert.Equal("11111", restorationWizard.CodeReader.Read(5));
 			Assert.Equal("00000", restorationWizard.CodeReader.Read(5));
 			Assert.Equal("11111", restorationWizard.CodeReader.Read(5));
+		}
+
+		[Trait("Region", "Backup And Restore")]
+		[Fact]
+		public void BackupAndRestore_ShouldWork_WithNonByteAlignedWrites2()
+		{
+			MemoryLibrary library = new MemoryLibrary();
+			Librarian librarian = library.Librarian;
+			Guid seriesId = new Guid("aaaaaaaa-0000-0000-0000-000000000003");
+			string seriesName = "not byte aligned II";
+			string seriesDescription = "These reads and writes are also NOT byte-aligned.";
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterCorePackRats();
+			PackRat<Code> codePackRat = piedPiper.GetPackRat<Code>(CoreSchema.Code);
+
+			BackupWizard backupWizard = BackupWizard.CreateNew(library, seriesId, seriesName, seriesDescription);
+			backupWizard.Writer.WriteCode(piedPiper.EncodeModel<Code>("0", CoreSchema.Code));
+			backupWizard.Writer.WriteCode(piedPiper.EncodeModel<Code>("00", CoreSchema.Code));
+			backupWizard.Writer.WriteCode(piedPiper.EncodeModel<Code>("10101", CoreSchema.Code));
+
+			RestorationWizard restorationWizard = RestorationWizard.OpenExistingTapeSeries(library, seriesId, 0);
+			Code code1 = codePackRat.UnpackModel(restorationWizard.CodeReader);
+			Assert.Equal("0", code1.ToString());
+			Code code2 = codePackRat.UnpackModel(restorationWizard.CodeReader);
+			Assert.Equal("00", code2.ToString());
+			Code code3 = codePackRat.UnpackModel(restorationWizard.CodeReader);
+			Assert.Equal("10101", code3.ToString());
 		}
 		#endregion
 	}
