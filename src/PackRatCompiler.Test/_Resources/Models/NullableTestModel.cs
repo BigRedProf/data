@@ -1,5 +1,7 @@
 ﻿using BigRedProf.Data.Core;
 
+#nullable enable
+
 namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 {
 	[GeneratePackRat("b8a0492a-c5e6-4955-819b-f47797005105")]
@@ -15,6 +17,6 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 		public string? ImplicitlyNullableField { get; set; }
 
 		[PackField(4, CoreSchema.TextUtf8)]
-		public string ImplicitlyNonNullableField { get; set; }
+		public string ImplicitlyNonNullableField { get; set; } = string.Empty;
 	}
 }
