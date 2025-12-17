@@ -5,7 +5,7 @@
 		<TargetFramework>netstandard2.1</TargetFramework>
 
 		<PackageId>BigRedProf.Data.Tape</PackageId>
-		<Version>0.7.6</Version>
+		<Version>0.7.7</Version>
 		<IsPackable>true</IsPackable>
 		<RepositoryUrl>https://github.com/BigRedProf/data</RepositoryUrl>
 
