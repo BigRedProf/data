@@ -1,6 +1,8 @@
 ﻿using BigRedProf.Data.Core.Internal.PackRats;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Text;
 
 namespace BigRedProf.Data.Core
@@ -35,6 +37,12 @@ namespace BigRedProf.Data.Core
 			if(trail.Length == 0)
 				throw new ArgumentException("Trail must contain at least one element.", nameof(trail));
 
+			foreach(string segment in trail)
+			{
+				if(string.IsNullOrEmpty(segment))
+					throw new ArgumentException("Trail segments cannot be null or empty.", nameof(trail));
+			}
+
 			_trail = new List<string>(trail);
 		}
 		#endregion
@@ -48,6 +56,84 @@ namespace BigRedProf.Data.Core
 		{
 			Code encodedTextTrail = _piedPiper.EncodeModel(this, CoreSchema.TextTrail);
 			return Multihash.FromCode(encodedTextTrail, algorithm);
+		}
+		#endregion
+
+		#region object methods
+		public override string ToString()
+		{
+			return ToStringRepresentation(this, '/');
+		}
+		#endregion
+
+		#region functions
+		public static string ToStringRepresentation(TextTrail textTrail, char separator)
+		{
+			if(textTrail == null)
+				throw new ArgumentNullException(nameof(textTrail));
+
+			StringBuilder sb = new StringBuilder();
+			for(int i = 0; i < textTrail.Segments.Count; ++i)
+			{
+				string segment = textTrail.Segments[i];
+
+				if(i > 0)
+					sb.Append(separator);
+
+				for(int j = 0; j < segment.Length; ++j)
+				{
+					char c = segment[j];
+					if (c == separator)
+					{
+						// If the separator character appears in the segment, we need to escape it by doubling it.
+						sb.Append(separator);
+						sb.Append(separator);
+					}
+					else
+					{
+						// Otherwise, we can just append the character as is.
+						sb.Append(c);
+					}
+				}
+			}
+			return sb.ToString();
+		}
+
+		public static TextTrail FromStringRepresentation(string stringRepresentation, char separator)
+		{
+			Debug.Assert(stringRepresentation != null, "stringRepresentation cannot be null.");
+			List<string> segments = new List<string>();
+			StringBuilder currentSegment = new StringBuilder();
+			for(int i = 0; i < stringRepresentation.Length; ++i)
+			{
+				char c = stringRepresentation[i];
+				if (c == separator)
+				{
+					if (i + 1 < stringRepresentation.Length && stringRepresentation[i + 1] == separator)
+					{
+						// If we encounter a separator character followed by another separator character, this is an escaped separator, so we add a single separator to the current segment and skip the next character.
+						currentSegment.Append(separator);
+						i++;
+					}
+					else
+					{
+						// Otherwise, this is a segment separator, so we add the current segment to the list of segments and start a new segment.
+						segments.Add(currentSegment.ToString());
+						currentSegment.Clear();
+					}
+				}
+				else
+				{
+					// If it's not a separator character, we just add it to the current segment.
+					currentSegment.Append(c);
+				}
+			}
+			// Add the last segment if there is one.
+			if (currentSegment.Length > 0)
+			{
+				segments.Add(currentSegment.ToString());
+			}
+			return new TextTrail(segments.ToArray());
 		}
 		#endregion
 	}

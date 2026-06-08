@@ -9,7 +9,7 @@ namespace BigRedProf.Data.Test
 {
 	public class TextTrailTests
 	{
-		#region constructors
+		#region constructor tests
 		[Fact]
 		[Trait("Region", "constructors")]
 		public void Constructor_ShouldThrowIfTrailIsNull()
@@ -27,6 +27,26 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentException>(() =>
 			{
 				new TextTrail();
+			});
+		}
+
+		[Fact]
+		[Trait("Region", "constructors")]
+		public void Constructor_ShouldNotAllowNullSegments()
+		{
+			Assert.Throws<ArgumentException>(() =>
+			{
+				new TextTrail("seg1", null, "seg3");
+			});
+		}
+
+		[Fact]
+		[Trait("Region", "constructors")]
+		public void Constructor_ShouldNotAllowEmptySegments()
+		{
+			Assert.Throws<ArgumentException>(() =>
+			{
+				new TextTrail("seg1", "", "seg3");
 			});
 		}
 
@@ -51,7 +71,7 @@ namespace BigRedProf.Data.Test
 		}
 		#endregion
 
-		#region properties
+		#region property tests
 		[Fact]
 		[Trait("Region", "properties")]
 		public void Indexer_ShouldThrowIfIndexIsOutOfRange()
@@ -99,6 +119,76 @@ namespace BigRedProf.Data.Test
 			Multihash hash = trail.GetMultihash(MultihashAlgorithm.Sha256);
 
 			Assert.Equal(expectedHash, hash.ToMultibaseString());
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void ToString_ShouldReturnConcatenatedSegments()
+		{
+			TextTrail trail = new TextTrail("seg1", "seg2", "seg3");
+			string expectedString = "seg1/seg2/seg3";
+			Assert.Equal(expectedString, trail.ToString());
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void ToString_ShouldHandleSpecialCharacters()
+		{
+			TextTrail trail = new TextTrail("seg/1", "seg\\2", "seg3");
+			string expectedString = "seg//1/seg\\2/seg3";
+			Assert.Equal(expectedString, trail.ToString());
+		}
+		#endregion
+
+		#region function tests
+		[Fact]
+		[Trait("Region", "functions")]
+		public void ToStringRepresentation_ShouldReturnConcatenatedSegments()
+		{
+			TextTrail trail = new TextTrail("seg1", "seg2", "seg3");
+			string expectedString = "seg1+seg2+seg3";
+			string actualString = TextTrail.ToStringRepresentation(trail, '+');
+			Assert.Equal(expectedString, actualString);
+		}
+
+		[Fact]
+		[Trait("Region", "functions")]
+		public void ToStringRepresentation_ShouldHandleSpecialCharacters()
+		{
+			TextTrail trail = new TextTrail("seg+1", "seg\\2", "seg3");
+			string expectedString = "seg++1+seg\\2+seg3";
+			string actualString = TextTrail.ToStringRepresentation(trail, '+');
+			Assert.Equal(expectedString, actualString);
+		}
+
+		[Fact]
+		[Trait("Region", "functions")]
+		public void ToStringRepresentation_ShouldThrowIfTextTrailIsNull()
+		{
+			Assert.Throws<ArgumentNullException>(() =>
+			{
+				TextTrail.ToStringRepresentation(null, '/');
+			});
+		}
+
+		[Fact]
+		[Trait("Region", "functions")]
+		public void FromStringRepresentation_ShouldReturnTextTrail()
+		{
+			string str = "seg1+seg2+seg3";
+			TextTrail expectedTrail = new TextTrail("seg1", "seg2", "seg3");
+			TextTrail actualTrail = TextTrail.FromStringRepresentation(str, '+');
+			Assert.Equal(expectedTrail.Segments, actualTrail.Segments);
+		}
+
+		[Fact]
+		[Trait("Region", "functions")]
+		public void FromStringRepresentation_ShouldHandleSpecialCharacters()
+		{
+			string str = "seg++1+seg\\2+seg3";
+			TextTrail expectedTrail = new TextTrail("seg+1", "seg\\2", "seg3");
+			TextTrail actualTrail = TextTrail.FromStringRepresentation(str, '+');
+			Assert.Equal(expectedTrail.Segments, actualTrail.Segments);
 		}
 		#endregion
 	}
