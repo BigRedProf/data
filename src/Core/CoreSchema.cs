@@ -137,6 +137,11 @@
 		public const string TextAscii = "af494088-5e94-44bf-81d9-e0bcd62df092";
 
 		/// <summary>
+		/// The schema identifier for the <see cref="TextTrail"/> type."/>
+		/// </summary>
+		public const string TextTrail = "a34c0544-0133-4bf0-ac90-851c5006c0b6";
+
+		/// <summary>
 		/// The schema identifier for UTF-8-encoded text.
 		/// </summary>
 		public const string TextUtf8 = "9cdf52b4-4c47-4b6d-bc17-34f33312b7a7";

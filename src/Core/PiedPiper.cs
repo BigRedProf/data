@@ -65,6 +65,7 @@ namespace BigRedProf.Data.Core
 			RegisterPackRat<Multihash>(new MultihashPackRat(this), CoreSchema.MultihashSchema);
 			RegisterPackRat<float>(new SinglePackRat(this), CoreSchema.Single);
 			RegisterPackRat<string>(new TextPackRat(this, Encoding.ASCII), CoreSchema.TextAscii);
+			RegisterPackRat<TextTrail>(new TextTrailPackRat(this), CoreSchema.TextTrail);
 			RegisterPackRat<string>(new TextPackRat(this, Encoding.UTF8), CoreSchema.TextUtf8);
 			RegisterPackRat<string>(new TextPackRat(this, Encoding.Unicode), CoreSchema.TextUtf16);
 			RegisterPackRat<string>(new TextPackRat(this, Encoding.UTF32), CoreSchema.TextUtf32);
