@@ -52,6 +52,18 @@ namespace BigRedProf.Data.Core
 		#endregion
 
 		#region methods
+		public TextTrail Append(string segment)
+		{
+			if(string.IsNullOrEmpty(segment))
+				throw new ArgumentException("Segment cannot be null or empty.", nameof(segment));
+
+			string[] segments = new string[_trail.Count + 1];
+			for(int i = 0; i < _trail.Count; ++i)
+				segments[i] = _trail[i];
+			segments[_trail.Count] = segment;
+
+			return new TextTrail(segments);
+		}
 		public Multihash GetMultihash(MultihashAlgorithm algorithm)
 		{
 			Code encodedTextTrail = _piedPiper.EncodeModel(this, CoreSchema.TextTrail);
