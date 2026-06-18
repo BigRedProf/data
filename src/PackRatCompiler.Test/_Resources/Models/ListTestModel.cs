@@ -1,5 +1,7 @@
 ﻿using BigRedProf.Data.Core;
-using System.Collections;
+using System.Collections.Generic;
+
+#nullable enable
 
 namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 {
@@ -7,13 +9,13 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 	public class ListTestModel
 	{
 		[PackListField(1, CoreSchema.TextUtf8, ByteAligned.Yes)]
-		public IList<string> List { get; set; }
+		public IList<string> List { get; set; } = new List<string>();
 
 		[PackListField(2, CoreSchema.TextUtf8, ByteAligned.No)]
 		public IList<string>? NullableList { get; set; }
 
 		[PackListField(3, CoreSchema.TextUtf8, ByteAligned.No)]
-		public IList<string?> ListOfNullableElements { get; set; }
+		public IList<string?> ListOfNullableElements { get; set; } = new List<string?>();
 
 		[PackListField(4, CoreSchema.TextUtf8, ByteAligned.Yes)]
 		public IList<string?>? NullableListOfNullableElements { get; set; }
