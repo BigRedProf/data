@@ -8,12 +8,21 @@ namespace BigRedProf.Data.Core
 	/// often as small <see cref="Code"/> values called tokens. This helps to achieve efficiency by
 	/// packing the models into small tokens while still working with them as natural models.
 	/// </summary>
+	/// <remarks>
+	/// Thread safety: all members are safe for concurrent use, so a tokenizer can be hydrated
+	/// from a dynamic source (like a story) on one thread while other threads read. Once
+	/// hydration is complete, call <see cref="Freeze"/> to make reads lock-free and further
+	/// definitions throw.
+	/// </remarks>
 	/// <typeparam name="TModel">The model, or token definition, to be tokenized.</typeparam>
 	public class Tokenizer<TModel>
 	{
 		#region fields
-		private IDictionary<Code, TModel> _tokenToModelMap;
-		private IDictionary<TModel, Code> _modelToTokenMap;
+		private readonly object _lock = new object();
+		private readonly IDictionary<Code, TModel> _tokenToModelMap;
+		private readonly IDictionary<TModel, Code> _modelToTokenMap;
+		private volatile bool _isFrozen;
+		private int _nextOrdinal;
 		#endregion
 
 		#region constructors
@@ -57,35 +66,67 @@ namespace BigRedProf.Data.Core
 
 		#region properties
 		/// <summary>
+		/// True once <see cref="Freeze"/> has been called: reads are lock-free and further
+		/// definitions throw.
+		/// </summary>
+		public bool IsFrozen
+		{
+			get
+			{
+				return _isFrozen;
+			}
+		}
+
+		/// <summary>
 		/// The number of tokens defined.
 		/// </summary>
 		public int Count
 		{
 			get
 			{
-				return _tokenToModelMap.Count;
+				if (_isFrozen)
+					return _tokenToModelMap.Count;
+
+				lock (_lock)
+				{
+					return _tokenToModelMap.Count;
+				}
 			}
 		}
 
 		/// <summary>
-		/// The models that have been tokenized.
+		/// The models that have been tokenized. Before <see cref="Freeze"/> this returns a
+		/// snapshot; after, it exposes the (now immutable) definitions directly.
 		/// </summary>
 		public IEnumerable<TModel> Models
 		{
 			get
 			{
-				return _tokenToModelMap.Values;
+				if (_isFrozen)
+					return _tokenToModelMap.Values;
+
+				lock (_lock)
+				{
+					return new List<TModel>(_tokenToModelMap.Values);
+				}
 			}
 		}
 
 		/// <summary>
-		/// The defined tokens and the models they represent.
+		/// The defined tokens and the models they represent. Before <see cref="Freeze"/> this
+		/// returns a snapshot; after, it exposes the (now immutable) definitions directly.
 		/// </summary>
 		public IEnumerable<KeyValuePair<Code, TModel>> Tokens
 		{
 			get
 			{
-				return _tokenToModelMap;
+				if (_isFrozen)
+					return _tokenToModelMap;
+
+				lock (_lock)
+				{
+					return new List<KeyValuePair<Code, TModel>>(_tokenToModelMap);
+				}
 			}
 		}
 		#endregion
@@ -95,7 +136,9 @@ namespace BigRedProf.Data.Core
 		/// Defines a token. Tokens are wire format, so a definition is forever: attempting to
 		/// reuse an already-defined token, or to tokenize an already-tokenized model, throws.
 		/// Use <see cref="RedefineToken(Code, TModel)"/> for the rare deliberate redefinition,
-		/// such as updating the model behind a token after an entity changed.
+		/// such as updating the model behind a token after an entity changed. New code should
+		/// prefer <see cref="AllocateNextToken(TModel)"/> and let the tokenizer pick the token;
+		/// this method exists for pinning legacy hand-authored tokens.
 		/// </summary>
 		/// <param name="token">The token.</param>
 		/// <param name="model">The model, or token definition.</param>
@@ -105,6 +148,9 @@ namespace BigRedProf.Data.Core
 		/// <exception cref="ArgumentException">
 		/// Thrown if the token is already defined or the model is already tokenized.
 		/// </exception>
+		/// <exception cref="InvalidOperationException">
+		/// Thrown if the tokenizer is frozen.
+		/// </exception>
 		public void DefineToken(Code token, TModel model)
 		{
 			if (token == null)
@@ -113,14 +159,11 @@ namespace BigRedProf.Data.Core
 			if (model == null)
 				throw new ArgumentNullException(nameof(model));
 
-			if (_tokenToModelMap.ContainsKey(token))
-				throw new ArgumentException($"Token '{token}' is already defined.", nameof(token));
-
-			if (_modelToTokenMap.ContainsKey(model))
-				throw new ArgumentException("Model is already tokenized.", nameof(model));
-
-			_tokenToModelMap[token] = model;
-			_modelToTokenMap[model] = token;
+			lock (_lock)
+			{
+				ThrowIfFrozen();
+				DefineTokenCore(token, model);
+			}
 		}
 
 		/// <summary>
@@ -133,6 +176,9 @@ namespace BigRedProf.Data.Core
 		/// <exception cref="ArgumentNullException">
 		/// Thrown if the token or model is null.
 		/// </exception>
+		/// <exception cref="InvalidOperationException">
+		/// Thrown if the tokenizer is frozen.
+		/// </exception>
 		public void RedefineToken(Code token, TModel model)
 		{
 			if (token == null)
@@ -141,16 +187,70 @@ namespace BigRedProf.Data.Core
 			if (model == null)
 				throw new ArgumentNullException(nameof(model));
 
-			TModel previousModel;
-			if (_tokenToModelMap.TryGetValue(token, out previousModel))
-				_modelToTokenMap.Remove(previousModel);
+			lock (_lock)
+			{
+				ThrowIfFrozen();
 
-			Code previousToken;
-			if (_modelToTokenMap.TryGetValue(model, out previousToken))
-				_tokenToModelMap.Remove(previousToken);
+				TModel previousModel;
+				if (_tokenToModelMap.TryGetValue(token, out previousModel))
+					_modelToTokenMap.Remove(previousModel);
 
-			_tokenToModelMap[token] = model;
-			_modelToTokenMap[model] = token;
+				Code previousToken;
+				if (_modelToTokenMap.TryGetValue(model, out previousToken))
+					_tokenToModelMap.Remove(previousToken);
+
+				_tokenToModelMap[token] = model;
+				_modelToTokenMap[model] = token;
+			}
+		}
+
+		/// <summary>
+		/// Assigns the next token in the canonical sequence to the specified model and returns
+		/// it. The canonical encoding is wire format and fixed forever: the token for ordinal
+		/// <c>n</c> (zero-based) is the binary representation of <c>n + 1</c>, most significant
+		/// bit first, with no leading zeros — "1", "10", "11", "100", and so on. In a tokenizer
+		/// with no hand-pinned tokens, allocation is therefore fully deterministic: replaying
+		/// the same definitions in the same order always assigns the same tokens. Ordinals whose
+		/// canonical token collides with a hand-pinned token are skipped.
+		/// </summary>
+		/// <param name="model">The model, or token definition.</param>
+		/// <returns>The token assigned to the model.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if the model is null.</exception>
+		/// <exception cref="ArgumentException">
+		/// Thrown if the model is already tokenized.
+		/// </exception>
+		/// <exception cref="InvalidOperationException">
+		/// Thrown if the tokenizer is frozen.
+		/// </exception>
+		public Code AllocateNextToken(TModel model)
+		{
+			if (model == null)
+				throw new ArgumentNullException(nameof(model));
+
+			lock (_lock)
+			{
+				ThrowIfFrozen();
+
+				Code token = EncodeOrdinal(_nextOrdinal++);
+				while (_tokenToModelMap.ContainsKey(token))
+					token = EncodeOrdinal(_nextOrdinal++);
+
+				DefineTokenCore(token, model);
+
+				return token;
+			}
+		}
+
+		/// <summary>
+		/// Freezes the tokenizer: subsequent reads are lock-free and subsequent definitions
+		/// throw. Call this once hydration is complete. Freezing is idempotent.
+		/// </summary>
+		public void Freeze()
+		{
+			lock (_lock)
+			{
+				_isFrozen = true;
+			}
 		}
 
 		/// <summary>
@@ -160,7 +260,13 @@ namespace BigRedProf.Data.Core
 		/// <returns>True if the token has been defined, otherwise false.</returns>
 		public bool IsTokenDefined(Code token)
 		{
-			return _tokenToModelMap.ContainsKey(token);
+			if (_isFrozen)
+				return _tokenToModelMap.ContainsKey(token);
+
+			lock (_lock)
+			{
+				return _tokenToModelMap.ContainsKey(token);
+			}
 		}
 
 		/// <summary>
@@ -170,7 +276,13 @@ namespace BigRedProf.Data.Core
 		/// <returns>True if the model has been tokenized, otherwise false.</returns>
 		public bool IsModelTokenized(TModel model)
 		{
-			return _modelToTokenMap.ContainsKey(model);
+			if (_isFrozen)
+				return _modelToTokenMap.ContainsKey(model);
+
+			lock (_lock)
+			{
+				return _modelToTokenMap.ContainsKey(model);
+			}
 		}
 
 		/// <summary>
@@ -186,7 +298,7 @@ namespace BigRedProf.Data.Core
 				throw new ArgumentNullException(nameof(token));
 
 			TModel model;
-			if (!_tokenToModelMap.TryGetValue(token, out model))
+			if (!TryGetModel(token, out model))
 				throw new ArgumentException("Token not defined.", nameof(token));
 
 			return model;
@@ -207,9 +319,13 @@ namespace BigRedProf.Data.Core
 			if (token == null)
 				throw new ArgumentNullException(nameof(token));
 
-			bool hasTokenDefinition = _tokenToModelMap.TryGetValue(token, out model);
+			if (_isFrozen)
+				return _tokenToModelMap.TryGetValue(token, out model);
 
-			return hasTokenDefinition;
+			lock (_lock)
+			{
+				return _tokenToModelMap.TryGetValue(token, out model);
+			}
 		}
 
 		/// <summary>
@@ -225,7 +341,7 @@ namespace BigRedProf.Data.Core
 				throw new ArgumentNullException(nameof(model));
 
 			Code token;
-			if(!_modelToTokenMap.TryGetValue(model, out token))
+			if (!TryGetToken(model, out token))
 				throw new ArgumentException("Model not tokenized.", nameof(model));
 
 			return token;
@@ -247,10 +363,46 @@ namespace BigRedProf.Data.Core
 			if (model == null)
 				throw new ArgumentNullException(nameof(model));
 
-			if (!_modelToTokenMap.TryGetValue(model, out token))
-				return false;
+			if (_isFrozen)
+				return _modelToTokenMap.TryGetValue(model, out token);
 
-			return true;
+			lock (_lock)
+			{
+				return _modelToTokenMap.TryGetValue(model, out token);
+			}
+		}
+		#endregion
+
+		#region private methods
+		private void DefineTokenCore(Code token, TModel model)
+		{
+			if (_tokenToModelMap.ContainsKey(token))
+				throw new ArgumentException($"Token '{token}' is already defined.", nameof(token));
+
+			if (_modelToTokenMap.ContainsKey(model))
+				throw new ArgumentException("Model is already tokenized.", nameof(model));
+
+			_tokenToModelMap[token] = model;
+			_modelToTokenMap[model] = token;
+		}
+
+		private void ThrowIfFrozen()
+		{
+			if (_isFrozen)
+			{
+				throw new InvalidOperationException(
+					"The tokenizer is frozen. Tokens cannot be defined after Freeze() is called."
+				);
+			}
+		}
+		#endregion
+
+		#region private functions
+		private static Code EncodeOrdinal(int ordinal)
+		{
+			// The canonical ordinal-to-token encoding. This is wire format: it must never
+			// change, just like schema identifiers.
+			return new Code(Convert.ToString((long)ordinal + 1, 2));
 		}
 		#endregion
 

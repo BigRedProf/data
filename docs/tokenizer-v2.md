@@ -57,13 +57,17 @@ public Code AllocateNextToken(TModel model);
 public int Count { get; }
 ```
 
-with **one canonical ordinal → Code encoding** shared by all tokenizers (the existing
-efficient-whole-number style encoding is fine; what matters is that it's fixed forever
-and documented as wire format). Determinism is the point: if the rule is "the *n*th
-`AgentCreated` event gets token `encode(n)`," every consumer replaying the story assigns
-identical tokens with no coordination. The created-event should still *record* the
-assigned token explicitly — the allocator makes it impossible to get wrong, the recorded
-token makes it auditable.
+with **one canonical ordinal → Code encoding** shared by all tokenizers, fixed forever
+and documented as wire format. **The chosen encoding: ordinal *n* (zero-based) gets the
+binary representation of *n* + 1, most significant bit first, no leading zeros** — "1",
+"10", "11", "100", … — which is unique for every ordinal and is exactly the scheme the
+digihouse Magic classes were already approximating by hand. Ordinals whose canonical
+token collides with a hand-pinned token are skipped, so mixed pinned/allocated
+tokenizers stay safe; pure story-fed tokenizers are fully deterministic. Determinism is
+the point: if the rule is "the *n*th `AgentCreated` event gets token `encode(n)`," every
+consumer replaying the story assigns identical tokens with no coordination. The
+created-event should still *record* the assigned token explicitly — the allocator makes
+it impossible to get wrong, the recorded token makes it auditable.
 
 `DefineToken` stays public for pinning legacy tokens (the Magic classes' existing
 hand-authored codes must keep decoding forever), but new entities never hand-pick.
@@ -111,15 +115,15 @@ Roughly half of every digihouse Magic class evaporates, and future store/catalog
 
 Dynamic usage — the whole point of story-fed tokenizers — means a story listener calling
 `DefineToken`/`RedefineToken` while request threads encode and decode. Plain
-`Dictionary` will corrupt or throw. Two supportable contracts; offer both:
+`Dictionary` will corrupt or throw.
 
-- **Freeze-after-hydrate** (matches replay semantics): `Freeze()` makes reads lock-free
-  forever and writes throw. Right for reference data that only changes at startup.
-- **Synchronized** for live-updating tokenizers: internal lock (or swap-on-write
-  immutable maps) so a listener can append while encoders read.
-
-The default constructor should pick one documented behavior; silent non-thread-safety
-is the only wrong answer.
+**The shipped contract: every member is safe for concurrent use** (an internal lock
+guards both maps; an uncontended lock is noise next to the dictionary work), **and
+`Freeze()` flips the tokenizer to lock-free reads forever** — after which definitions
+throw. Hydrate, freeze, serve. Live-updating tokenizers simply never freeze and pay the
+uncontended-lock cost. Pre-freeze, the `Models`/`Tokens` properties return snapshots so
+enumeration never races a definition; post-freeze they expose the immutable maps
+directly.
 
 ## 6. Hydration ordering is a rule, not a hope
 
@@ -163,12 +167,15 @@ heavy digihouse traffic makes this worth taking.
    `Tokens` exposed.
 2. ✅ Identity-keyed lookup (#3) — done July 2026: comparer and identity-selector
    constructors; digihouse's equality boilerplate is now deletable.
-3. Allocator (#2) — needs the canonical encoding decision; prerequisite for story-fed
-   tokenizers and for retiring hand-authored tokens.
-4. Concurrency contract (#5) — before the first live-updating tokenizer ships. (The
-   #6 error-message half is done: `UnpackModel` failures now name the model type and
-   point at hydration.)
+3. ✅ Allocator (#2) — done July 2026: `AllocateNextToken` with the canonical
+   binary-of-(n+1) encoding; pinned-token collisions are skipped.
+4. ✅ Concurrency contract (#5) — done July 2026: all members thread-safe via internal
+   lock; `Freeze()` gives lock-free reads. (The #6 error-message half is also done:
+   `UnpackModel` failures now name the model type and point at hydration.)
 5. ✅ `Code.GetHashCode` (#7) — done July 2026: bytes+length hash, allocation-free.
+
+Remaining from this doc: nothing framework-side. Downstream work (retiring digihouse's
+hand-authored tokens, story-fed hydration order) proceeds per `v1-models.md`.
 
 All of 1–4 are additive or fix-broken, so nothing here breaks existing wire format:
 pinned tokens keep decoding forever, and the allocator only governs tokens that don't

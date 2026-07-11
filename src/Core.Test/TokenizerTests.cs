@@ -156,6 +156,151 @@ namespace BigRedProf.Data.Test
 		}
 		#endregion
 
+		#region token allocation
+		[Fact]
+		[Trait("Region", "token allocation")]
+		public void AllocateNextToken_ShouldAssignTheCanonicalSequence()
+		{
+			Tokenizer<string> tokenizer = new Tokenizer<string>();
+
+			// ordinal n gets the binary representation of n + 1
+			Assert.Equal(new Code("1"), tokenizer.AllocateNextToken("Illinois Fighting Illini"));
+			Assert.Equal(new Code("10"), tokenizer.AllocateNextToken("Indiana Hoosiers"));
+			Assert.Equal(new Code("11"), tokenizer.AllocateNextToken("Iowa Hawkeyes"));
+			Assert.Equal(new Code("100"), tokenizer.AllocateNextToken("Maryland Terrapins"));
+			Assert.Equal(new Code("101"), tokenizer.AllocateNextToken("Michigan State Spartans"));
+
+			Assert.Equal(5, tokenizer.Count);
+		}
+
+		[Fact]
+		[Trait("Region", "token allocation")]
+		public void AllocateNextToken_ShouldSkipPinnedTokens()
+		{
+			Tokenizer<string> tokenizer = new Tokenizer<string>();
+			tokenizer.DefineToken(new Code("10"), "Nebraska Cornhuskers");
+
+			Assert.Equal(new Code("1"), tokenizer.AllocateNextToken("Illinois Fighting Illini"));
+			Assert.Equal(new Code("11"), tokenizer.AllocateNextToken("Indiana Hoosiers"));
+			Assert.Equal(new Code("100"), tokenizer.AllocateNextToken("Iowa Hawkeyes"));
+		}
+
+		[Fact]
+		[Trait("Region", "token allocation")]
+		public void AllocateNextToken_ShouldThrowWhenModelIsNull()
+		{
+			Tokenizer<string> tokenizer = new Tokenizer<string>();
+
+			Assert.Throws<ArgumentNullException>(
+				() =>
+				{
+					tokenizer.AllocateNextToken(null);
+				}
+			);
+		}
+
+		[Fact]
+		[Trait("Region", "token allocation")]
+		public void AllocateNextToken_ShouldThrowWhenModelIsAlreadyTokenized()
+		{
+			Tokenizer<string> tokenizer = new Tokenizer<string>();
+			tokenizer.AllocateNextToken("Nebraska Cornhuskers");
+
+			Assert.Throws<ArgumentException>(
+				() =>
+				{
+					tokenizer.AllocateNextToken("Nebraska Cornhuskers");
+				}
+			);
+		}
+		#endregion
+
+		#region freezing
+		[Fact]
+		[Trait("Region", "freezing")]
+		public void Freeze_ShouldMakeDefinitionsThrowAndKeepReadsWorking()
+		{
+			Tokenizer<string> tokenizer = new Tokenizer<string>();
+			Code token = tokenizer.AllocateNextToken("Nebraska Cornhuskers");
+
+			Assert.False(tokenizer.IsFrozen);
+			tokenizer.Freeze();
+			Assert.True(tokenizer.IsFrozen);
+
+			Assert.Throws<InvalidOperationException>(
+				() =>
+				{
+					tokenizer.DefineToken(new Code("1000"), "Ohio State Buckeyes");
+				}
+			);
+			Assert.Throws<InvalidOperationException>(
+				() =>
+				{
+					tokenizer.RedefineToken(token, "Ohio State Buckeyes");
+				}
+			);
+			Assert.Throws<InvalidOperationException>(
+				() =>
+				{
+					tokenizer.AllocateNextToken("Ohio State Buckeyes");
+				}
+			);
+
+			// reads keep working after the freeze
+			Assert.Equal("Nebraska Cornhuskers", tokenizer.GetModel(token));
+			Assert.Equal(token, tokenizer.GetToken("Nebraska Cornhuskers"));
+			Assert.True(tokenizer.IsTokenDefined(token));
+			Assert.Equal(1, tokenizer.Count);
+			Assert.Contains("Nebraska Cornhuskers", tokenizer.Models);
+		}
+
+		[Fact]
+		[Trait("Region", "freezing")]
+		public void Freeze_ShouldBeIdempotent()
+		{
+			Tokenizer<string> tokenizer = new Tokenizer<string>();
+			tokenizer.Freeze();
+			tokenizer.Freeze();
+
+			Assert.True(tokenizer.IsFrozen);
+		}
+
+		[Fact]
+		[Trait("Region", "freezing")]
+		public void ConcurrentReadsDuringHydration_ShouldNotThrow()
+		{
+			Tokenizer<string> tokenizer = new Tokenizer<string>();
+			int modelCount = 5000;
+
+			System.Threading.Tasks.Task writer = System.Threading.Tasks.Task.Run(
+				() =>
+				{
+					for (int i = 0; i < modelCount; ++i)
+						tokenizer.AllocateNextToken($"model {i}");
+				}
+			);
+
+			System.Threading.Tasks.Task reader = System.Threading.Tasks.Task.Run(
+				() =>
+				{
+					Code firstToken = new Code("1");
+					while (!writer.IsCompleted)
+					{
+						string model;
+						if (tokenizer.TryGetModel(firstToken, out model))
+							Assert.Equal("model 0", model);
+
+						int count = tokenizer.Count;
+						Assert.InRange(count, 0, modelCount);
+					}
+				}
+			);
+
+			System.Threading.Tasks.Task.WaitAll(writer, reader);
+			Assert.Equal(modelCount, tokenizer.Count);
+		}
+		#endregion
+
 		#region identity-keyed tokenizers
 		[Fact]
 		[Trait("Region", "identity-keyed tokenizers")]
