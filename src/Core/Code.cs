@@ -282,13 +282,16 @@ namespace BigRedProf.Data.Core
 
 		public override int GetHashCode()
 		{
-			// TODO: Find a better hash code.
-			//
-			// This is quick, but doesn't work (since there can be extra unused bytes).
-			//return (this.ByteArray.GetHashCode() ^ this.Length);
-			//
-			// And this works but is slow.
-			return this.ToString().GetHashCode();
+			// The byte array is canonical (constructors zero the unused trailing bits), so
+			// hashing the bytes plus the length is correct and allocation-free.
+			unchecked
+			{
+				int hashCode = _length;
+				for (int i = 0; i < _byteArray.Length; ++i)
+					hashCode = (hashCode * 31) + _byteArray[i];
+
+				return hashCode;
+			}
 		}
 
 		public override string ToString()

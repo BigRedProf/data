@@ -61,7 +61,13 @@ namespace BigRedProf.Data.Core.PackRats
 
 			TModel model;
 			if (!_tokenizer.TryGetModel(token, out model))
-				throw new InvalidOperationException($"Token '{token}' not defined.");
+			{
+				throw new InvalidOperationException(
+					$"Token '{token}' not defined in tokenizer for model type " +
+					$"'{typeof(TModel).Name}'. If this model comes from a dynamic source, " +
+					"ensure its tokenizer is hydrated before decoding models that reference it."
+				);
+			}
 
 			return model;
 		}

@@ -61,6 +61,13 @@ namespace BigRedProf.Data.Core
 		/// <typeparam name="TModel">The type of model.</typeparam>
 		/// <param name="tokenizer">The tokenizer.</param>
 		/// <param name="tokenizerId">The tokenizer identifier.</param>
+		/// <remarks>
+		/// Registering a tokenizer also registers a
+		/// <see cref="BigRedProf.Data.Core.PackRats.TokenizedModelPackRat{TModel}"/> under the same
+		/// identifier. This is what allows a tokenizer identifier to be used as the schema
+		/// identifier of a packed field, packing that field as a small token reference instead of
+		/// the full model.
+		/// </remarks>
 		void RegisterTokenizer<TModel>(Tokenizer<TModel> tokenizer, AttributeFriendlyGuid tokenizerId);
 
 		/// <summary>
