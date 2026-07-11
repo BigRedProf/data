@@ -91,6 +91,7 @@ namespace BigRedProf.Data.Core
 
 			Debug.Assert(_byteArray.Length <= byteArray.Length);
 			Array.Copy(byteArray, 0, _byteArray, 0, _byteArray.Length);
+			ZeroUnusedBitsInLastByte();
 		}
 
 		/// <summary>
@@ -114,6 +115,7 @@ namespace BigRedProf.Data.Core
 			: this(byteArray, length)
 		{
 			_byteArray[_byteArray.Length - 1] = lastByte;
+			ZeroUnusedBitsInLastByte();
 		}
 		#endregion
 
@@ -240,6 +242,21 @@ namespace BigRedProf.Data.Core
 		public byte[] ToByteArray()
 		{
 			return _byteArray;
+		}
+		#endregion
+
+		#region private methods
+		/// <summary>
+		/// Zeroes out the unused high bits of the last byte so that codes of the same bit
+		/// content are always byte-for-byte identical, regardless of any garbage bits in
+		/// the source byte array. This canonical form is required for <see cref="Equals(object)"/>
+		/// and <see cref="Multihash.FromCode(Code, MultihashAlgorithm)"/> to behave correctly.
+		/// </summary>
+		private void ZeroUnusedBitsInLastByte()
+		{
+			int usedBitsInLastByte = _length % 8;
+			if (usedBitsInLastByte != 0)
+				_byteArray[_byteArray.Length - 1] &= (byte)((1 << usedBitsInLastByte) - 1);
 		}
 		#endregion
 

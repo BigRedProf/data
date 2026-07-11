@@ -131,10 +131,14 @@ namespace BigRedProf.Data.Test
 			int lengthBits = 30; // not multiple of 8
 			Code code = new Code(raw, lengthBits);
 
+			// the Code constructor canonicalizes the last byte by zeroing its two unused
+			// high bits (0xEF -> 0x2F), so the expected digest is over the canonical bytes
+			byte[] canonicalRaw = new byte[] { 0xDE, 0xAD, 0xBE, 0x2F };
+
 			byte[] dRaw, dLen, expected;
 			using (var sha = SHA256.Create())
 			{
-				dRaw = sha.ComputeHash(raw);
+				dRaw = sha.ComputeHash(canonicalRaw);
 				byte[] lenBe = UInt64ToBigEndian((ulong)lengthBits);
 				dLen = sha.ComputeHash(lenBe);
 				expected = sha.ComputeHash(Concat(dRaw, dLen));
@@ -146,6 +150,24 @@ namespace BigRedProf.Data.Test
 			// Assert
 			Assert.Equal(MultihashAlgorithm.Sha256, mh.Algorithm);
 			Assert.True(expected.SequenceEqual(mh.Digest));
+		}
+
+		[Fact]
+		[Trait("Region", "functions")]
+		public void FromCode_NonByteAligned_IgnoresUnusedTrailingBits()
+		{
+			// Arrange: only the first 12 bits are significant; the source arrays differ
+			// solely in the unused high 4 bits of the last byte (0xFA vs 0x0A)
+			Code codeWithGarbageBits = new Code(new byte[] { 0xDE, 0xFA }, 12);
+			Code codeWithZeroedBits = new Code(new byte[] { 0xDE, 0x0A }, 12);
+
+			// Act
+			Multihash multihashFromGarbageBits = Multihash.FromCode(codeWithGarbageBits, MultihashAlgorithm.Sha256);
+			Multihash multihashFromZeroedBits = Multihash.FromCode(codeWithZeroedBits, MultihashAlgorithm.Sha256);
+
+			// Assert
+			Assert.Equal(codeWithZeroedBits, codeWithGarbageBits);
+			Assert.Equal(multihashFromZeroedBits, multihashFromGarbageBits);
 		}
 		#endregion
 

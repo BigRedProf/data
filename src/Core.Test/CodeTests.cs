@@ -34,6 +34,34 @@ namespace BigRedProf.Data.Test
 			Assert.Equal<Bit>(0, code[15]);
 		}
 		[Fact]
+		public void ByteArrayConstructorShouldZeroUnusedTrailingBits()
+		{
+			// only the first 12 bits are significant; the source arrays differ solely
+			// in the unused high 4 bits of the last byte
+			Code codeWithGarbageBits = new Code(new byte[] { 0b10110101, 0b11111010 }, 12);
+			Code codeWithZeroedBits = new Code(new byte[] { 0b10110101, 0b00001010 }, 12);
+
+			Assert.Equal(codeWithZeroedBits, codeWithGarbageBits);
+			Assert.True(codeWithZeroedBits == codeWithGarbageBits);
+			Assert.Equal(codeWithZeroedBits.GetHashCode(), codeWithGarbageBits.GetHashCode());
+			Assert.Equal((byte)0b00001010, codeWithGarbageBits.ToByteArray()[1]);
+		}
+
+		[Fact]
+		public void LastByteConstructorShouldZeroUnusedTrailingBits()
+		{
+			// only the first 12 bits are significant; the last bytes differ solely
+			// in the unused high 4 bits
+			Code codeWithGarbageBits = new Code(new byte[] { 0b10110101, 0 }, 12, 0b11111010);
+			Code codeWithZeroedBits = new Code(new byte[] { 0b10110101, 0 }, 12, 0b00001010);
+
+			Assert.Equal(codeWithZeroedBits, codeWithGarbageBits);
+			Assert.True(codeWithZeroedBits == codeWithGarbageBits);
+			Assert.Equal(codeWithZeroedBits.GetHashCode(), codeWithGarbageBits.GetHashCode());
+			Assert.Equal((byte)0b00001010, codeWithGarbageBits.ToByteArray()[1]);
+		}
+
+		[Fact]
 		public void ZeroLengthCodesShouldThrow()
 		{
 			Assert.Throws<ArgumentOutOfRangeException>(
