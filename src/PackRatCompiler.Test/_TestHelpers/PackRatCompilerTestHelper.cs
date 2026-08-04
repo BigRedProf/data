@@ -61,8 +61,26 @@ namespace BigRedProf.Data.Test._TestHelpers
 				MemoryStream actualPackRatStreamForRead = new MemoryStream(actualPackRatStream.ToArray());
 				string actualPackRat = ReadStream(actualPackRatStreamForRead);
 
-				Assert.Equal(expectedPackRat, actualPackRat);
+				Assert.Equal(NormalizeLineEndings(expectedPackRat), NormalizeLineEndings(actualPackRat));
 			}
+		}
+
+		/// <summary>
+		/// Normalizes line endings so generated code can be compared to a checked-in
+		/// expected resource regardless of platform.
+		/// </summary>
+		/// <remarks>
+		/// The generator writes <see cref="Environment.NewLine"/>, which is CRLF on
+		/// Windows and LF on Linux, while the expected resource carries whatever line
+		/// endings it was committed with. Comparing raw strings therefore passed on
+		/// Windows and failed on Linux -- which is why CI skipped these tests rather
+		/// than running them. Line endings are not what these tests are asserting.
+		/// </remarks>
+		private static string NormalizeLineEndings(string value)
+		{
+			Debug.Assert(value != null);
+
+			return value.Replace("\r\n", "\n");
 		}
 
 		public static string ReadStream(Stream stream)

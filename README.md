@@ -2,6 +2,35 @@
 
 The **BigRedProf.Data** library is a simple, flexible .NET library for defining and serializing models. 
 
+## Development
+
+This repository is driven by [Task](https://taskfile.dev). Install it once per
+machine:
+
+```powershell
+choco install go-task
+```
+
+Then, from the repository root:
+
+```powershell
+task --list      # see available tasks
+task verify      # build + unit tests — everything required before merging
+task build       # fast inner loop
+task doctor      # toolchain/version diagnostics
+task pack        # build the NuGet packages locally
+```
+
+Task loads the layered environment (`.env.local` then `.env`) on every
+invocation, so no shell setup is required — commands work in a fresh process for
+humans and agents alike. Note the solution lives at `src/Data.sln`, not at the
+repository root.
+
+`BigRedProf.Data.Core`, `BigRedProf.Data.PackRatCompiler` and
+`BigRedProf.Data.Tape` are published to GitHub Packages by CI on a push to
+`main`. `task pack` builds them locally and deliberately cannot push. See
+[script/README.md](script/README.md) for the (short) script layer.
+
 ## Glossary
 
 **bit** - a discrete binary value; uses the symbols **0** and **1**
