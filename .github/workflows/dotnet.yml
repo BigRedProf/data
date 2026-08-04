@@ -1,5 +1,9 @@
 name: .NET
 
+permissions:
+  contents: read
+  packages: write
+
 on:
   push:
     branches: [ "main" ]
@@ -17,32 +21,54 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.403
-    - name: Restore
-      run: dotnet restore
-      working-directory: src
-    - name: Build Debug
-      run: dotnet build --no-restore
-      working-directory: src
-    - name: HACKHACK SKIPPING Test Debug
-      run: echo HACKHACK SKIPPING dotnet test --no-build --verbosity normal
-      working-directory: src
-    - name: Build Release
-      run: dotnet build --no-restore -c Release
-      working-directory: src
-    - name: HACKHACK SKIPPING Test Release
-      run: echo HACKHACK SKIPPING dotnet test --no-build --verbosity normal -c Release
-      working-directory: src
+    # Task is the repository's orchestration layer, so CI is a thin wrapper
+    # around it rather than a second, drifting copy of the build steps.
+    - name: Setup Task
+      uses: arduino/setup-task@v2
+      with:
+        version: 3.x
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+    # `task verify` is restore + build + test, and is the same command
+    # developers and agents run locally. It restores once and tests without
+    # rebuilding, so there is no separate restore step here.
+    #
+    # The tests used to be skipped outright ("HACKHACK SKIPPING"). Only 5 of 503
+    # actually failed here, and only because the PackRat generator emits
+    # Environment.NewLine while the expected resource carries CRLF -- a line
+    # ending comparison, not a defect. That comparison now normalizes, so the
+    # whole suite runs.
+    - name: Verify (Debug)
+      run: task verify
+    # An ambient environment variable wins over the value in .env, so this runs
+    # the identical graph against Release.
+    - name: Verify (Release)
+      run: task verify
+      env:
+        BRP_DOTNET_CONFIGURATION: Release
+    # Packaging and publishing stay as explicit dotnet steps, so this workflow
+    # remains the only thing that can release a package.
+    #
+    # Pack runs on pull requests too -- it publishes nothing, and knowing the
+    # packages still build is worth having before merge.
     - name: Pack
       run: dotnet pack -c Release
       working-directory: src
     - name: Add NuGet Source
+      if: github.event_name == 'push'
       run: dotnet nuget add source --username BigRedProf --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/BigRedProf/index.json"
+    # The pushes are guarded to `push` events (i.e. merges to main). Without the
+    # guard a pull request would publish, so bumping a version on a branch would
+    # release it before anyone reviewed the change. --skip-duplicate only hides
+    # that while the version happens to be unchanged.
     - name: Push BigRedProf.Data.Core package
+      if: github.event_name == 'push'
       run: dotnet nuget push ./Core/bin/Release/BigRedProf.Data.Core.*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }}  --source "github" --skip-duplicate
       working-directory: src
     - name: Push BigRedProf.Data.PackRatCompiler package
+      if: github.event_name == 'push'
       run: dotnet nuget push ./PackRatCompiler/bin/Release/*.*nupkg --api-key ${{ secrets.GITHUB_TOKEN }}  --source "github" --skip-duplicate
       working-directory: src
     - name: Push BigRedProf.Data.Tape package
+      if: github.event_name == 'push'
       run: dotnet nuget push ./Tape/bin/Release/BigRedProf.Data.Tape.*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }}  --source "github" --skip-duplicate
       working-directory: src

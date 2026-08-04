@@ -349,3 +349,6 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 /src/.github
+
+# BigRedProf: per-developer environment overrides (Task loads this before .env)
+.env.local
