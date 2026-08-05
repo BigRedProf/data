@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace BigRedProf.Data.Core
 {
@@ -46,16 +47,45 @@ namespace BigRedProf.Data.Core
 		#region INonGenericPackRat methods
 		void IWeaklyTypedPackRat.PackModel(CodeWriter writer, object model)
 		{
-			if (!(model is T))
+			T typedModel;
+			if (model is T)
+			{
+				typedModel = (T) model;
+			}
+			else if (IsEnumOverUnderlyingType(model, typeof(T)))
+			{
+				// A boxed enum is never `is T` against its own underlying type, so an
+				// enum-valued model would otherwise be rejected by the integral pack rat
+				// that is perfectly capable of packing it.
+				typedModel = (T) Convert.ChangeType(model, typeof(T), CultureInfo.InvariantCulture);
+			}
+			else
+			{
 				throw new ArgumentException("Invalid model type", nameof(model));
+			}
 
-			T typedModel = (T) model;
 			PackModel(writer, typedModel);
 		}
 
 		object IWeaklyTypedPackRat.UnpackModel(CodeReader reader)
 		{
 			return UnpackModel(reader);
+		}
+		#endregion
+
+		#region private functions
+		private static bool IsEnumOverUnderlyingType(object model, Type underlyingType)
+		{
+			bool isMatch = false;
+
+			if (model != null)
+			{
+				Type modelType = model.GetType();
+				if (modelType.IsEnum)
+					isMatch = Enum.GetUnderlyingType(modelType) == underlyingType;
+			}
+
+			return isMatch;
 		}
 		#endregion
 	}

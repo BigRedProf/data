@@ -1,5 +1,6 @@
 using BigRedProf.Data.Core;
 using BigRedProf.Data.Tape._TestHelpers;
+using BigRedProf.Data.Tape.Test._TestHelpers;
 using BigRedProf.Data.Tape;
 using System;
 using System.Text;
@@ -12,6 +13,7 @@ namespace BigRedProf.Data.Tape.Test
 		#region fields
 		private readonly TapeProvider _memoryTapeProvider;
 		private readonly TapeProvider _diskTapeProvider;
+		private readonly TempDir _diskTempDir;
 		private bool _disposed;
 		#endregion
 
@@ -19,7 +21,8 @@ namespace BigRedProf.Data.Tape.Test
 		public TapePlayerTests()
 		{
 			_memoryTapeProvider = TapeProviderHelper.CreateMemoryTapeProvider();
-			_diskTapeProvider = TapeProviderHelper.CreateDiskTapeProvider();
+			_diskTempDir = TapeProviderHelper.CreateDiskTempDir();
+			_diskTapeProvider = TapeProviderHelper.CreateDiskTapeProvider(_diskTempDir);
 		}
 		#endregion
 
@@ -28,7 +31,7 @@ namespace BigRedProf.Data.Tape.Test
 		{
 			if (!_disposed)
 			{
-				TapeProviderHelper.DestroyDiskTapeProvider();
+				_diskTempDir.Dispose();
 				_disposed = true;
 			}
 		}
