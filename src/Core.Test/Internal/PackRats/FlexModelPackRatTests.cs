@@ -2,6 +2,7 @@
 using BigRedProf.Data.Core.Internal.PackRats;
 using BigRedProf.Data.Test._TestHelpers;
 using System;
+using System.IO;
 using Xunit;
 
 namespace BigRedProf.Data.Test
@@ -99,5 +100,40 @@ namespace BigRedProf.Data.Test
 			PackRatTestHelper.TestPackModel(packRat, model, expectedCode);
 			PackRatTestHelper.TestUnpackModelCodeOnlyNoEquals(packRat, expectedCode);
 		}
+
+		[Fact]
+		[Trait("Region", "PackRat methods")]
+		public void PackModelAndUnpackModel_ShouldWorkForEnumTrait()
+		{
+			IPiedPiper piedPiper = CreatePiedPiper();
+			FlexModelPackRat packRat = new FlexModelPackRat(piedPiper);
+			FlexModel model = new FlexModel();
+			string traitId = "00000000-0000-0000-0000-000000000002";
+
+			model.AddTrait(new Trait<TestGameType>(traitId, TestGameType.Deluxe));
+
+			Code packedCode;
+			using (MemoryStream stream = new MemoryStream())
+			{
+				CodeWriter writer = new CodeWriter(stream);
+				packRat.PackModel(writer, model);
+				packedCode = writer.ToDebugCode();
+			}
+
+			CodeReader reader = PackRatTestHelper.CreateCodeReader(packedCode);
+			FlexModel unpackedModel = packRat.UnpackModel(reader);
+
+			Assert.Equal(TestGameType.Deluxe, unpackedModel.GetTrait<TestGameType>(traitId));
+		}
+	}
+
+	/// <summary>
+	/// An Int32-backed enum used to verify that enum-valued traits survive a
+	/// pack/unpack round trip through an Int32 schema.
+	/// </summary>
+	public enum TestGameType
+	{
+		Classic = 1,
+		Deluxe = 2
 	}
 }
