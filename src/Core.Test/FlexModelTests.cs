@@ -267,5 +267,55 @@ namespace BigRedProf.Data.Test
 			bool removed = model.RemoveTrait("00000000-0000-0000-0000-000000000008");
 			Assert.False(removed);
 		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void GetTrait_ShouldReturnEnumValue_WhenTraitIsStoredAsUnderlyingType()
+		{
+			// This is the shape a trait has after an unpack: the integral pack rat
+			// hands back a boxed int, not a boxed enum.
+			FlexModel model = new FlexModel();
+			string traitId = "00000000-0000-0000-0000-000000000003";
+			model.AddTrait(new Trait<int>(traitId, 2));
+
+			TestGameType value = model.GetTrait<TestGameType>(traitId);
+
+			Assert.Equal(TestGameType.Deluxe, value);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void TryGetTrait_ShouldReturnEnumValue_WhenTraitIsStoredAsUnderlyingType()
+		{
+			FlexModel model = new FlexModel();
+			string traitId = "00000000-0000-0000-0000-000000000005";
+			model.AddTrait(new Trait<int>(traitId, 1));
+
+			bool result = model.TryGetTrait<TestGameType>(traitId, out TestGameType value);
+
+			Assert.True(result);
+			Assert.Equal(TestGameType.Classic, value);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void GetTrait_ShouldStillThrow_WhenEnumUnderlyingTypeDoesNotMatch()
+		{
+			FlexModel model = new FlexModel();
+			string traitId = "00000000-0000-0000-0000-000000000007";
+			model.AddTrait(new Trait<int>(traitId, 1));
+
+			Assert.Throws<InvalidOperationException>(() => model.GetTrait<TestByteBackedType>(traitId));
+		}
+	}
+
+	/// <summary>
+	/// A Byte-backed enum used to verify that a stored value is only reinterpreted as an
+	/// enum when the enum's underlying type actually matches.
+	/// </summary>
+	public enum TestByteBackedType : byte
+	{
+		One = 1,
+		Two = 2
 	}
 }

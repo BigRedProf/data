@@ -105,7 +105,7 @@ namespace BigRedProf.Data.Core
 			if (!_untypedTraits.TryGetValue(traitIdentifier, out UntypedTrait untypedTrait))
 				throw new ArgumentException($"Trait '{traitIdentifier}' does not exist.");
 
-			if (!(untypedTrait.Model is M))
+			if (!TryCastTraitModel(untypedTrait.Model, out M trait))
 			{
 				throw new InvalidOperationException(
 					$"Trait '{traitIdentifier}' exists but cannot be cast to type '{typeof(M).Name}'. " +
@@ -113,7 +113,7 @@ namespace BigRedProf.Data.Core
 				);
 			}
 
-			return (M)untypedTrait.Model;
+			return trait;
 		}
 
 		/// <summary>
@@ -129,7 +129,7 @@ namespace BigRedProf.Data.Core
 			if (!_untypedTraits.TryGetValue(traitIdentifier, out UntypedTrait untypedTrait))
 				return false;
 
-			if (!(untypedTrait.Model is M))
+			if (!TryCastTraitModel(untypedTrait.Model, out trait))
 			{
 				throw new InvalidOperationException(
 					$"Trait '{traitIdentifier}' exists but cannot be cast to type '{typeof(M).Name}'. " +
@@ -137,7 +137,6 @@ namespace BigRedProf.Data.Core
 				);
 			}
 
-			trait = (M)untypedTrait.Model;
 			return true;
 		}
 
@@ -167,6 +166,34 @@ namespace BigRedProf.Data.Core
 		public bool RemoveTrait(AttributeFriendlyGuid traitIdentifier)
 		{
 			return _untypedTraits.Remove(traitIdentifier);
+		}
+		#endregion
+
+		#region private functions
+		private static bool TryCastTraitModel<M>(object model, out M trait)
+		{
+			bool didCast = false;
+			trait = default;
+
+			if (model is M)
+			{
+				trait = (M) model;
+				didCast = true;
+			}
+			else
+			{
+				// A trait packed through an integral schema comes back boxed as that
+				// integral type, so a boxed int is not `is M` against an enum M even
+				// when the enum's underlying type is int.
+				Type traitType = typeof(M);
+				if (model != null && traitType.IsEnum && model.GetType() == Enum.GetUnderlyingType(traitType))
+				{
+					trait = (M) Enum.ToObject(traitType, model);
+					didCast = true;
+				}
+			}
+
+			return didCast;
 		}
 		#endregion
 	}
