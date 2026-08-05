@@ -17,10 +17,6 @@ namespace BigRedProf.Data.Tape._TestHelpers
 			}
 		#endregion
 
-		#region static fields
-			private static TempDir? _tempDir;
-		#endregion
-
 		#region functions
 			public static IPiedPiper CreatePiedPiper()
 			{
@@ -38,15 +34,24 @@ namespace BigRedProf.Data.Tape._TestHelpers
 				return new MemoryTapeProvider();
 			}
 
-			public static TapeProvider CreateDiskTapeProvider()
+			/// <summary>
+			/// Creates a temp directory for a disk tape provider. The caller owns it and must
+			/// dispose it. It is deliberately NOT held in a static field: xUnit runs test
+			/// classes in parallel, so a shared static is overwritten by whichever class
+			/// constructs last, and the first class to dispose then deletes a directory another
+			/// class is still using.
+			/// </summary>
+			public static TempDir CreateDiskTempDir()
 			{
-				_tempDir = new TempDir(Path.Combine(Path.GetTempPath(), "UnitTests.DiskTapeProvider"));
-				return new DiskTapeProvider(_tempDir.Path);
+				return new TempDir(Path.Combine(Path.GetTempPath(), "UnitTests.DiskTapeProvider"));
 			}
 
-			public static void DestroyDiskTapeProvider()
+			public static TapeProvider CreateDiskTapeProvider(TempDir tempDir)
 			{
-				_tempDir?.Dispose();
+				if (tempDir == null)
+					throw new ArgumentNullException(nameof(tempDir));
+
+				return new DiskTapeProvider(tempDir.Path);
 			}
 
 			public static void TestWriteAndReadRoundTrip(
