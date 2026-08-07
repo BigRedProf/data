@@ -1,6 +1,6 @@
 # Data repository task graph — the authoritative build definition.
 #
-#   Install Task:                       choco install go-task  (or winget install Task.Task)
+#   Provision development tools:       script/bootstrap/windows.ps1 (or ubuntu.sh)
 #   List tasks:                         task --list
 #   Everything required before merging: task verify
 #

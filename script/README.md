@@ -8,15 +8,18 @@ framework.
 
 ## Scripts
 
-| Script       | Invoked by    | Purpose                                                                    |
-| ------------ | ------------- | -------------------------------------------------------------------------- |
-| `common.ps1` | (dot-sourced) | Shared helpers: `Write-Step`, `Invoke-Checked`, `Test-CommandExists`, `Get-RepoRoot`, `Test-DotEnvEncoding` |
-| `doctor.ps1` | `task doctor` | Toolchain diagnostics; checks Task, .NET, `.env` encoding                   |
+| Script                  | Invoked by    | Purpose                                                                    |
+| ----------------------- | ------------- | -------------------------------------------------------------------------- |
+| `common.ps1`            | (dot-sourced) | Shared helpers: `Write-Step`, `Invoke-Checked`, `Test-CommandExists`, `Get-RepoRoot`, `Test-DotEnvEncoding` |
+| `doctor.ps1`            | `task doctor` | Toolchain diagnostics; checks Task, .NET, PowerShell, and `.env` encoding   |
+| `bootstrap/windows.ps1` | developer     | Idempotent Windows toolchain provisioning                                  |
+| `bootstrap/ubuntu.sh`   | developer     | Idempotent Ubuntu toolchain provisioning                                   |
 
-That is the whole list, and deliberately so. This repository ships **libraries
-and a CLI**, not a service: there is no Dockerfile, no container image, and
-therefore no `image` or `publish` script. Sibling repositories (`stories`,
-`digihouse`) have those because they deploy services.
+The bootstrap scripts are the narrow exception to Task-owned orchestration:
+they install Task itself and therefore cannot be Task commands. This repository
+ships **libraries and a CLI**, not a service: there is no Dockerfile, no
+container image, and therefore no `image` or `publish` script. Sibling
+repositories (`stories`, `digihouse`) have those because they deploy services.
 
 ## Publishing
 

@@ -4,14 +4,25 @@ The **BigRedProf.Data** library is a simple, flexible .NET library for defining 
 
 ## Development
 
-This repository is driven by [Task](https://taskfile.dev). Install it once per
-machine:
+This repository is driven by [Task](https://taskfile.dev). Provision the
+required .NET SDK, Task, and PowerShell 7 from the repository root:
 
 ```powershell
-choco install go-task
+# Windows
+powershell -ExecutionPolicy Bypass -File .\script\bootstrap\windows.ps1
 ```
 
-Then, from the repository root:
+```bash
+# Ubuntu
+bash ./script/bootstrap/ubuntu.sh
+```
+
+The scripts install only missing or incompatible tools, diagnose the resulting
+environment, and run `task verify`. See
+[script/bootstrap/README.md](script/bootstrap/README.md) for check-only and
+non-interactive options.
+
+For day-to-day development:
 
 ```powershell
 task --list      # see available tasks

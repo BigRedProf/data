@@ -3,8 +3,31 @@ Set-StrictMode -Version Latest
 
 . "$PSScriptRoot\common.ps1"
 
-# Minimum Task (go-task) version this repository expects. Bump deliberately.
-$requiredTaskVersion = [version]"3.38.0"
+$requirements = @{}
+$toolchainPath = Join-Path $PSScriptRoot "bootstrap\toolchain.env"
+foreach ($line in [System.IO.File]::ReadAllLines($toolchainPath))
+{
+	if ([string]::IsNullOrWhiteSpace($line) -or $line.TrimStart().StartsWith("#"))
+	{
+		continue
+	}
+
+	$separatorIndex = $line.IndexOf('=')
+	if ($separatorIndex -lt 1)
+	{
+		throw "Invalid toolchain requirement: $line"
+	}
+
+	$name = $line.Substring(0, $separatorIndex).Trim()
+	$value = $line.Substring($separatorIndex + 1).Trim()
+	$requirements[$name] = $value
+}
+
+$requiredTaskVersion = [version]$requirements["TASK_MIN_VERSION"]
+$requiredPwshVersion = [version]$requirements["PWSH_MIN_VERSION"]
+$repoRoot = Get-RepoRoot
+$globalJson = Get-Content -Raw (Join-Path $repoRoot "global.json") | ConvertFrom-Json
+$requiredDotNetVersion = [version]$globalJson.sdk.version
 
 Write-Step "BigRedProf toolchain diagnostics"
 
@@ -15,15 +38,37 @@ Write-Host "==============================================================="
 Write-Host "                 BIGREDPROF DEVELOPMENT ENVIRONMENT"
 Write-Host "==============================================================="
 Write-Host (" Repository  : data")
-Write-Host (" Machine     : " + $env:COMPUTERNAME)
+Write-Host (" Machine     : " + [Environment]::MachineName)
 Write-Host (" PowerShell  : " + $PSVersionTable.PSVersion + " (" + $PSVersionTable.PSEdition + ")")
 Write-Host (" OS          : " + [System.Environment]::OSVersion.VersionString)
+
+if ($PSVersionTable.PSVersion -lt $requiredPwshVersion)
+{
+	Write-Host "   -> PowerShell is older than required version $requiredPwshVersion. Run the development bootstrap."
+	$ok = $false
+}
 
 # --- .NET SDK ---------------------------------------------------------------
 if (Test-CommandExists "dotnet")
 {
-	$dotnetVersion = (& dotnet --version).Trim()
-	Write-Host (" .NET SDK    : " + $dotnetVersion)
+	Push-Location $repoRoot
+	try
+	{
+		$dotnetVersion = (& dotnet --version 2>$null | Out-String).Trim()
+		if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($dotnetVersion))
+		{
+			Write-Host (" .NET SDK    : " + $dotnetVersion + " (global.json >= " + $requiredDotNetVersion + ")")
+		}
+		else
+		{
+			Write-Host (" .NET SDK    : <incompatible with global.json " + $requiredDotNetVersion + ">")
+			$ok = $false
+		}
+	}
+	finally
+	{
+		Pop-Location
+	}
 }
 else
 {
@@ -38,15 +83,20 @@ if (Test-CommandExists "task")
 	Write-Host (" Task        : " + $taskVersionRaw + " (required >= $requiredTaskVersion)")
 
 	$match = [regex]::Match($taskVersionRaw, '\d+\.\d+\.\d+')
-	if ($match.Success -and ([version]$match.Value) -lt $requiredTaskVersion)
+	if (-not $match.Success)
 	{
-		Write-Host "   -> Task is older than the required version. Upgrade with: choco upgrade go-task"
+		Write-Host "   -> Could not parse the Task version. Run the development bootstrap."
+		$ok = $false
+	}
+	elseif ([version]$match.Value -lt $requiredTaskVersion)
+	{
+		Write-Host "   -> Task is older than the required version. Run the development bootstrap."
 		$ok = $false
 	}
 }
 else
 {
-	Write-Host " Task        : <missing> — install with: choco install go-task"
+	Write-Host " Task        : <missing> — run the development bootstrap"
 	$ok = $false
 }
 
