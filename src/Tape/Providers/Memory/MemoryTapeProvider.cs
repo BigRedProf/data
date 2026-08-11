@@ -1,12 +1,25 @@
 using BigRedProf.Data.Core;
 using System;
 using System.Collections.Generic;
-using System.Xml.Linq;
+using System.Diagnostics;
 
 namespace BigRedProf.Data.Tape.Providers.Memory
 {
 	public class MemoryTapeProvider : TapeProvider
 	{
+		#region constants
+			/// <summary>
+			/// The largest a tape's backing array can ever be. A tape holds at most
+			/// <see cref="Tape.MaxContentLength"/> BITS, so its bytes are one eighth of that.
+			/// </summary>
+			private const int MaxTapeByteLength = Tape.MaxContentLength / 8;
+
+			/// <summary>
+			/// The size a tape's backing array starts at, before any content is written.
+			/// </summary>
+			private const int InitialTapeByteLength = 4096;
+		#endregion
+
 		#region fields
 			private readonly Dictionary<Guid, byte[]> _tapes;
 			private readonly Dictionary<Guid, byte[]> _labels;
@@ -56,9 +69,22 @@ namespace BigRedProf.Data.Tape.Providers.Memory
 				if (tapeId == Guid.Empty)
 					throw new ArgumentException("Tape ID cannot be empty.", nameof(tapeId));
 
+				if (byteOffset < 0)
+					throw new ArgumentOutOfRangeException(nameof(byteOffset), "Byte offset cannot be negative.");
+
+				if (byteLength < 0)
+					throw new ArgumentOutOfRangeException(nameof(byteLength), "Byte length cannot be negative.");
+
 				byte[] tapeData = GetTapeData(tapeId);
-				var resultBytes = new byte[byteLength];
-				Array.Copy(tapeData, byteOffset, resultBytes, 0, byteLength);
+				byte[] resultBytes = new byte[byteLength];
+
+				// The backing array only covers the region written so far, so anything past it
+				// is still blank tape and reads back as zeros. DiskTapeProvider does the same
+				// thing when a read runs past the end of the tape file.
+				int availableByteLength = tapeData.Length - byteOffset;
+				if (availableByteLength > 0)
+					Array.Copy(tapeData, byteOffset, resultBytes, 0, Math.Min(availableByteLength, byteLength));
+
 				return resultBytes;
 			}
 
@@ -90,10 +116,10 @@ namespace BigRedProf.Data.Tape.Providers.Memory
 				if (byteLength > data.Length)
 					throw new ArgumentException("Byte length exceeds source data length.", nameof(byteLength));
 
-				byte[] tapeData = GetTapeData(tapeId);
-
-				if (byteOffset + byteLength > tapeData.Length)
+				if ((long) byteOffset + byteLength > MaxTapeByteLength)
 					throw new ArgumentOutOfRangeException(nameof(byteLength), "Invalid byte length specified.");
+
+				byte[] tapeData = EnsureTapeCapacity(GetTapeData(tapeId), byteOffset + byteLength);
 
 				Array.Copy(data, 0, tapeData, byteOffset, byteLength);
 				SetTapeData(tapeId, tapeData);
@@ -115,8 +141,10 @@ namespace BigRedProf.Data.Tape.Providers.Memory
 				if (tape == null)
 					throw new ArgumentNullException(nameof(tape), "Tape cannot be null.");
 
-				// TODO: Consider making tape length grow dynamically so it's not always 125MB long.
-				_tapes[tape.Id] = new byte[Code.MaxLength];
+				// A tape starts small and grows as it is written to. Reserving MaxTapeByteLength
+				// up front charged every new tape a 125MB allocation regardless of how little
+				// was ever recorded on it.
+				_tapes[tape.Id] = new byte[InitialTapeByteLength];
 			}
 		#endregion
 
@@ -124,6 +152,32 @@ namespace BigRedProf.Data.Tape.Providers.Memory
 			private byte[] GetTapeData(Guid tapeId)
 			{
 				return _tapes[tapeId];
+			}
+
+			/// <summary>
+			/// Returns a backing array at least <paramref name="requiredByteLength"/> long,
+			/// doubling when it has to grow so a stream of small sequential writes costs
+			/// amortized linear time rather than quadratic.
+			/// </summary>
+			private static byte[] EnsureTapeCapacity(byte[] tapeData, int requiredByteLength)
+			{
+				Debug.Assert(tapeData != null);
+				Debug.Assert(requiredByteLength >= 0 && requiredByteLength <= MaxTapeByteLength);
+
+				byte[] result = tapeData;
+				if (tapeData.Length < requiredByteLength)
+				{
+					long doubledByteLength = (long) tapeData.Length * 2;
+					int newByteLength = (int) Math.Min(
+						MaxTapeByteLength,
+						Math.Max(requiredByteLength, doubledByteLength)
+					);
+
+					result = new byte[newByteLength];
+					Array.Copy(tapeData, 0, result, 0, tapeData.Length);
+				}
+
+				return result;
 			}
 
 			private byte[] SetTapeData(Guid tapeId, byte[] data)

@@ -10,13 +10,6 @@ namespace BigRedProf.Data.Test._TestHelpers
 {
 	internal static class PackRatCompilerTestHelper
 	{
-		#region class constructors
-		static PackRatCompilerTestHelper()
-		{
-			MSBuildLocator.RegisterDefaults();
-		}
-		#endregion
-
 		#region methods
 		public static Stream GetResource(string path)
 		{
@@ -31,38 +24,35 @@ namespace BigRedProf.Data.Test._TestHelpers
 			return resource;
 		}
 
-		public static void TestGeneratePackRat(string modelResourcePath, string expectedPackRatResourcePath)
+		public static void TestGeneratePackRat(
+			CompilationContext compilationContext,
+			string modelResourcePath,
+			string expectedPackRatResourcePath
+		)
 		{
+			Debug.Assert(compilationContext != null);
 			Debug.Assert(modelResourcePath != null);
 			Debug.Assert(expectedPackRatResourcePath != null);
 
-			StreamWriter stdoutStreamWriter = new StreamWriter(Console.OpenStandardOutput());
-			stdoutStreamWriter.AutoFlush = true;
-			using (CompilationContext compilationContext = new CompilationContext(stdoutStreamWriter, stdoutStreamWriter))
-			{
-				string hackHackProjectPath = @"../../../../Core/BigRedProf.Data.Core.csproj";
-				compilationContext.AddProject(new FileInfo(hackHackProjectPath));
+			PackRatGenerator packRatGenerator = new PackRatGenerator(compilationContext);
+			Stream model = PackRatCompilerTestHelper.GetResource(modelResourcePath);
+			Stream expectedPackRatStream = PackRatCompilerTestHelper.GetResource(expectedPackRatResourcePath);
+			string expectedPackRat = ReadStream(expectedPackRatStream);
 
-				PackRatGenerator packRatGenerator = new PackRatGenerator(compilationContext);
-				Stream model = PackRatCompilerTestHelper.GetResource(modelResourcePath);
-				Stream expectedPackRatStream = PackRatCompilerTestHelper.GetResource(expectedPackRatResourcePath);
-				string expectedPackRat = ReadStream(expectedPackRatStream);
+			string modelCSharp = ReadStream(model);
+			CSharpSyntaxTree syntaxTree = (CSharpSyntaxTree) compilationContext.AddCSharp(modelCSharp);
+			ClassDeclarationSyntax classDeclarationSyntax = GetModelClasses(syntaxTree).First();
+			INamedTypeSymbol modelSymbol = GetTypes(compilationContext.Compilation.GlobalNamespace)
+				.Where(t => t.Name == classDeclarationSyntax.Identifier.ToString())
+				.First();
 
-				string modelCSharp = ReadStream(model);
-				CSharpSyntaxTree syntaxTree = (CSharpSyntaxTree) compilationContext.AddCSharp(modelCSharp);
-				ClassDeclarationSyntax classDeclarationSyntax = GetModelClasses(syntaxTree).First();
-				INamedTypeSymbol modelSymbol = GetTypes(compilationContext.Compilation.GlobalNamespace)
-					.Where(t => t.Name == classDeclarationSyntax.Identifier.ToString())
-					.First();
+			MemoryStream actualPackRatStream = new MemoryStream();
+			packRatGenerator.GeneratePackRat(modelSymbol, actualPackRatStream);
+			actualPackRatStream.Close();
+			MemoryStream actualPackRatStreamForRead = new MemoryStream(actualPackRatStream.ToArray());
+			string actualPackRat = ReadStream(actualPackRatStreamForRead);
 
-				MemoryStream actualPackRatStream = new MemoryStream();
-				packRatGenerator.GeneratePackRat(modelSymbol, actualPackRatStream);
-				actualPackRatStream.Close();
-				MemoryStream actualPackRatStreamForRead = new MemoryStream(actualPackRatStream.ToArray());
-				string actualPackRat = ReadStream(actualPackRatStreamForRead);
-
-				Assert.Equal(NormalizeLineEndings(expectedPackRat), NormalizeLineEndings(actualPackRat));
-			}
+			Assert.Equal(NormalizeLineEndings(expectedPackRat), NormalizeLineEndings(actualPackRat));
 		}
 
 		/// <summary>

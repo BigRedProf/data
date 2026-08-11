@@ -2,14 +2,26 @@ using BigRedProf.Data.Test._TestHelpers;
 
 namespace BigRedProf.Data.PackRatCompiler.Test
 {
-	public class PackRatGeneratorTests
+	public class PackRatGeneratorTests : IClassFixture<CompilationContextFixture>
 	{
+		#region fields
+		private readonly CompilationContextFixture _compilationContextFixture;
+		#endregion
+
+		#region constructors
+		public PackRatGeneratorTests(CompilationContextFixture compilationContextFixture)
+		{
+			_compilationContextFixture = compilationContextFixture;
+		}
+		#endregion
+
 		#region methods
 		[Fact]
 		[Trait("Region", "methods")]
 		public void GeneratePackRat_ShouldWorkForPointModel()
 		{
 			PackRatCompilerTestHelper.TestGeneratePackRat(
+				_compilationContextFixture.CompilationContext,
 				"_Resources/Models/Point.cs",
 				"_Resources/ExpectedPackRats/PointPackRat.cs"
 			);
@@ -20,6 +32,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test
 		public void GeneratePackRat_ShouldWorkForNullableTestModel()
 		{
 			PackRatCompilerTestHelper.TestGeneratePackRat(
+				_compilationContextFixture.CompilationContext,
 				"_Resources/Models/NullableTestModel.cs",
 				"_Resources/ExpectedPackRats/NullableTestModelPackRat.cs"
 			);
@@ -30,6 +43,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test
 		public void GeneratePackRat_ShouldWorkForListTestModel()
 		{
 			PackRatCompilerTestHelper.TestGeneratePackRat(
+				_compilationContextFixture.CompilationContext,
 				"_Resources/Models/ListTestModel.cs",
 				"_Resources/ExpectedPackRats/ListTestModelPackRat.cs"
 			);
@@ -44,6 +58,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test
 			// interleaved, which also exercises ordering by Position rather than by
 			// declaration order.
 			PackRatCompilerTestHelper.TestGeneratePackRat(
+				_compilationContextFixture.CompilationContext,
 				"_Resources/Models/MixedListTestModel.cs",
 				"_Resources/ExpectedPackRats/MixedListTestModelPackRat.cs"
 			);
@@ -54,6 +69,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test
 		public void GeneratePackRat_ShouldWorkForModelWithEnum()
 		{
 			PackRatCompilerTestHelper.TestGeneratePackRat(
+				_compilationContextFixture.CompilationContext,
 				"_Resources/Models/ModelWithEnum.cs",
 				"_Resources/ExpectedPackRats/ModelWithEnumPackRat.cs"
 			);
@@ -64,6 +80,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test
 		public void GeneratePackRat_ShouldWorkForTokenTestModelModel()
 		{
 			PackRatCompilerTestHelper.TestGeneratePackRat(
+				_compilationContextFixture.CompilationContext,
 				"_Resources/Models/TokenTestModel.cs",
 				"_Resources/ExpectedPackRats/TokenTestModelPackRat.cs"
 			);
