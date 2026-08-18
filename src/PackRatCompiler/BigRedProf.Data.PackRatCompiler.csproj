@@ -4,8 +4,6 @@
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net8.0</TargetFramework>
 		<PackageType>DotNetCliTool</PackageType>
-		<Version>0.7.8</Version>
-		<RepositoryUrl>https://github.com/BigRedProf/data</RepositoryUrl>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
@@ -17,6 +15,10 @@
 		<ToolCommandName>prc</ToolCommandName>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<AssemblyName>prc</AssemblyName>
+
+		<Title>PackRat Compiler</Title>
+		<Description>The prc command-line tool: generates BigRedProf pack rats from annotated C# models.</Description>
+		<PackageTags>bigredprof;codegen;packrat;dotnet-tool</PackageTags>
 	</PropertyGroup>
 	
 	<ItemGroup>

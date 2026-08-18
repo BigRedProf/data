@@ -100,7 +100,12 @@ tasks:
 #
 # Package publishing is CI's job. .github/workflows/dotnet.yml pushes
 # BigRedProf.Data.Core, BigRedProf.Data.PackRatCompiler and BigRedProf.Data.Tape
-# on a push to main; `task pack` only builds them locally, so nothing here can
-# release a package by accident. The workflow calls `task verify` for the
-# build-and-test half, so CI and local agree on what "it builds" means.
+# to nuget.org when a `v*` TAG is pushed -- not on a merge to main; `task pack`
+# only builds them locally, so nothing here can release a package by accident.
+# The workflow calls `task verify` for the build-and-test half, so CI and local
+# agree on what "it builds" means.
+#
+# To release: tag the commit `v<major>.<minor>.<patch>` and push the tag. MinVer
+# reads the version from it (Directory.Build.props), so there is no version to
+# bump in any csproj. An untagged build is a prerelease named after the last tag.
 # -----------------------------------------------------------------------------
