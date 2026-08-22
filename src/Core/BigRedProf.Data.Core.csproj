@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
+		<TargetFramework>netstandard2.1</TargetFramework>
 
 		<Title>Data Library</Title>
 		<Description>The foundation of the BigRedProf data model: codes, pack rats, and the schema-identified binary encoding everything else is built on.</Description>
