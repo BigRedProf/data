@@ -745,10 +745,15 @@ trait ordering (#35), `Datum` (#36), `FlexDatum` (#37), `Trait`/`TraitValue` (#3
 (#42), variable-length trait lengths (#43), retired field positions and the rules of schema change
 (#46), documentation and exception types (#48).
 
-**Still open**, and deliberately so: tokenized trait identifiers (#44) waits on `tokenizer-v2.md`;
-the consumers' directory rename (#45) waits on the `Schemas`/`Data`/`Vocabulary` decision; a shared
-`CoreTrait.Kind` (#47) is a judgement call; and immutable `Code` (#49) is the largest item by blast
-radius and the only one that is not really about the ontology.
+Also landed: immutable `Code` with a `CodeBuilder` (#49).
+
+**Still open**, and deliberately so. Tokenized trait identifiers (#44) wait on `tokenizer-v2.md`.
+The consumers' directory rename (#45) is decided — `Data` — but lands in the `digihouse`,
+`stories`, and `content` repositories rather than this one. A shared `CoreTrait.Kind` (#47) is
+deferred on the strength of the trait rules themselves: an identifier is minted once and bound to
+its schema forever, so minting a core one with no consumer spends a permanent identifier on a
+guess, and guessing the answer's schema wrong would cost a second identifier plus a retired
+first.
 
 ### Defects — fix regardless of the naming outcome
 
