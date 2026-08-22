@@ -20,9 +20,21 @@ namespace BigRedProf.Data.Test._TestHelpers
 		#region class constructors
 		static CompilationContextFixture()
 		{
-			// Must happen before the first MSBuildWorkspace is created, and exactly once per
-			// process -- RegisterDefaults throws if called twice.
-			MSBuildLocator.RegisterDefaults();
+			// The MSBuild workspace runs its design-time builds in a separate BuildHost process,
+			// which locates MSBuild for itself. Registering here is not merely unnecessary: by
+			// the time this runs the test host has already loaded MSBuild assemblies, and
+			// MSBuildLocator throws when it finds them.
+			if (!MSBuildLocator.IsRegistered)
+			{
+				try
+				{
+					MSBuildLocator.RegisterDefaults();
+				}
+				catch (InvalidOperationException)
+				{
+					// Already loaded by the host. Nothing to do.
+				}
+			}
 		}
 		#endregion
 
@@ -39,9 +51,12 @@ namespace BigRedProf.Data.Test._TestHelpers
 
 			_compilationContext = new CompilationContext(_stdoutStreamWriter, _stdoutStreamWriter);
 
-			// HACKHACK: relative path from the test binary to the Core project.
-			string hackHackProjectPath = @"../../../../Core/BigRedProf.Data.Core.csproj";
-			_compilationContext.AddProject(new FileInfo(hackHackProjectPath));
+			// Resolved from the test assembly rather than the working directory: the MSBuild
+			// workspace builds out of process, so the working directory is not ours to assume.
+			string projectPath = Path.GetFullPath(
+				Path.Combine(AppContext.BaseDirectory, @"../../../../Core/BigRedProf.Data.Core.csproj")
+			);
+			_compilationContext.AddProject(new FileInfo(projectPath));
 		}
 		#endregion
 
