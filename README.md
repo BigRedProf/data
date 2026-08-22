@@ -44,13 +44,22 @@ repository root.
 
 ## Glossary
 
-**bit** - a discrete binary value; uses the symbols **0** and **1**
+The full account, and the reasoning behind these names, is in
+[docs/ontology-draft-datum.md](docs/ontology-draft-datum.md).
 
-**code** - a sequence of one or more bits used to represent something (think cryptographic messages, NOT computer instructions)
+**bit** - precisely one of two discrete states; uses the symbols **0** and **1**
+
+**code** - a sequence of one or more bits (think cryptographic messages, NOT computer instructions); a code by itself does not mean anything
+
+**schema** - the agreement that gives a code meaning: a correspondence between codes and the things those codes stand for
+
+**datum** - a **code** together with the **schema** under which that code is to be read; many data, collectively, are **data**
+
+**subject** - the thing a datum represents; a datum *represents*, or *models*, its subject
 
 ---
 
-**model** - a software developer's representation of a domain object
+**model** - a representation of a subject at runtime, made of objects rather than bits; a runtime model and a **datum** are two representations of the same subject, and **packing** converts between them
 
 ---
 
@@ -58,15 +67,29 @@ repository root.
 
 **unpacking** - the act of turning a **code** into a **model** (think deserialization)
 
-**pack rat** - the actor responsible **packing** and **unpacking** a specific **model**
+**pack rat** - the actor responsible for **packing** and **unpacking** a specific **model**
 
 **pied piper** - the actor who organizes all the **pack rats** (consider creating a singleton pied piper in your startup code if you're using dependency injection)
 
 ---
 
-**flex model** - a flexible **model** composed of one or more models called traits; the advantage of the flex model is that clients don't need to understand its full schema to work with it--they can use the traits they understand and ignore the rest
+**trait** - a named aspect a subject may have; a trait identifier designates both the question being asked and the schema of the answer (eg: "What is your name?", answered "Memorial Stadium")
 
-**trait** - a model and its purpose (eg: "My name is Memorial Stadium." or "My location is Lincoln, Nebraska.")
+A trait identifier is a *global* agreement, and three rules about it are permanent: it is bound to its schema **forever**; a trait is present or absent, with absence being how you say no; and a subject has **at most one** answer per question, so multiplicity lives inside the answer's schema.
+
+**trait value** - a trait identifier together with a code answering that trait; the trait's schema is what makes that code a datum
+
+**flex datum** - a **datum** whose subject is represented by independently identified **traits**; a consumer can use the traits it recognizes without understanding the rest, and unrecognized traits are skipped, preserved, and carried forward untouched
+
+---
+
+There are two ways to compose a representation, and neither is the lesser one.
+
+A **structured schema** -- what `[GeneratePackRat]` and `[PackField]` declare -- is a *form*: numbered blanks in a fixed order, where a part is identified by its position and by nothing else. It refuses to write down what both parties already know, which is why it is compact. It asks in return that both parties hold the identical form.
+
+A **flex datum** is a *card*: labeled entries, where a part is identified globally. It pays an identifier per entry to buy the ability to be read by someone who does not hold your form.
+
+Use a form when you control every writer and reader and they change together. Use a flex datum when you do not know who will read this, when writers and readers will change at different times, and when records must survive being exported, archived, and read back by strangers.
 
 ---
 

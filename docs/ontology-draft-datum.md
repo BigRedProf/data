@@ -3,7 +3,11 @@
 > One of two parallel drafts written for [issue #33](https://github.com/BigRedProf/data/issues/33).
 > Draft A and Draft B say the same things about the same world in two different vocabularies.
 > Draft B is preserved as written; this draft has since been developed further.
-> Nothing here is decided, and no work items have been created — Part 4 proposes them for review.
+> **Status.** The ontology was accepted and most of Part 4 has landed on `feature/v1-ontology`;
+> see Part 4 for what shipped and what is still open. Parts 1 and 2 stand as written. Part 3's
+> *Where the implementation diverges from the lecture* is kept in the present tense as the record
+> of what the abstract account found — several of the files and line numbers it cites no longer
+> exist, which is the point.
 
 **Design goal.** `BigRedProf.Data` should encourage developers to think **data-first**: to design
 the durable, portable record before designing the classes that happen to hold it in memory today.
@@ -728,8 +732,19 @@ whatever namespace is chosen.
 
 ## Part 4 — Proposed work items
 
-**None of these have been created.** They are listed here for review, and would become sub-issues
-of #33 once the ontology and the list are agreed.
+Filed as sub-issues of #33, numbered [#34](https://github.com/BigRedProf/data/issues/34) through
+[#49](https://github.com/BigRedProf/data/issues/49).
+
+**Landed** on `feature/v1-ontology`: unknown traits skippable and preservable (#34), canonical
+trait ordering (#35), `Datum` (#36), `FlexDatum` (#37), `Trait`/`TraitValue` (#38), one verb pair
+(#39), immutability and a builder (#40), `TapeLabel` as a view (#41), trait value enumeration
+(#42), variable-length trait lengths (#43), retired field positions and the rules of schema change
+(#46), documentation and exception types (#48).
+
+**Still open**, and deliberately so: tokenized trait identifiers (#44) waits on `tokenizer-v2.md`;
+the consumers' directory rename (#45) waits on the `Schemas`/`Data`/`Vocabulary` decision; a shared
+`CoreTrait.Kind` (#47) is a judgement call; and immutable `Code` (#49) is the largest item by blast
+radius and the only one that is not really about the ontology.
 
 ### Defects — fix regardless of the naming outcome
 
