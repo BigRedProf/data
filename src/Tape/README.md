@@ -8,7 +8,7 @@ The **BigRedProf.Data.Tape** library provides a structured way to store and mana
 
 **header** - a 1,000-bit (125 B) preamble to the tape containing things like a version and the offset to content
 
-**label** - a *FlexModel*, up to 1,000,000-bits (125 KB) in pack length, containing arbitrary metadata about the tape expressed as traits
+**label** - a *FlexDatum*, up to 1,000,000-bits (125 KB) in pack length, containing arbitrary metadata about the tape expressed as traits
 
 **content** - up to 1,000,000,000 bits (125 MB) of arbitrary data
 
@@ -24,7 +24,7 @@ Each **tape** consists of **three parts**:
 | **Section**  | **Size**          | **Description** |
 |-------------|-----------------|----------------|
 | **Header**  | **1,000 bits (125 B)** | Stores version info and label length. |
-| **Label**   | **Up to 1,000,000 bits (125 KB)** | Stores metadata as a `FlexModel`, using well-known and custom traits. |
+| **Label**   | **Up to 1,000,000 bits (125 KB)** | Stores metadata as a `FlexDatum`, using well-known and custom traits. |
 | **Content** | **Up to 1,000,000,000 bits (125 MB)** | The actual data stored in the tape. |
 
 ---
