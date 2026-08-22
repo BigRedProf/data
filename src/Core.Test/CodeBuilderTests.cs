@@ -112,6 +112,23 @@ namespace BigRedProf.Data.Core.Test
 
 		[Fact]
 		[Trait("Region", "methods")]
+		public void Constructor_ShouldNotAliasTheSeedCode()
+		{
+			// The seed is immutable and must stay that way while the builder is written to.
+			// Aliasing its backing array would change a value other code may already have
+			// compared, fingerprinted, or used as a dictionary key.
+			Code seed = new Code("0000 0000");
+			CodeBuilder builder = new CodeBuilder(seed);
+		
+			builder[0] = 1;
+			builder[7] = 1;
+		
+			Assert.Equal<Code>("0000 0000", seed);
+			Assert.Equal<Code>("1000 0001", builder.Build());
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
 		public void Constructor_ShouldSeedFromAnExistingCode()
 		{
 			CodeBuilder builder = new CodeBuilder(new Code("1011"));

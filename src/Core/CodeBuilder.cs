@@ -43,7 +43,10 @@ namespace BigRedProf.Data.Core
 			if (code == null)
 				throw new ArgumentNullException(nameof(code));
 
-			_byteArray = code.ToByteArray();
+			// Copied, never aliased: the seed code is immutable and must stay that way while
+			// this builder is written to.
+			_byteArray = new byte[code.ByteArray.Length];
+			Array.Copy(code.ByteArray, 0, _byteArray, 0, code.ByteArray.Length);
 			_length = code.Length;
 		}
 		#endregion
@@ -108,7 +111,7 @@ namespace BigRedProf.Data.Core
 			if ((offset % 8) == 0 && code.Length >= 8)
 			{
 				// Whole bytes land byte-aligned, so copy them wholesale.
-				byte[] sourceBytes = code.ToByteArray();
+				byte[] sourceBytes = code.ByteArray;
 				int byteLengthOfCode = code.Length / 8;
 				for (int i = 0; i < byteLengthOfCode; ++i)
 					_byteArray[(offset / 8) + i] = sourceBytes[i];

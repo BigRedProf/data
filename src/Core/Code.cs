@@ -215,9 +215,21 @@ namespace BigRedProf.Data.Core
 		#endregion
 
 		#region methods
+		/// <summary>
+		/// Returns the code's bits as a byte array.
+		/// </summary>
+		/// <remarks>
+		/// A copy. A code is immutable, so handing out its backing array would let any caller
+		/// change a value that other code has already compared, fingerprinted, or used as a
+		/// dictionary key. Callers inside this assembly that only read can use
+		/// <see cref="ByteArray"/> and skip the copy.
+		/// </remarks>
 		public byte[] ToByteArray()
 		{
-			return _byteArray;
+			byte[] byteArray = new byte[_byteArray.Length];
+			Array.Copy(_byteArray, 0, byteArray, 0, _byteArray.Length);
+
+			return byteArray;
 		}
 		#endregion
 

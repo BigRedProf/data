@@ -155,7 +155,7 @@ namespace BigRedProf.Data.Core
 				throw new ArgumentNullException(nameof(code));
 
 			// Hash of raw packed bytes
-			byte[] rawBytes = code.ToByteArray();
+			byte[] rawBytes = code.ByteArray;
 			byte[] digest = HashBytes(rawBytes, algorithm);
 
 			// Byte-aligned: H(rawBytes)

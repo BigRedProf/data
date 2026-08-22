@@ -510,7 +510,7 @@ namespace BigRedProf.Data.Core
 
 			M model;
 			PackRat<M> packRat = GetPackRat<M>(schemaId);
-			MemoryStream memoryStream = new MemoryStream(code.ToByteArray());
+			MemoryStream memoryStream = new MemoryStream(code.ByteArray);
 			using (CodeReader codeReader = new CodeReader(memoryStream))
 			{
 				model = packRat.UnpackModel(codeReader);
@@ -590,7 +590,7 @@ namespace BigRedProf.Data.Core
 
 			object model;
 			IWeaklyTypedPackRat packRat = GetPackRat(schemaId);
-			MemoryStream memoryStream = new MemoryStream(code.ToByteArray());
+			MemoryStream memoryStream = new MemoryStream(code.ByteArray);
 			using (CodeReader codeReader = new CodeReader(memoryStream))
 			{
 				model = packRat.UnpackModel(codeReader);

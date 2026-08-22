@@ -177,6 +177,22 @@ namespace BigRedProf.Data.Test
 
 		#endregion
 
+		#region ToByteArray tests
+		[Fact]
+		[Trait("Region", "methods")]
+		public void ToByteArrayShouldReturnACopy()
+		{
+			// A code is immutable, so it must not hand out its backing array.
+			Code code = new Code("1010 1010");
+		
+			byte[] bytes = code.ToByteArray();
+			bytes[0] = 0xFF;
+		
+			Assert.Equal<Code>("1010 1010", code);
+			Assert.NotEqual((byte) 0xFF, code.ToByteArray()[0]);
+		}
+		#endregion
+
 		#region object tests
 		[Fact]
 		public void ToStringShouldFormatCorrectly()
