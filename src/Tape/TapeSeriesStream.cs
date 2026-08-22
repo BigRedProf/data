@@ -610,8 +610,7 @@ namespace BigRedProf.Data.Tape
 		#region helpers (byte/bit pack/unpack)
 		private static void CopyCodeToBuffer(Code code, byte[] buffer, int offset, int byteCount)
 		{
-			byte[] bytes = code.ToByteArray();
-			Array.Copy(bytes, 0, buffer, offset, byteCount);
+			code.CopyTo(buffer, offset, 0, byteCount);
 		}
 
 		private static byte PackPartialByte(Code bits, int bitOffset, int bitCount)

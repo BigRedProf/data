@@ -177,6 +177,46 @@ namespace BigRedProf.Data.Test
 
 		#endregion
 
+		#region reading tests
+		[Fact]
+		[Trait("Region", "methods")]
+		public void GetByteShouldReturnTheByte()
+		{
+			Code code = new Code("10101010 11110000");
+		
+			Assert.Equal(2, code.ByteLength);
+			Assert.Equal(code.ToByteArray()[0], code.GetByte(0));
+			Assert.Equal(code.ToByteArray()[1], code.GetByte(1));
+			Assert.Throws<ArgumentOutOfRangeException>(() => code.GetByte(2));
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void CopyToShouldCopyTheRequestedBytes()
+		{
+			Code code = new Code("10101010 11110000 00001111");
+			byte[] buffer = new byte[4];
+		
+			code.CopyTo(buffer, 1, 1, 2);
+		
+			Assert.Equal(0, buffer[0]);
+			Assert.Equal(code.GetByte(1), buffer[1]);
+			Assert.Equal(code.GetByte(2), buffer[2]);
+			Assert.Equal(0, buffer[3]);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void CopyToShouldRejectRangesOutsideTheCodeOrTheBuffer()
+		{
+			Code code = new Code("10101010 11110000");
+		
+			Assert.Throws<ArgumentNullException>(() => code.CopyTo(null, 0, 0, 1));
+			Assert.Throws<ArgumentOutOfRangeException>(() => code.CopyTo(new byte[2], 0, 1, 2));
+			Assert.Throws<ArgumentOutOfRangeException>(() => code.CopyTo(new byte[1], 0, 0, 2));
+		}
+		#endregion
+
 		#region ToByteArray tests
 		[Fact]
 		[Trait("Region", "methods")]

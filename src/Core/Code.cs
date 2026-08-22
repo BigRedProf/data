@@ -216,6 +216,51 @@ namespace BigRedProf.Data.Core
 
 		#region methods
 		/// <summary>
+		/// The number of bytes the code occupies.
+		/// </summary>
+		public int ByteLength => _byteArray.Length;
+
+		/// <summary>
+		/// Returns a single byte of the code.
+		/// </summary>
+		/// <remarks>
+		/// For readers that want the bytes without a copy of the whole code. A code can be a
+		/// gigabit long, so <see cref="ToByteArray"/> is not always a reasonable way to read one.
+		/// </remarks>
+		/// <param name="index">The byte index.</param>
+		public byte GetByte(int index)
+		{
+			if (index < 0 || index >= _byteArray.Length)
+				throw new ArgumentOutOfRangeException(nameof(index));
+
+			return _byteArray[index];
+		}
+
+		/// <summary>
+		/// Copies part of the code into an existing buffer.
+		/// </summary>
+		/// <remarks>
+		/// The way to move a large code somewhere without allocating a second copy of it first.
+		/// </remarks>
+		/// <param name="destination">The buffer to copy into.</param>
+		/// <param name="destinationIndex">Where in the buffer to start writing.</param>
+		/// <param name="sourceByteIndex">Which byte of the code to start from.</param>
+		/// <param name="byteCount">How many bytes to copy.</param>
+		public void CopyTo(byte[] destination, int destinationIndex, int sourceByteIndex, int byteCount)
+		{
+			if (destination == null)
+				throw new ArgumentNullException(nameof(destination));
+
+			if (sourceByteIndex < 0 || sourceByteIndex + byteCount > _byteArray.Length)
+				throw new ArgumentOutOfRangeException(nameof(sourceByteIndex));
+
+			if (destinationIndex < 0 || destinationIndex + byteCount > destination.Length)
+				throw new ArgumentOutOfRangeException(nameof(destinationIndex));
+
+			Array.Copy(_byteArray, sourceByteIndex, destination, destinationIndex, byteCount);
+		}
+
+		/// <summary>
 		/// Returns the code's bits as a byte array.
 		/// </summary>
 		/// <remarks>

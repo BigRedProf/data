@@ -155,7 +155,8 @@ namespace BigRedProf.Data.Tape.Internal
 			int startByte = tapeOffset >> 3;
 			int startBit = tapeOffset & 7;
 
-			byte[] src = content.ToByteArray();
+			// Deliberately no byte array of the whole content: a code can be a gigabit long, and
+			// this method usually writes a small piece of one.
 
 			// Fast path: fully byte-aligned on both content and tape, whole-byte length
 			if (startBit == 0 && (contentOffset & 7) == 0 && (length & 7) == 0)
@@ -163,18 +164,9 @@ namespace BigRedProf.Data.Tape.Internal
 				int fullBytes = length >> 3;
 				if (fullBytes > 0)
 				{
-					int srcStartByte = contentOffset >> 3;
-					// If content starts at byte 0 we can avoid copying; otherwise take a slice
-					if (srcStartByte == 0)
-					{
-						tapeProvider.WriteTapeInternal(tapeId, src, startByte, fullBytes);
-					}
-					else
-					{
-						byte[] tmp = new byte[fullBytes];
-						Array.Copy(src, srcStartByte, tmp, 0, fullBytes);
-						tapeProvider.WriteTapeInternal(tapeId, tmp, startByte, fullBytes);
-					}
+					byte[] tmp = new byte[fullBytes];
+					content.CopyTo(tmp, 0, contentOffset >> 3, fullBytes);
+					tapeProvider.WriteTapeInternal(tapeId, tmp, startByte, fullBytes);
 				}
 				return;
 			}
@@ -191,7 +183,7 @@ namespace BigRedProf.Data.Tape.Internal
 				int sIndex = contentOffset + i;
 				int sByte = sIndex >> 3;
 				int sBit = sIndex & 7;
-				int bit = (src[sByte] >> sBit) & 1;
+				int bit = (content.GetByte(sByte) >> sBit) & 1;
 
 				int tIndex = startBit + i;
 				int dByte = tIndex >> 3;
