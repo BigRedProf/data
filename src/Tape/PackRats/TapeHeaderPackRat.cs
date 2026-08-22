@@ -47,21 +47,21 @@ namespace BigRedProf.Data.Tape.PackRats
 
 			// series name (for show)
 			string? seriesName = null;
-			model.Label.TryGetTrait(CoreTrait.SeriesName, out seriesName);
+			model.Label.TryGetTrait(CoreTrait.SeriesName, PiedPiper, out seriesName);
 			string terminalFriendlySeriesName = MakeFixedSizeAscii(seriesName, 50);
 			stringBuilder.Append(terminalFriendlySeriesName);
 			stringBuilder.Append('|');
 
 			// series number (for show)
 			int seriesNumber = 0;
-			model.Label.TryGetTrait<int>(CoreTrait.SeriesNumber, out seriesNumber);
+			model.Label.TryGetTrait<int>(CoreTrait.SeriesNumber, PiedPiper, out seriesNumber);
 			string terminalFriendlySeriesNumber = Make5DigitNumber(seriesNumber);
 			stringBuilder.Append(terminalFriendlySeriesNumber);
 			stringBuilder.Append('|');
 
 			// GUID, as 36-character string (for show)
 			Guid guid = Guid.Empty;
-			model.Label.TryGetTrait<Guid>(CoreTrait.Id, out guid);
+			model.Label.TryGetTrait<Guid>(CoreTrait.Id, PiedPiper, out guid);
 			stringBuilder.Append(guid.ToString());
 
 			// End-of-file (for show)
@@ -85,7 +85,7 @@ namespace BigRedProf.Data.Tape.PackRats
 			writer.WriteCode("00000000 00000000 00000000 00000000");
 
 			// Label
-			Code packedLabel = PiedPiper.PackModel<FlexModel>(model.Label, CoreSchema.FlexModel);
+			Code packedLabel = PiedPiper.PackModel<FlexDatum>(model.Label, CoreSchema.FlexDatum);
 			if (packedLabel.Length > (model.BytesAllocatedForLabel * 8))
 			{
 				throw new InvalidOperationException(
@@ -94,7 +94,7 @@ namespace BigRedProf.Data.Tape.PackRats
 					"allocated for label."
 				);
 			}
-			PiedPiper.PackModel(writer, model.Label, CoreSchema.FlexModel);
+			PiedPiper.PackModel(writer, model.Label, CoreSchema.FlexDatum);
 
 			// Label padding
 			int paddedBitLength = (model.BytesAllocatedForLabel * 8) - (packedLabel.Length);
@@ -147,7 +147,7 @@ namespace BigRedProf.Data.Tape.PackRats
 			reader.Read(16 * 8);
 
 			// Label
-			model.Label = PiedPiper.UnpackModel<FlexModel>(reader, CoreSchema.FlexModel);
+			model.Label = PiedPiper.UnpackModel<FlexDatum>(reader, CoreSchema.FlexDatum);
 
 			return model;
 		}

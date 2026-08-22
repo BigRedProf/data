@@ -88,18 +88,22 @@ namespace BigRedProf.Data.Core
 		void RegisterTokenizers(Assembly assembly);
 
 		/// <summary>
-		/// Defines a trait by associating a <see cref="TraitDefinition"/> with a given trait 
-		/// identifier.
+		/// Defines a trait: the question a trait identifier asks, and the schema of its answer.
 		/// </summary>
-		/// <param name="traitDefintion">The trait definition.</param>
-		void DefineTrait(TraitDefinition traitDefintion);
+		/// <remarks>
+		/// A trait identifier is bound to its schema forever. Redefining one throws, because
+		/// changing the schema of an answer is asking a different question, and a different
+		/// question needs a different identifier.
+		/// </remarks>
+		/// <param name="trait">The trait.</param>
+		void DefineTrait(Trait trait);
 
 		/// <summary>
-		/// Returns the <see cref="TraitDefinition"/> for a given trait identifier.
+		/// Returns the <see cref="Trait"/> for a given trait identifier.
 		/// </summary>
 		/// <param name="traitId">The trait identifier.</param>
-		/// <returns>The trait definition.</returns>
-		TraitDefinition GetTraitDefinition(AttributeFriendlyGuid traitId);
+		/// <returns>The trait.</returns>
+		Trait GetTrait(AttributeFriendlyGuid traitId);
 
 		bool IsTraitDefined(AttributeFriendlyGuid traitId);
 
@@ -232,6 +236,23 @@ namespace BigRedProf.Data.Core
 		/// <param name="model">The model.</param>
 		/// <param name="schemaId">The schema identifier.</param>
 		/// <returns>The datum.</returns>
+		/// <summary>
+		/// Packs a model of a type not known at compile time into a standalone <see cref="Code"/>.
+		/// </summary>
+		/// <param name="model">The model.</param>
+		/// <param name="schemaId">The schema identifier.</param>
+		/// <returns>The code.</returns>
+		Code PackModel(object model, AttributeFriendlyGuid schemaId);
+
+		/// <summary>
+		/// Unpacks a model of a type not known at compile time from a standalone
+		/// <see cref="Code"/>.
+		/// </summary>
+		/// <param name="code">The packed model.</param>
+		/// <param name="schemaId">The schema identifier.</param>
+		/// <returns>The model.</returns>
+		object UnpackModel(Code code, AttributeFriendlyGuid schemaId);
+
 		Datum PackDatum<M>(M model, AttributeFriendlyGuid schemaId);
 
 		/// <summary>

@@ -94,9 +94,9 @@
 		public const string EfficientWholeNumber63 = "6a29f5c6-fb2b-4e5c-8d77-89371cd4a1f0";
 
 		/// <summary>
-		/// The schema identifier for the <see cref="FlexModel"/> type.
+		/// The schema identifier for the <see cref="FlexDatum"/> type.
 		/// </summary>
-		public const string FlexModel = "94059e98-41f8-4adc-b29e-1c0630645809";
+		public const string FlexDatum = "94059e98-41f8-4adc-b29e-1c0630645809";
 		
 		/// <summary>
 		/// The schema identifier for the <see cref="Guid"/> type.

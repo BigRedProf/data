@@ -25,7 +25,7 @@ namespace BigRedProf.Data.Tape.Models
 		// to include things like Guid and SeriesName as those traits live
 		// on the Label. On the other hand, it might be faster if we don't
 		// have to modify the header every time somebody changes the label.
-		public FlexModel Label { get; set; } = default!;
+		public FlexDatum Label { get; set; } = default!;
 		#endregion
 	}
 }

@@ -16,12 +16,11 @@ namespace BigRedProf.Data.Tape.Internal
 			byte[] bytes = tape.TapeProvider.ReadLabelInternal(tape.Id);
 			Code code = new Code(bytes);
 
-			FlexModel flexModel = piedPiper.UnpackModel<FlexModel>(code, CoreSchema.FlexModel);
-			TapeLabel tapeLabel = TapeLabel.FromFlexModel(flexModel);
-			return tapeLabel;
+			FlexDatum flexDatum = piedPiper.UnpackModel<FlexDatum>(code, CoreSchema.FlexDatum);
+			return TapeLabel.Over(piedPiper, flexDatum);
 		}
 
-		public static void WriteLabel(Tape tape, FlexModel label)
+		public static void WriteLabel(Tape tape, TapeLabel label)
 		{
 			if (tape == null)
 				throw new ArgumentNullException(nameof(tape), "Tape cannot be null.");
@@ -31,7 +30,7 @@ namespace BigRedProf.Data.Tape.Internal
 
 			var piedPiper = tape.TapeProvider.PiedPiper;
 
-			var code = piedPiper.PackModel(label, CoreSchema.FlexModel);
+			var code = piedPiper.PackModel(label.FlexDatum, CoreSchema.FlexDatum);
 			byte[] bytes = code.ToByteArray();
 
 			tape.TapeProvider.WriteLabelInternal(tape.Id, bytes);

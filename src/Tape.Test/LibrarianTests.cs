@@ -105,8 +105,8 @@ namespace BigRedProf.Data.Tape.Test
 				Librarian librarian = new Librarian(tapeProvider);
 				Guid tapeId = new Guid("00000000-4343-0000-0000-000000000001");
 				Tape tape = Tape.CreateNew(tapeProvider, tapeId);
-				TapeLabel tapeLabel = new TapeLabel()
-				.WithTapeId(tapeId);
+				TapeLabel tapeLabel = TapeLabel.Empty(tapeProvider.PiedPiper)
+					.WithTapeId(tapeId);
 				tape.WriteLabel(tapeLabel);
 				librarian.AddTape(tape);
 
