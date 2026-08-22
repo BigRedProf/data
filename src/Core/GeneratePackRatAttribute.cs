@@ -22,9 +22,13 @@ namespace BigRedProf.Data.Core
 	/// unreadable, which would be survivable, but wrong. A changed form is a different form and
 	/// needs a different schema identifier.
 	///
-	/// A part may be retired but never renumbered. Drop a field and leave its position empty; the
-	/// positions after it keep the numbers they have always had. The compiler permits gaps for
-	/// exactly this reason.
+	/// A part cannot be retired. This is where the analogy with trait identifiers breaks down: a
+	/// flex datum's entries name themselves, so dropping one costs nothing, but a part here is
+	/// located by counting. Leaving a gap in the declared positions does NOT leave a gap on the
+	/// wire -- declare 1 and 3 and you get two sequential parts, with the part declared 3 simply
+	/// becoming the second thing written. Every code packed under the old schema is then misread.
+	/// So the compiler requires positions to be exactly 1..n, and removing a field means minting
+	/// a new schema identifier.
 	///
 	/// Appending a part is not free either. A reader built against the old schema stops after the
 	/// parts it knows, and unless something independently marks where this code ends it cannot

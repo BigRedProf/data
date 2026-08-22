@@ -136,6 +136,15 @@ what notation a blank takes, and every previously filled copy now reads wrong �
 which would be survivable, but **wrong**, which is not. A changed form is a different form and
 needs a different identity.
 
+*A blank cannot be quietly retired.* It is tempting to think a blank could be abandoned while the
+ones after it keep their numbers, the way a trait identifier can be retired and never reused. It
+cannot, and the reason is the difference this section is about. A card's entries name themselves,
+so removing one leaves the others exactly where they were. A form's blanks are found by counting,
+so **a hole in the numbering is not a hole on the page**: strike out blank 2 and blank 3 simply
+becomes the second thing anyone reads. The only way to retire a blank while keeping the form's
+identity is to leave it physically present and agree that it is to be ignored — and that is a
+different form's worth of agreement, so it may as well be a different form.
+
 *Adding a blank at the end is not free either.* An old reader stops after the blanks it knows,
 and unless something independently marks where the filled form ends, it has no way to tell that
 more was written — and if forms are stored end to end, it will read the next form's first blank as
@@ -844,16 +853,19 @@ maps tokens; and nothing that does one of those three lives anywhere else.
 when the code's extent is marked from outside — but nothing in the library, the compiler, or the
 `[PackField]` documentation says so. Today it is folklore.
 
-Worse, the one rule the compiler *does* enforce pushes the wrong way. `ValidatePackRatFields`
-([PackRatGenerator.cs:241](../src/PackRatCompiler/PackRatGenerator.cs:241)) requires positions to
-be exactly `1..n`, dense and contiguous. Ordinals therefore cannot be retired: removing the second
-of three fields forces the third to be renumbered, which silently changes what every previously
-written code means while the schema identifier stays the same. The density rule makes the only
-safe edit — leaving a hole where a part used to be — impossible to express. Retiring a part should
-look like retiring a trait identifier: the position is spent forever and nothing takes its place.
+The compiler enforces one rule — `ValidatePackRatFields` requires positions to be exactly `1..n`
+— and that rule is **correct**, though for a reason worth stating. It was briefly relaxed here to
+allow gaps, on the theory that a retired position should behave like a retired trait identifier:
+spent forever, nothing taking its place. That was wrong. A gap in the declaration is not a gap on
+the wire. Positions 1 and 3 generate two sequential parts, so the part declared 3 simply becomes
+the second thing written, and every code already packed under that schema is misread. The
+relaxation made the dangerous edit *look* sanctioned. It has been reverted, and the case is now
+covered by a test asserting the compiler rejects a gap.
 
-Decide what `prc` should enforce (reserved/retired positions, a warning when a schema's part list
-changes without a new schema identifier) and what stays documentation.
+What the compiler still cannot catch is the same edit done the compliant way: delete a field,
+renumber the rest, keep the schema identifier. Only documentation and discipline prevent that
+today. A shape fingerprint — a hash over the ordered part schemas, declared alongside the schema
+identifier and checked at compile time — would catch it, and is worth considering.
 *Done when:* the rules appear in the pack rat compiler's documentation and on
 `GeneratePackRatAttribute`/`PackFieldAttribute`, and the append-under-framing rule is stated with
 its precondition rather than as general advice.

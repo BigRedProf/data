@@ -29,16 +29,20 @@ namespace BigRedProf.Data.PackRatCompiler.Test
 
 		[Fact]
 		[Trait("Region", "methods")]
-		public void GeneratePackRat_ShouldWorkForModelWithARetiredFieldPosition()
+		public void GeneratePackRat_ShouldRejectAGapInFieldPositions()
 		{
-			// Positions need not be contiguous. A retired position stays retired, because
-			// renumbering the parts after it would silently change what every code already
-			// written under this schema means.
-			PackRatCompilerTestHelper.TestGeneratePackRat(
-				_compilationContextFixture.CompilationContext,
-				"_Resources/Models/RetiredFieldTestModel.cs",
-				"_Resources/ExpectedPackRats/RetiredFieldTestModelPackRat.cs"
-			);
+			// A gap in the declaration is not a gap on the wire. Positions 1 and 3 would generate
+			// two sequential parts, so the part declared 3 simply becomes the second thing
+			// written -- and every code already packed under this schema is then misread. To
+			// remove a part, mint a new schema identifier.
+			IReadOnlyList<(int Code, string Message)> errors =
+				PackRatCompilerTestHelper.TestGeneratePackRatErrors(
+					_compilationContextFixture.CompilationContext,
+					"_Resources/Models/GappedFieldPositionTestModel.cs"
+				);
+		
+			Assert.Single(errors);
+			Assert.Equal(102, errors[0].Code);
 		}
 
 		[Fact]

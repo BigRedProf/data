@@ -35,10 +35,10 @@ namespace BigRedProf.Data.Core
 		/// packed code marks where one part ends and the next begins except the schema itself, so
 		/// a part is identified by being second and by nothing else.
 		///
-		/// Positions must be at least 1 and no two fields may share one. They need not be
-		/// contiguous: retiring a field means leaving its position empty forever, because
-		/// renumbering the parts after it would silently change what every previously written code
-		/// means. See <see cref="GeneratePackRatAttribute"/> for the full rules of change.
+		/// Positions must be exactly 1..n, with no gaps. A gap in the declaration is not a gap on
+		/// the wire, so it would silently shift every part after it rather than preserving their
+		/// places. Removing a field means minting a new schema identifier. See
+		/// <see cref="GeneratePackRatAttribute"/> for the full rules of change.
 		/// </remarks>
 		public int Position
 		{

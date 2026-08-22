@@ -233,34 +233,37 @@ namespace BigRedProf.Data.PackRatCompiler
 		}
 
 		/// <summary>
-		/// Validates that field positions are usable as permanent wire identities.
+		/// Validates that field positions form a dense sequence starting at 1.
 		/// </summary>
 		/// <remarks>
-		/// A position is an identity within its schema, and a filled-in record carries no
-		/// position markers -- a part is identified by being second, and by nothing else. So
-		/// positions must be at least 1 and strictly increasing, and no two fields may share one.
+		/// A position is an identity within its schema, and a packed code carries no position
+		/// markers -- a part is identified by being second, and by nothing else. So a hole in the
+		/// declared ordinals is NOT a hole on the wire: positions 1 and 3 generate two sequential
+		/// parts, and the part declared 3 is simply the second thing written. Allowing a gap would
+		/// let a field be removed while the schema identifier stayed the same, which produces an
+		/// incompatible wire format that looks sanctioned.
 		///
-		/// Positions are deliberately NOT required to be contiguous. A retired position must stay
-		/// retired: if removing the second of three fields forced the third to be renumbered, then
-		/// every code already written under this schema would silently mean something different
-		/// while the schema identifier stayed the same. Leaving a hole where a part used to be is
-		/// the only safe way to drop one, so a hole has to be expressible.
+		/// Positions must therefore be exactly 1..n. A part cannot be retired: changing the set of
+		/// parts at all means minting a new schema identifier. See GeneratePackRatAttribute.
 		/// </remarks>
 		private void ValidatePackRatFields(INamedTypeSymbol modelClass, IList<PackFieldInfo> fields)
 		{
-			int previousPosition = 0;
 			for (int i = 0; i < fields.Count; ++i)
 			{
 				PackFieldInfo field = fields[i];
 
-				if (field.Position < 1)
+				if (field.Position != i + 1)
 				{
 					_compilationContext.ReportError(
 						CompilerError.InvalidFieldPosition,
 						String.Format(
-							"Field '{0}' in model '{1}' has invalid field position {2}. Positions start at 1.",
+							"Field '{0}' in model '{1}' has invalid field position. Expected: {2}. "
+								+ "Actual: {3}. Positions must be exactly 1..n with no gaps, because "
+								+ "a gap in the declaration is not a gap on the wire. To remove a "
+								+ "field, mint a new schema identifier.",
 							field.Name,
 							modelClass.ToDisplayString(),
+							i + 1,
 							field.Position
 						),
 						modelClass.ContainingModule.ToDisplayString(),
@@ -268,26 +271,9 @@ namespace BigRedProf.Data.PackRatCompiler
 						field.SourceColumn
 					);
 				}
-				else if (field.Position == previousPosition)
-				{
-					_compilationContext.ReportError(
-						CompilerError.DuplicateFieldPosition,
-						String.Format(
-							"Field '{0}' in model '{1}' reuses field position {2}. A position is an "
-								+ "identity within its schema and belongs to exactly one field.",
-							field.Name,
-							modelClass.ToDisplayString(),
-							field.Position
-						),
-						modelClass.ContainingModule.ToDisplayString(),
-						field.SourceLineNumber,
-						field.SourceColumn
-					);
-				}
-
-				previousPosition = field.Position;
 			}
 		}
+
 		#endregion
 	}
 }
