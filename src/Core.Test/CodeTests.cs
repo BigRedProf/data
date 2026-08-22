@@ -217,6 +217,46 @@ namespace BigRedProf.Data.Test
 		}
 		#endregion
 
+		#region view tests
+		[Fact]
+		[Trait("Region", "methods")]
+		public void AsSpanShouldSeeTheCodesBytes()
+		{
+			Code code = new Code("10101010 11110000");
+		
+			ReadOnlySpan<byte> span = code.AsSpan();
+		
+			Assert.Equal(code.ByteLength, span.Length);
+			Assert.Equal(code.GetByte(0), span[0]);
+			Assert.Equal(code.GetByte(1), span[1]);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void AsMemoryShouldSeeTheCodesBytes()
+		{
+			Code code = new Code("10101010 11110000");
+		
+			ReadOnlyMemory<byte> memory = code.AsMemory();
+		
+			Assert.Equal(code.ByteLength, memory.Length);
+			Assert.Equal(code.GetByte(0), memory.Span[0]);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void AsSpanShouldZeroTheUnusedBitsOfTheFinalByte()
+		{
+			// Two codes of equal length must have identical views, so the bits past the end of
+			// the code cannot be allowed to differ.
+			Code fromString = new Code("101");
+			Code fromBits = new Code(1, 0, 1);
+		
+			Assert.Equal(fromString.AsSpan()[0], fromBits.AsSpan()[0]);
+			Assert.Equal(0, fromString.AsSpan()[0] & 0b1111_1000);
+		}
+		#endregion
+
 		#region ToByteArray tests
 		[Fact]
 		[Trait("Region", "methods")]
