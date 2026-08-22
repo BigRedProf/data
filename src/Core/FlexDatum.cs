@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace BigRedProf.Data.Core
@@ -167,7 +168,11 @@ namespace BigRedProf.Data.Core
 		/// <param name="piedPiper">The pied piper, which knows the trait and its schema.</param>
 		/// <param name="value">The trait's value.</param>
 		/// <returns>True if the trait is present, otherwise false.</returns>
-		public bool TryGetTrait<M>(AttributeFriendlyGuid traitId, IPiedPiper piedPiper, out M value)
+		public bool TryGetTrait<M>(
+			AttributeFriendlyGuid traitId,
+			IPiedPiper piedPiper,
+			[MaybeNullWhen(false)] out M value
+		)
 		{
 			if (traitId == null)
 				throw new ArgumentNullException(nameof(traitId));
@@ -199,7 +204,7 @@ namespace BigRedProf.Data.Core
 		#endregion
 
 		#region IEquatable<FlexDatum> methods
-		public bool Equals(FlexDatum other)
+		public bool Equals(FlexDatum? other)
 		{
 			if (other == null)
 				return false;
@@ -219,7 +224,7 @@ namespace BigRedProf.Data.Core
 		#endregion
 
 		#region object methods
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			return Equals(obj as FlexDatum);
 		}
@@ -243,7 +248,7 @@ namespace BigRedProf.Data.Core
 			return _hashCode;
 		}
 
-		public static bool operator ==(FlexDatum left, FlexDatum right)
+		public static bool operator ==(FlexDatum? left, FlexDatum? right)
 		{
 			if (object.ReferenceEquals(left, right))
 				return true;
@@ -254,7 +259,7 @@ namespace BigRedProf.Data.Core
 			return left.Equals(right);
 		}
 
-		public static bool operator !=(FlexDatum left, FlexDatum right)
+		public static bool operator !=(FlexDatum? left, FlexDatum? right)
 		{
 			return !(left == right);
 		}

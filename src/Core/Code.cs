@@ -323,9 +323,9 @@ namespace BigRedProf.Data.Core
 		#endregion
 
 		#region object methods
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
-			Code that = obj as Code;
+			Code? that = obj as Code;
 			if(that == null)
 				return false;
 
@@ -386,7 +386,7 @@ namespace BigRedProf.Data.Core
 		#endregion
 
 		#region operator overloads
-		public static bool operator ==(Code left, Code right)
+		public static bool operator ==(Code? left, Code? right)
 		{
 			if (object.ReferenceEquals(left, right))
 				return true;
@@ -400,7 +400,7 @@ namespace BigRedProf.Data.Core
 			return left.Equals(right);
 		}
 
-		public static bool operator !=(Code left, Code right)
+		public static bool operator !=(Code? left, Code? right)
 		{
 			return !(left == right);
 		}

@@ -19,7 +19,7 @@ namespace BigRedProf.Data.Core
 		#endregion
 
 		#region object methods
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (!(obj is Bit))
 				return false;
