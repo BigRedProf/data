@@ -38,7 +38,7 @@ namespace BigRedProf.Data.Tape.Test
 			Assert.Equal(seriesName, label.SeriesName);
 			Assert.Equal(1, label.SeriesNumber);
 			Assert.Equal(seriesName, label.Name);
-			string storedDescription;
+			string? storedDescription;
 			Assert.True(label.TryGetSeriesDescription(out storedDescription));
 			Assert.Equal(seriesDescription, storedDescription);
 			Assert.Equal(0, tape.Position);
@@ -76,7 +76,7 @@ namespace BigRedProf.Data.Tape.Test
 
 			Tape tape = librarian.FetchTapesInSeries(seriesId).Single();
 			TapeLabel label = tape.ReadLabel();
-			Code stored;
+			Code? stored;
 			Assert.True(label.TryGetClientCheckpoint(out stored));
 			Assert.Equal(checkpoint, stored);
 		}
@@ -125,7 +125,7 @@ namespace BigRedProf.Data.Tape.Test
 			Tape tape = librarian.FetchTapesInSeries(seriesId).Single();
 			TapeLabel label = tape.ReadLabel();
 
-			Code storedCheckpoint;
+			Code? storedCheckpoint;
 			Assert.True(label.TryGetClientCheckpoint(out storedCheckpoint));
 			Assert.Equal(checkpoint, storedCheckpoint);
 
@@ -221,7 +221,7 @@ namespace BigRedProf.Data.Tape.Test
 			Assert.Equal(expectedPosition, tape.Position);
 
 			TapeLabel label = tape.ReadLabel();
-			Code storedCheckpoint;
+			Code? storedCheckpoint;
 			Assert.True(label.TryGetClientCheckpoint(out storedCheckpoint));
 			Assert.Equal(newCheckpoint, storedCheckpoint);
 			Multihash expectedContentDigest = ComputeContentDigest(tape);

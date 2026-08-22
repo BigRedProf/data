@@ -526,7 +526,7 @@ namespace BigRedProf.Data.Tape
 			label = label.WithSeriesInfo(prior.SeriesId, prior.SeriesName, prior.SeriesNumber + 1);
 			label = label.WithName(prior.Name);
 
-			string desc;
+			string? desc;
 			if (prior.TryGetSeriesDescription(out desc))
 				label = label.WithSeriesDescription(desc);
 

@@ -147,19 +147,19 @@ namespace BigRedProf.Data.Tape
 			TapeLabel label = latestTape.ReadLabel();
 
 			string seriesName = label.SeriesName;
-			string seriesDescription;
+			string? seriesDescription;
 			if (!label.TryGetSeriesDescription(out seriesDescription))
 				seriesDescription = string.Empty;
 
-			Multihash parentDigest;
+			Multihash? parentDigest;
 			if (!label.TryGetTrait<Multihash>(CoreTrait.SeriesParentDigest, out parentDigest))
 				parentDigest = baselineDigest;
 
-			Multihash headDigest;
+			Multihash? headDigest;
 			if (!label.TryGetTrait<Multihash>(CoreTrait.SeriesHeadDigest, out headDigest))
 				headDigest = parentDigest;
 
-			Multihash contentDigest;
+			Multihash? contentDigest;
 			if (!label.TryGetTrait<Multihash>(CoreTrait.ContentDigest, out contentDigest))
 				contentDigest = baselineDigest;
 
@@ -191,7 +191,7 @@ namespace BigRedProf.Data.Tape
 		public Code GetLatestCheckpoint()
 		{
 			TapeLabel label = _currentTape.ReadLabel();
-			if (!label.TryGetClientCheckpoint(out Code checkpoint))
+			if (!label.TryGetClientCheckpoint(out Code? checkpoint))
 				throw new InvalidOperationException("No checkpoint has been recorded for the current tape.");
 			return checkpoint;
 		}

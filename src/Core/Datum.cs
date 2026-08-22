@@ -70,7 +70,7 @@ namespace BigRedProf.Data.Core
 		#endregion
 
 		#region IEquatable<Datum> methods
-		public bool Equals(Datum other)
+		public bool Equals(Datum? other)
 		{
 			if (other == null)
 				return false;
@@ -80,7 +80,7 @@ namespace BigRedProf.Data.Core
 		#endregion
 
 		#region object methods
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			return Equals(obj as Datum);
 		}
@@ -95,7 +95,7 @@ namespace BigRedProf.Data.Core
 			return $"{_schemaId}:{_code}";
 		}
 
-		public static bool operator ==(Datum left, Datum right)
+		public static bool operator ==(Datum? left, Datum? right)
 		{
 			if (object.ReferenceEquals(left, right))
 				return true;
@@ -106,7 +106,7 @@ namespace BigRedProf.Data.Core
 			return left.Equals(right);
 		}
 
-		public static bool operator !=(Datum left, Datum right)
+		public static bool operator !=(Datum? left, Datum? right)
 		{
 			return !(left == right);
 		}

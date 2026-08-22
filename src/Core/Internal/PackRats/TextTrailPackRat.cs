@@ -27,7 +27,10 @@ namespace BigRedProf.Data.Core.Internal.PackRats
 			if(reader == null)
 				throw new ArgumentNullException(nameof(reader));
 
-			IList<string> segments = PiedPiper.UnpackList<string>(reader, CoreSchema.TextUtf8, false, false, ByteAligned.Yes);
+			// allowNullLists is false, so the list is never null -- a correlation between an
+			// argument and a return that the static type cannot express.
+			IList<string> segments =
+				PiedPiper.UnpackList<string>(reader, CoreSchema.TextUtf8, false, false, ByteAligned.Yes)!;
 			TextTrail model = new TextTrail(segments.ToArray());
 
 			return model;

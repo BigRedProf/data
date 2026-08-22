@@ -51,7 +51,7 @@ public sealed class RestorationWizard : IDisposable
 		if (first == null) throw new InvalidOperationException("No tapes found in the requested series.");
 		var firstLabel = first.ReadLabel();
 		string seriesName = firstLabel.SeriesName ?? string.Empty;
-		string seriesDesc;
+		string? seriesDesc;
 		if (!firstLabel.TryGetSeriesDescription(out seriesDesc)) seriesDesc = string.Empty;
 
 		var stream = new TapeSeriesStream(librarian, seriesId, TapeSeriesStream.OpenMode.Read);

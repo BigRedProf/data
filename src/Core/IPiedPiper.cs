@@ -1,5 +1,6 @@
 ﻿using BigRedProf.Data.Core.PackRats;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace BigRedProf.Data.Core
@@ -164,7 +165,7 @@ namespace BigRedProf.Data.Core
 		/// <param name="schemaId">The schema identifier.</param>
 		/// <param name="byteAligned">Controls the packing size of the null marker.</param>
 		/// <returns>The model.</returns>
-		M UnpackNullableModel<M>(CodeReader reader, AttributeFriendlyGuid schemaId, ByteAligned byteAligned);
+		[return: MaybeNull] M UnpackNullableModel<M>(CodeReader reader, AttributeFriendlyGuid schemaId, ByteAligned byteAligned);
 
 		/// <summary>
 		/// Packs a list using the specified list element pack rat.
@@ -195,7 +196,7 @@ namespace BigRedProf.Data.Core
 		/// <param name="allowNullElements">Whether or not null elements are allowed in the list.</param>
 		/// <param name="byteAligned">Controls the packing size of the null markers.</param>
 		/// <returns>The list.</returns>
-		IList<M> UnpackList<M>(
+		IList<M>? UnpackList<M>(
 			CodeReader reader,
 			AttributeFriendlyGuid elementSchemaId,
 			bool allowNullLists,

@@ -118,7 +118,7 @@ namespace BigRedProf.Data.Core
 			return _code.ToString();
 		}
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (obj is KCode other)
 				return _code.Equals(other._code);
@@ -135,7 +135,7 @@ namespace BigRedProf.Data.Core
 		#endregion
 
 		#region operator overloads
-		public static bool operator ==(KCode left, KCode right)
+		public static bool operator ==(KCode? left, KCode? right)
 		{
 			if (ReferenceEquals(left, right))
 				return true;
@@ -146,14 +146,14 @@ namespace BigRedProf.Data.Core
 			return left._code == right._code;
 		}
 
-		public static bool operator !=(KCode left, KCode right)
+		public static bool operator !=(KCode? left, KCode? right)
 		{
 			return !(left == right);
 		}
 		#endregion
 
 		#region Casts
-		public static implicit operator Code(KCode kcode)
+		public static implicit operator Code?(KCode? kcode)
 		{
 			return kcode?._code;
 		}
