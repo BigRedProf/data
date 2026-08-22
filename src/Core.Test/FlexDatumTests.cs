@@ -164,6 +164,21 @@ namespace BigRedProf.Data.Test
 
 		[Fact]
 		[Trait("Region", "methods")]
+		public void AddTrait_ShouldWorkForAnEnumOverAnIntegralSchema()
+		{
+			// The caller should not have to cast on the way in when GetTrait does not make them
+			// cast on the way out.
+			IPiedPiper piedPiper = CreatePiedPiper();
+			FlexDatum flexDatum = new FlexDatumBuilder(piedPiper)
+				.AddTrait(TraitEnum, TestGameType.Deluxe)
+				.Build();
+
+			Assert.Equal(TestGameType.Deluxe, flexDatum.GetTrait<TestGameType>(TraitEnum, piedPiper));
+			Assert.Equal((int) TestGameType.Deluxe, flexDatum.GetTrait<int>(TraitEnum, piedPiper));
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
 		public void GetTrait_ShouldThrowWhenTheModelCannotBeCast()
 		{
 			IPiedPiper piedPiper = CreatePiedPiper();

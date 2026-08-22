@@ -51,7 +51,18 @@ namespace BigRedProf.Data.Core
 				throw new ArgumentNullException(nameof(traitId));
 
 			Guid schemaId = _piedPiper.GetTrait(traitId).SchemaId;
-			_traitCodes[traitId] = _piedPiper.PackModel(value, schemaId);
+
+			// An enum answered through an integral schema has no pack rat of its own, so pack it
+			// as its underlying value. GetTrait does the same in reverse.
+			if (typeof(M).IsEnum)
+			{
+				object underlyingValue = Convert.ChangeType(value, Enum.GetUnderlyingType(typeof(M)));
+				_traitCodes[traitId] = _piedPiper.PackModel(underlyingValue, schemaId);
+			}
+			else
+			{
+				_traitCodes[traitId] = _piedPiper.PackModel(value, schemaId);
+			}
 
 			return this;
 		}
