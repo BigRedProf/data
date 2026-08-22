@@ -12,6 +12,14 @@ namespace BigRedProf.Data.Core.Test
 		private const string UnknownSchemaId = "7b1d54a4-2f0e-4f5a-9c3f-1a5a1d0b8e21";
 		#endregion
 
+		#region test helpers
+		private enum TestSeat
+		{
+			Window = 1,
+			Aisle = 2
+		}
+		#endregion
+
 		#region constructor tests
 		[Fact]
 		[Trait("Region", "constructors")]
@@ -39,6 +47,47 @@ namespace BigRedProf.Data.Core.Test
 			Datum datum = piedPiper.PackDatum<string>("Memorial Stadium", CoreSchema.TextUtf8);
 
 			Assert.Equal("Memorial Stadium", datum.Unpack<string>(piedPiper));
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void Unpack_ShouldWorkWithoutKnowingTheModelType()
+		{
+			// The ordinary case for a datum that arrived from somewhere: the reader knows how to
+			// read it, because the datum says, but not what type that is until it looks.
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterCorePackRats();
+		
+			Datum datum = piedPiper.PackDatum<string>("Memorial Stadium", CoreSchema.TextUtf8);
+		
+			object model = datum.Unpack<object>(piedPiper);
+		
+			Assert.Equal("Memorial Stadium", model);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void Unpack_ShouldWorkForAnEnumOverAnIntegralSchema()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterCorePackRats();
+		
+			Datum datum = piedPiper.PackDatum<int>((int) TestSeat.Aisle, CoreSchema.Int32);
+		
+			Assert.Equal(TestSeat.Aisle, datum.Unpack<TestSeat>(piedPiper));
+			Assert.Equal((int) TestSeat.Aisle, datum.Unpack<int>(piedPiper));
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void Unpack_ShouldThrowWhenTheModelIsNotTheRequestedType()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterCorePackRats();
+		
+			Datum datum = piedPiper.PackDatum<string>("Lincoln", CoreSchema.TextUtf8);
+		
+			Assert.Throws<InvalidOperationException>(() => datum.Unpack<int>(piedPiper));
 		}
 
 		[Fact]

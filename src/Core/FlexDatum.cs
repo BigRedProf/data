@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using BigRedProf.Data.Core.Internal;
 
 namespace BigRedProf.Data.Core
 {
@@ -271,19 +272,12 @@ namespace BigRedProf.Data.Core
 			Guid schemaId = piedPiper.GetTrait(traitId).SchemaId;
 			object model = piedPiper.UnpackModel(code, schemaId);
 
-			if (model is M typedModel)
-				return typedModel;
-
-			// A trait packed through an integral schema comes back boxed as that integral type,
-			// so a boxed int is not `is M` against an enum M even when the enum's underlying type
-			// is int.
-			Type modelType = typeof(M);
-			if (model != null && modelType.IsEnum && model.GetType() == Enum.GetUnderlyingType(modelType))
-				return (M) Enum.ToObject(modelType, model);
+			if (ModelCoercion.TryCoerce<M>(model, out M coerced))
+				return coerced;
 
 			throw new InvalidOperationException(
-				$"Trait '{traitId}' exists but cannot be cast to type '{typeof(M).Name}'. " +
-				$"Actual type: '{(model != null ? model.GetType().Name : "null")}'."
+				$"Trait '{traitId}' exists but cannot be presented as type '{typeof(M).Name}'. " +
+				$"Actual type: '{ModelCoercion.DescribeType(model)}'."
 			);
 		}
 		#endregion
