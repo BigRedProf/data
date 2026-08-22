@@ -97,13 +97,11 @@ namespace BigRedProf.Data.Core
 		public Bit this[int offset]
 		{
 			get { return _code[offset]; }
-			set { _code[offset] = value; }
 		}
 
 		public Code this[int offset, int length]
 		{
 			get { return _code[offset, length]; }
-			set { _code[offset, length] = value; }
 		}
 		#endregion
 

@@ -712,13 +712,17 @@ BigRedProf.Digihouse
     Rendering/
 ```
 
-I lean **`Vocabulary`**, narrowly, on the grounds that it is the only candidate that is true of
-everything in the directory and true of the fusion. `Data` remains the pragmatic choice and would
-be a clear improvement over `Models`. `Schemas` is the most precise and the most likely to need an
-exception carved out for it.
+**Decided: `Data`.** The deciding argument is one none of the three descriptions above captures.
+`Data` is the *library's own name*, so it makes the choice a convention rather than a one-off:
+every application and library in the stack grows its own `*.Data`, and
+`BigRedProf.Digihouse.Data` sits under `BigRedProf.Data` the way it reads. `Vocabulary` describes
+the contents slightly better and `Schemas` describes the bulk of them more precisely, but neither
+scales into a pattern the whole stack can follow, and a name that repeats itself across every
+repository teaches the habit far more effectively than a name that is merely accurate once.
 
-A cheap way to settle it is the sentence a new contributor reads: *"To add a new event, put it in
-`____/Events/`."* Try all three and see which one needs a footnote.
+The objection about ASP.NET's `Data/` convention stands and is accepted: these directories hold
+schema declarations and durable vocabulary, never a `DbContext` or a repository, and that
+distinction should be stated wherever the convention is written down.
 
 Whichever wins, the misfits move out first: `MarkRasterizer`, `MessageService`, and the
 runtime-only view structs belong with behavior, not with agreements.
@@ -819,11 +823,9 @@ work; explicitly *not* accompanied by putting schema identifiers on the wire.
 
 ### Vocabulary and documentation
 
-**11a. Rename consumers' `Models` directories, namespaces, and assemblies.**
-The destination is **undecided** — `Schemas`, `Data`, and `Vocabulary` are compared in *What
-consumers call their data*, and that comparison should be settled before this item is opened.
-What *is* settled is that `Models` names the role that can be refactored rather than the one that
-cannot.
+**11a. Rename consumers' `Models` directories, namespaces, and assemblies to `Data`.**
+Every application and library in the stack grows its own `*.Data`, matching the base library's own
+name; see *What consumers call their data* for why that beat `Vocabulary` and `Schemas`.
 Scope: `digihouse/src/Models`, `stories/src/Models`, `content/src/Core/Models`. Move the files
 that are neither schema declarations nor durable vocabulary — `MarkRasterizer`, `MessageService`,
 and the runtime-only view structs — into a behavioral project first, so the rename is honest

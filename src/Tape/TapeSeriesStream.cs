@@ -630,13 +630,13 @@ namespace BigRedProf.Data.Tape
 			if (bitCount <= 0)
 				throw new ArgumentOutOfRangeException(nameof(bitCount));
 
-			Code code = new Code(bitCount);
+			CodeBuilder builder = new CodeBuilder(bitCount);
 			for (int i = 0; i < bitCount; ++i)
 			{
 				int bit = (b >> i) & 0x01;
-				code[i] = bit;
+				builder[i] = bit;
 			}
-			return code;
+			return builder.Build();
 		}
 		#endregion
 	}

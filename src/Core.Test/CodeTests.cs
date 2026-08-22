@@ -12,7 +12,7 @@ namespace BigRedProf.Data.Test
 		public void ByteArrayConstructorShouldWork()
 		{
 			Code code = new Code(new byte[] { 127, 0b01011011 });
-			
+
 			Assert.Equal(16, code.Length);
 
 			Assert.Equal<Bit>(1, code[0]);
@@ -168,63 +168,6 @@ namespace BigRedProf.Data.Test
 		}
 
 		[Fact]
-		public void IndexerShouldSetCorrectValues()
-		{
-			Code code = new Code(0, 0, 0, 0, 0, 0, 0, 0, 0);
-
-			code[0] = 0;
-			Assert.Equal<Bit>(0, code[0]);
-
-			code[1] = 1;
-			Assert.Equal<Bit>(1, code[1]);
-
-			code[2] = 0;
-			Assert.Equal<Bit>(0, code[2]);
-
-			code[3] = 1;
-			Assert.Equal<Bit>(1, code[3]);
-
-			code[4] = 0;
-			Assert.Equal<Bit>(0, code[4]);
-
-			code[5] = 1;
-			Assert.Equal<Bit>(1, code[5]);
-
-			code[6] = 0;
-			Assert.Equal<Bit>(0, code[6]);
-
-			code[7] = 0;
-			Assert.Equal<Bit>(0, code[7]);
-
-			code[8] = 1;
-			Assert.Equal<Bit>(1, code[8]);
-		}
-
-		[Fact]
-		public void IndexerShouldChangeValues()
-		{
-			Code code = new Code(1, 0, 0, 1, 0, 1);
-
-			code[0] = 0;
-			Assert.Equal<Bit>(0, code[0]);
-
-			code[1] = 1;
-			Assert.Equal<Bit>(1, code[1]);
-
-			code[2] = 0;
-			Assert.Equal<Bit>(0, code[2]);
-
-			code[3] = 1;
-			Assert.Equal<Bit>(1, code[3]);
-
-			code[4] = 0;
-			Assert.Equal<Bit>(0, code[4]);
-
-			code[5] = 1;
-			Assert.Equal<Bit>(1, code[5]);
-		}
-
-		[Fact]
 		public void CodeIndexerShouldGetCorrectValues()
 		{
 			Code code = new Code("1010101010");
@@ -232,30 +175,6 @@ namespace BigRedProf.Data.Test
 			Assert.Equal("1", code[0, 1]);
 		}
 
-		[Fact]
-		public void CodeIndexerShouldSetCorrectValues()
-		{
-			Code code = "0000 0000 0000";
-
-			code[0, 4] = "1010";
-			code[4, 4] = "1111";
-			code[8, 4] = "1100";
-
-			Code expectedCode = "1010 1111 1100";
-			Assert.Equal(expectedCode, code);
-		}
-
-		[Fact]
-		public void CodeIndexerShouldChangeValues()
-		{
-			Code code = new Code(0, 0, 0, 0, 1, 1, 1, 1);
-
-			code[0, 3] = new Code("101");
-			code[5, 3] = new Code("010");
-
-			Code expectedCode = new Code(1, 0, 1, 0, 1, 0, 1, 0);
-			Assert.Equal<Code>(expectedCode, code);
-		}
 		#endregion
 
 		#region object tests

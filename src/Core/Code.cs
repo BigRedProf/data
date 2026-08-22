@@ -56,7 +56,7 @@ namespace BigRedProf.Data.Core
 
 			// TODO: replace this with a bit stream writer when we have one; will be faster
 			for (int i = 0; i < bits.Length; ++i)
-				this[i] = bits[i];
+				SetBit(i, bits[i]);
 		}
 
 		/// <summary>
@@ -143,8 +143,12 @@ namespace BigRedProf.Data.Core
 		}
 
 		/// <summary>
-		/// Gets or sets the value of a specific <see cref="Bit"/> within the code.
+		/// Gets the value of a specific <see cref="Bit"/> within the code.
 		/// </summary>
+		/// <remarks>
+		/// Read-only. A code is a value, so it cannot be changed once it exists; build one with
+		/// <see cref="CodeBuilder"/> instead.
+		/// </remarks>
 		/// <param name="offset">The offset into the code.</param>
 		/// <returns>The bit at the specified offset.</returns>
 		public Bit this[int offset]
@@ -158,21 +162,10 @@ namespace BigRedProf.Data.Core
 				int mask = GetMaskForByteAt(offset);
 				return (_byteArray[offsetIntoByteArray] & mask) == 0 ? 0 : 1;
 			}
-			set
-			{
-				if (offset < 0 || offset >= Length)
-					throw new ArgumentOutOfRangeException(nameof(offset));
-
-				int offsetIntoCurrentByte = GetByteOffsetAt(offset);
-				if(value == 1)
-					_byteArray[offsetIntoCurrentByte] |= GetMaskForByteAt(offset);
-				else
-					_byteArray[offsetIntoCurrentByte] &= GetInvertedMaskForByteAt(offset);
-			}
 		}
 
 		/// <summary>
-		/// Gets or sets the value of a specific range of bits within the code.
+		/// Gets the value of a specific range of bits within the code.
 		/// </summary>
 		/// <param name="offset">The offset into the code.</param>
 		/// <param name="length">The length of code to return.</param>
@@ -187,55 +180,38 @@ namespace BigRedProf.Data.Core
 				if (length == 0 || offset + length > Length)
 					throw new ArgumentOutOfRangeException(nameof(length));
 
-				Code code = new Code(length);
-
-				// do what we can quickly with byte-by-byte copies
-				int currentOffset = offset;
-				if((offset % 8) == 0 && length >= 8)
-				{
-					int offsetIntoByteArray = GetByteOffsetAt(offset);
-					int byteLengthOfCode = (length / 8);
-					for (int i = 0; i < byteLengthOfCode; ++i)
-						code.ByteArray[i] = _byteArray[offsetIntoByteArray + i];
-					currentOffset += byteLengthOfCode * 8;
-				}
-
-				// do the remainder bit-by-bit
-				while (currentOffset < offset + length)
-				{
-					code[currentOffset - offset] = this[currentOffset];
-					++currentOffset;
-				}
-
-				return code;
-			}
-			set
-			{
-				if (offset < 0 || offset >= Length)
-					throw new ArgumentOutOfRangeException(nameof(offset));
-
-				if (length == 0 || offset + length > Length)
-					throw new ArgumentOutOfRangeException(nameof(length));
+				CodeBuilder builder = new CodeBuilder(length);
 
 				// do what we can quickly with byte-by-byte copies
 				int currentOffset = offset;
 				if ((offset % 8) == 0 && length >= 8)
 				{
 					int offsetIntoByteArray = GetByteOffsetAt(offset);
-					int byteLengthOfCode = (length % 8);
+					int byteLengthOfCode = (length / 8);
+					byte[] bytes = new byte[byteLengthOfCode];
 					for (int i = 0; i < byteLengthOfCode; ++i)
-						_byteArray[offsetIntoByteArray + i] = value.ByteArray[i];
+						bytes[i] = _byteArray[offsetIntoByteArray + i];
+
+					Code head = new Code(bytes, byteLengthOfCode * 8);
 					currentOffset += byteLengthOfCode * 8;
+					if (currentOffset == offset + length)
+						return head;
+
+					for (int i = 0; i < head.Length; ++i)
+						builder[i] = head[i];
 				}
 
 				// do the remainder bit-by-bit
 				while (currentOffset < offset + length)
 				{
-					this[currentOffset] = value[currentOffset - offset];
+					builder[currentOffset - offset] = this[currentOffset];
 					++currentOffset;
 				}
+
+				return builder.Build();
 			}
 		}
+
 		#endregion
 
 		#region methods
@@ -358,6 +334,19 @@ namespace BigRedProf.Data.Core
 
 
 		#region private static methods
+		/// <summary>
+		/// Sets a bit. Callable only while a code is being constructed -- a code is a value and
+		/// does not change afterwards.
+		/// </summary>
+		private void SetBit(int offset, Bit bit)
+		{
+			int offsetIntoCurrentByte = GetByteOffsetAt(offset);
+			if (bit == 1)
+				_byteArray[offsetIntoCurrentByte] |= GetMaskForByteAt(offset);
+			else
+				_byteArray[offsetIntoCurrentByte] &= (byte) ~GetMaskForByteAt(offset);
+		}
+
 		private static int GetByteOffsetAt(int bitOffset)
 		{
 			return bitOffset / 8;
@@ -371,11 +360,6 @@ namespace BigRedProf.Data.Core
 		private static byte GetMaskForByteAt(int bitOffset)
 		{
 			return (byte) (1 << (bitOffset % 8));
-		}
-
-		private static byte GetInvertedMaskForByteAt(int bitOffset)
-		{
-			return (byte)(~GetMaskForByteAt(bitOffset));
 		}
 
 		private static Bit[] ConvertStringToBitArray(string bits)
