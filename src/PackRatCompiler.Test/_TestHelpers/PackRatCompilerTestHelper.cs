@@ -24,6 +24,27 @@ namespace BigRedProf.Data.Test._TestHelpers
 			return resource;
 		}
 
+		public static IReadOnlyList<(int Code, string Message)> TestGeneratePackRatErrors(
+			CompilationContext compilationContext,
+			string modelResourcePath
+		)
+		{
+			Stream model = PackRatCompilerTestHelper.GetResource(modelResourcePath);
+			string modelCSharp = ReadStream(model);
+			CSharpSyntaxTree syntaxTree = (CSharpSyntaxTree) compilationContext.AddCSharp(modelCSharp);
+			ClassDeclarationSyntax classDeclarationSyntax = GetModelClasses(syntaxTree).First();
+			INamedTypeSymbol modelSymbol = GetTypes(compilationContext.Compilation.GlobalNamespace)
+				.Where(t => t.Name == classDeclarationSyntax.Identifier.ToString())
+				.First();
+		
+			ErrorCapturingCompilationContext errorCapturingContext =
+				new ErrorCapturingCompilationContext(compilationContext);
+			PackRatGenerator packRatGenerator = new PackRatGenerator(errorCapturingContext);
+			packRatGenerator.GeneratePackRat(modelSymbol, new MemoryStream());
+		
+			return errorCapturingContext.Errors;
+		}
+
 		public static void TestGeneratePackRat(
 			CompilationContext compilationContext,
 			string modelResourcePath,

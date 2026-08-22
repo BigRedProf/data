@@ -29,6 +29,24 @@ namespace BigRedProf.Data.PackRatCompiler.Test
 
 		[Fact]
 		[Trait("Region", "methods")]
+		public void GeneratePackRat_ShouldRejectAGapInFieldPositions()
+		{
+			// A gap in the declaration is not a gap on the wire. Positions 1 and 3 would generate
+			// two sequential parts, so the part declared 3 simply becomes the second thing
+			// written -- and every code already packed under this schema is then misread. To
+			// remove a part, mint a new schema identifier.
+			IReadOnlyList<(int Code, string Message)> errors =
+				PackRatCompilerTestHelper.TestGeneratePackRatErrors(
+					_compilationContextFixture.CompilationContext,
+					"_Resources/Models/GappedFieldPositionTestModel.cs"
+				);
+		
+			Assert.Single(errors);
+			Assert.Equal(102, errors[0].Code);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
 		public void GeneratePackRat_ShouldWorkForNullableTestModel()
 		{
 			PackRatCompilerTestHelper.TestGeneratePackRat(

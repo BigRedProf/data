@@ -1,4 +1,4 @@
-using BigRedProf.Data.Core.Internal.PackRats;
+﻿using BigRedProf.Data.Core.Internal.PackRats;
 using BigRedProf.Data.Core.Internal;
 using BigRedProf.Data.Core.PackRats;
 using System;
@@ -15,7 +15,7 @@ namespace BigRedProf.Data.Core
 		#region fields
 		private IDictionary<Guid, IWeaklyTypedPackRat> _packRats;
 		private IDictionary<Guid, object> _tokenizers;
-		private IDictionary<Guid, TraitDefinition> _traitDefinitions;
+		private IDictionary<Guid, Trait> _traits;
 		#endregion
 
 		#region constructors
@@ -26,7 +26,7 @@ namespace BigRedProf.Data.Core
 		{
 			_packRats = new Dictionary<Guid, IWeaklyTypedPackRat>();
 			_tokenizers = new Dictionary<Guid, object>();
-			_traitDefinitions = new Dictionary<Guid, TraitDefinition>();
+			_traits = new Dictionary<Guid, Trait>();
 		}
 		#endregion
 
@@ -34,16 +34,16 @@ namespace BigRedProf.Data.Core
 		/// <inheritdoc/>
 		public void DefineCoreTraits()
 		{
-			DefineTrait(new TraitDefinition(CoreTrait.Id, CoreSchema.Guid));
-			DefineTrait(new TraitDefinition(CoreTrait.Name, CoreSchema.TextUtf8));
-			DefineTrait(new TraitDefinition(CoreTrait.Content, CoreSchema.Code));
-			DefineTrait(new TraitDefinition(CoreTrait.ContentDigest, CoreSchema.MultihashSchema));
-			DefineTrait(new TraitDefinition(CoreTrait.ContentLength, CoreSchema.EfficientWholeNumber31));
-			DefineTrait(new TraitDefinition(CoreTrait.SeriesId, CoreSchema.Guid));
-			DefineTrait(new TraitDefinition(CoreTrait.SeriesName, CoreSchema.TextUtf8));
-			DefineTrait(new TraitDefinition(CoreTrait.SeriesNumber, CoreSchema.EfficientWholeNumber31));
-			DefineTrait(new TraitDefinition(CoreTrait.SeriesHeadDigest, CoreSchema.MultihashSchema));
-			DefineTrait(new TraitDefinition(CoreTrait.SeriesParentDigest, CoreSchema.MultihashSchema));
+			DefineTrait(new Trait(CoreTrait.Id, CoreSchema.Guid));
+			DefineTrait(new Trait(CoreTrait.Name, CoreSchema.TextUtf8));
+			DefineTrait(new Trait(CoreTrait.Content, CoreSchema.Code));
+			DefineTrait(new Trait(CoreTrait.ContentDigest, CoreSchema.MultihashSchema));
+			DefineTrait(new Trait(CoreTrait.ContentLength, CoreSchema.EfficientWholeNumber31));
+			DefineTrait(new Trait(CoreTrait.SeriesId, CoreSchema.Guid));
+			DefineTrait(new Trait(CoreTrait.SeriesName, CoreSchema.TextUtf8));
+			DefineTrait(new Trait(CoreTrait.SeriesNumber, CoreSchema.EfficientWholeNumber31));
+			DefineTrait(new Trait(CoreTrait.SeriesHeadDigest, CoreSchema.MultihashSchema));
+			DefineTrait(new Trait(CoreTrait.SeriesParentDigest, CoreSchema.MultihashSchema));
 		}
 
 		/// <inheritdoc/>
@@ -52,16 +52,15 @@ namespace BigRedProf.Data.Core
 			RegisterPackRat<bool>(new BooleanPackRat(this), CoreSchema.Boolean);
 			RegisterPackRat<byte>(new BytePackRat(this), CoreSchema.Byte);
 			RegisterPackRat<Code>(new CodePackRat(this), CoreSchema.Code);
+			RegisterPackRat<Datum>(new DatumPackRat(this), CoreSchema.Datum);
 			RegisterPackRat<DateTime>(new DateTimePackRat(this), CoreSchema.DateTimeWithKind);
 			RegisterPackRat<DateTime>(new DateTimePackRat(this), CoreSchema.DateTimeWithoutKind);
 			RegisterPackRat<double>(new DoublePackRat(this), CoreSchema.Double);
 			RegisterPackRat<int>(new EfficientWholeNumber31PackRat(this), CoreSchema.EfficientWholeNumber31);
-			RegisterPackRat<FlexModel>(new FlexModelPackRat(this), CoreSchema.FlexModel);
+			RegisterPackRat<FlexDatum>(new FlexDatumPackRat(this), CoreSchema.FlexDatum);
 			RegisterPackRat<Guid>(new GuidPackRat(this), CoreSchema.Guid);
 			RegisterPackRat<int>(new Int32PackRat(this), CoreSchema.Int32);
 			RegisterPackRat<long>(new Int64PackRat(this), CoreSchema.Int64);
-			RegisterPackRat<ModelWithSchemaAndLength>(new ModelWithSchemaAndLengthPackRat(this), CoreSchema.ModelWithSchemaAndLength);
-			RegisterPackRat<ModelWithSchema>(new ModelWithSchemaPackRat(this), CoreSchema.ModelWithSchema);
 			RegisterPackRat<Multihash>(new MultihashPackRat(this), CoreSchema.MultihashSchema);
 			RegisterPackRat<float>(new SinglePackRat(this), CoreSchema.Single);
 			RegisterPackRat<string>(new TextPackRat(this, Encoding.ASCII), CoreSchema.TextAscii);
@@ -227,32 +226,32 @@ namespace BigRedProf.Data.Core
 		}
 
 		/// <inheritdoc/>
-		public void DefineTrait(TraitDefinition traitDefintion)
+		public void DefineTrait(Trait trait)
 		{
-			if (traitDefintion == null)
-				throw new ArgumentNullException(nameof(traitDefintion));
+			if (trait == null)
+				throw new ArgumentNullException(nameof(trait));
 
-			Guid traitId = traitDefintion.TraitId;
+			Guid traitId = trait.TraitId;
 
-			if (_traitDefinitions.ContainsKey(traitId))
+			if (_traits.ContainsKey(traitId))
 				throw new ArgumentException($"Trait '{traitId}' already defined.");
 
-			_traitDefinitions.Add(traitId, traitDefintion);
+			_traits.Add(traitId, trait);
 		}
 
 		/// <inheritdoc/>
-		public TraitDefinition GetTraitDefinition(AttributeFriendlyGuid traitId)
+		public Trait GetTrait(AttributeFriendlyGuid traitId)
 		{
-			if (!_traitDefinitions.TryGetValue(traitId, out TraitDefinition traitDefinition))
+			if (!_traits.TryGetValue(traitId, out Trait trait))
 				throw new ArgumentException($"Trait '{traitId}' not defined.", nameof(traitId));
 
-			return traitDefinition;
+			return trait;
 		}
 
 		/// <inheritdoc/>
 		public bool IsTraitDefined(AttributeFriendlyGuid traitId)
 		{
-			return _traitDefinitions.ContainsKey(traitId);
+			return _traits.ContainsKey(traitId);
 		}
 
 		/// <inheritdoc/>
@@ -481,7 +480,7 @@ namespace BigRedProf.Data.Core
 		}
 
 		/// <inheritdoc/>
-		public Code EncodeModel<M>(M model, AttributeFriendlyGuid schemaId)
+		public Code PackModel<M>(M model, AttributeFriendlyGuid schemaId)
 		{
 			if (model == null)
 				throw new ArgumentNullException(nameof(model));
@@ -501,7 +500,7 @@ namespace BigRedProf.Data.Core
 		}
 
 		/// <inheritdoc/>
-		public M DecodeModel<M>(Code code, AttributeFriendlyGuid schemaId)
+		public M UnpackModel<M>(Code code, AttributeFriendlyGuid schemaId)
 		{
 			if (code == null)
 				throw new ArgumentNullException(nameof(code));
@@ -511,13 +510,19 @@ namespace BigRedProf.Data.Core
 
 			M model;
 			PackRat<M> packRat = GetPackRat<M>(schemaId);
-			MemoryStream memoryStream = new MemoryStream(code.ToByteArray());
+			MemoryStream memoryStream = new MemoryStream(code.ByteArray);
 			using (CodeReader codeReader = new CodeReader(memoryStream))
 			{
 				model = packRat.UnpackModel(codeReader);
 			}
 
 			return model;
+		}
+
+		/// <inheritdoc/>
+		public Datum PackDatum<M>(M model, AttributeFriendlyGuid schemaId)
+		{
+			return new Datum(schemaId, PackModel<M>(model, schemaId));
 		}
 
 		/// <inheritdoc/>
@@ -554,7 +559,8 @@ namespace BigRedProf.Data.Core
 		#endregion
 
 		#region internal methods
-		internal Code EncodeModel(object model, AttributeFriendlyGuid schemaId)
+		/// <inheritdoc/>
+		public Code PackModel(object model, AttributeFriendlyGuid schemaId)
 		{
 			if (model == null)
 				throw new ArgumentNullException(nameof(model));
@@ -573,7 +579,8 @@ namespace BigRedProf.Data.Core
 			return code;
 		}
 
-		internal object DecodeModel(Code code, AttributeFriendlyGuid schemaId)
+		/// <inheritdoc/>
+		public object UnpackModel(Code code, AttributeFriendlyGuid schemaId)
 		{
 			if (code == null)
 				throw new ArgumentNullException(nameof(code));
@@ -583,7 +590,7 @@ namespace BigRedProf.Data.Core
 
 			object model;
 			IWeaklyTypedPackRat packRat = GetPackRat(schemaId);
-			MemoryStream memoryStream = new MemoryStream(code.ToByteArray());
+			MemoryStream memoryStream = new MemoryStream(code.ByteArray);
 			using (CodeReader codeReader = new CodeReader(memoryStream))
 			{
 				model = packRat.UnpackModel(codeReader);

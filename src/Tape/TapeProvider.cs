@@ -36,9 +36,9 @@ namespace BigRedProf.Data.Tape
 
 			EnsureCorePackRats(piedPiper);
 			EnsureCoreTraits(piedPiper);
-			EnsureTrait(piedPiper, new TraitDefinition(TapeTrait.ClientCheckpointCode, CoreSchema.Code));
-			EnsureTrait(piedPiper, new TraitDefinition(TapeTrait.SeriesDescription, CoreSchema.TextUtf8));
-			EnsureTrait(piedPiper, new TraitDefinition(TapeTrait.TapePosition, CoreSchema.Int32));
+			EnsureTrait(piedPiper, new Trait(TapeTrait.ClientCheckpointCode, CoreSchema.Code));
+			EnsureTrait(piedPiper, new Trait(TapeTrait.SeriesDescription, CoreSchema.TextUtf8));
+			EnsureTrait(piedPiper, new Trait(TapeTrait.TapePosition, CoreSchema.Int32));
 		}
 		#endregion
 
@@ -106,10 +106,10 @@ namespace BigRedProf.Data.Tape
 				piedPiper.DefineCoreTraits();
 		}
 
-		private static void EnsureTrait(IPiedPiper piedPiper, TraitDefinition traitDefinition)
+		private static void EnsureTrait(IPiedPiper piedPiper, Trait trait)
 		{
-			if(!piedPiper.IsTraitDefined(traitDefinition.TraitId))
-				piedPiper.DefineTrait(traitDefinition);
+			if(!piedPiper.IsTraitDefined(trait.TraitId))
+				piedPiper.DefineTrait(trait);
 		}
 		#endregion
 	}

@@ -610,8 +610,7 @@ namespace BigRedProf.Data.Tape
 		#region helpers (byte/bit pack/unpack)
 		private static void CopyCodeToBuffer(Code code, byte[] buffer, int offset, int byteCount)
 		{
-			byte[] bytes = code.ToByteArray();
-			Array.Copy(bytes, 0, buffer, offset, byteCount);
+			code.CopyTo(buffer, offset, 0, byteCount);
 		}
 
 		private static byte PackPartialByte(Code bits, int bitOffset, int bitCount)
@@ -630,13 +629,13 @@ namespace BigRedProf.Data.Tape
 			if (bitCount <= 0)
 				throw new ArgumentOutOfRangeException(nameof(bitCount));
 
-			Code code = new Code(bitCount);
+			CodeBuilder builder = new CodeBuilder(bitCount);
 			for (int i = 0; i < bitCount; ++i)
 			{
 				int bit = (b >> i) & 0x01;
-				code[i] = bit;
+				builder[i] = bit;
 			}
-			return code;
+			return builder.Build();
 		}
 		#endregion
 	}

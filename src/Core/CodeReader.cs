@@ -152,8 +152,10 @@ namespace BigRedProf.Data.Core
 
 			if (lastByteBitLength != 0)
 			{
+				CodeBuilder builder = new CodeBuilder(code);
 				for (int i = 0; i < lastByteBitLength; ++i)
-					code[(fullByteLength * 8) + i] = ReadBit();
+					builder[(fullByteLength * 8) + i] = ReadBit();
+				code = builder.Build();
 			}
 
 			return code;
@@ -163,11 +165,11 @@ namespace BigRedProf.Data.Core
 		{
 			Debug.Assert(bitCount >= 1);
 
-			Code code = new Code(bitCount);
+			CodeBuilder builder = new CodeBuilder(bitCount);
 			for(int i = 0; i < bitCount; ++i)
-				code[i] = ReadBit();
+				builder[i] = ReadBit();
 
-			return code;
+			return builder.Build();
 		}
 		#endregion
 	}

@@ -20,6 +20,7 @@
     <Compile Remove="_Resources\Models\ModelWithEnum.cs" />
     <Compile Remove="_Resources\Models\NullableTestModel.cs" />
     <Compile Remove="_Resources\Models\Point.cs" />
+    <Compile Remove="_Resources\Models\GappedFieldPositionTestModel.cs" />
     <Compile Remove="_Resources\Models\TokenTestModel.cs" />
   </ItemGroup>
 
@@ -34,6 +35,7 @@
     <EmbeddedResource Include="_Resources\Models\MixedListTestModel.cs" />
     <EmbeddedResource Include="_Resources\Models\ModelWithEnum.cs" />
     <EmbeddedResource Include="_Resources\Models\Point.cs" />
+    <EmbeddedResource Include="_Resources\Models\GappedFieldPositionTestModel.cs" />
     <EmbeddedResource Include="_Resources\Models\NullableTestModel.cs" />
     <EmbeddedResource Include="_Resources\Models\TokenTestModel.cs" />
   </ItemGroup>

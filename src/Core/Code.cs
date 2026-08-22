@@ -56,7 +56,7 @@ namespace BigRedProf.Data.Core
 
 			// TODO: replace this with a bit stream writer when we have one; will be faster
 			for (int i = 0; i < bits.Length; ++i)
-				this[i] = bits[i];
+				SetBit(i, bits[i]);
 		}
 
 		/// <summary>
@@ -143,8 +143,12 @@ namespace BigRedProf.Data.Core
 		}
 
 		/// <summary>
-		/// Gets or sets the value of a specific <see cref="Bit"/> within the code.
+		/// Gets the value of a specific <see cref="Bit"/> within the code.
 		/// </summary>
+		/// <remarks>
+		/// Read-only. A code is a value, so it cannot be changed once it exists; build one with
+		/// <see cref="CodeBuilder"/> instead.
+		/// </remarks>
 		/// <param name="offset">The offset into the code.</param>
 		/// <returns>The bit at the specified offset.</returns>
 		public Bit this[int offset]
@@ -158,21 +162,10 @@ namespace BigRedProf.Data.Core
 				int mask = GetMaskForByteAt(offset);
 				return (_byteArray[offsetIntoByteArray] & mask) == 0 ? 0 : 1;
 			}
-			set
-			{
-				if (offset < 0 || offset >= Length)
-					throw new ArgumentOutOfRangeException(nameof(offset));
-
-				int offsetIntoCurrentByte = GetByteOffsetAt(offset);
-				if(value == 1)
-					_byteArray[offsetIntoCurrentByte] |= GetMaskForByteAt(offset);
-				else
-					_byteArray[offsetIntoCurrentByte] &= GetInvertedMaskForByteAt(offset);
-			}
 		}
 
 		/// <summary>
-		/// Gets or sets the value of a specific range of bits within the code.
+		/// Gets the value of a specific range of bits within the code.
 		/// </summary>
 		/// <param name="offset">The offset into the code.</param>
 		/// <param name="length">The length of code to return.</param>
@@ -187,61 +180,101 @@ namespace BigRedProf.Data.Core
 				if (length == 0 || offset + length > Length)
 					throw new ArgumentOutOfRangeException(nameof(length));
 
-				Code code = new Code(length);
-
-				// do what we can quickly with byte-by-byte copies
-				int currentOffset = offset;
-				if((offset % 8) == 0 && length >= 8)
-				{
-					int offsetIntoByteArray = GetByteOffsetAt(offset);
-					int byteLengthOfCode = (length / 8);
-					for (int i = 0; i < byteLengthOfCode; ++i)
-						code.ByteArray[i] = _byteArray[offsetIntoByteArray + i];
-					currentOffset += byteLengthOfCode * 8;
-				}
-
-				// do the remainder bit-by-bit
-				while (currentOffset < offset + length)
-				{
-					code[currentOffset - offset] = this[currentOffset];
-					++currentOffset;
-				}
-
-				return code;
-			}
-			set
-			{
-				if (offset < 0 || offset >= Length)
-					throw new ArgumentOutOfRangeException(nameof(offset));
-
-				if (length == 0 || offset + length > Length)
-					throw new ArgumentOutOfRangeException(nameof(length));
+				CodeBuilder builder = new CodeBuilder(length);
 
 				// do what we can quickly with byte-by-byte copies
 				int currentOffset = offset;
 				if ((offset % 8) == 0 && length >= 8)
 				{
 					int offsetIntoByteArray = GetByteOffsetAt(offset);
-					int byteLengthOfCode = (length % 8);
+					int byteLengthOfCode = (length / 8);
+					byte[] bytes = new byte[byteLengthOfCode];
 					for (int i = 0; i < byteLengthOfCode; ++i)
-						_byteArray[offsetIntoByteArray + i] = value.ByteArray[i];
+						bytes[i] = _byteArray[offsetIntoByteArray + i];
+
+					Code head = new Code(bytes, byteLengthOfCode * 8);
 					currentOffset += byteLengthOfCode * 8;
+					if (currentOffset == offset + length)
+						return head;
+
+					for (int i = 0; i < head.Length; ++i)
+						builder[i] = head[i];
 				}
 
 				// do the remainder bit-by-bit
 				while (currentOffset < offset + length)
 				{
-					this[currentOffset] = value[currentOffset - offset];
+					builder[currentOffset - offset] = this[currentOffset];
 					++currentOffset;
 				}
+
+				return builder.Build();
 			}
 		}
+
 		#endregion
 
 		#region methods
+		/// <summary>
+		/// The number of bytes the code occupies.
+		/// </summary>
+		public int ByteLength => _byteArray.Length;
+
+		/// <summary>
+		/// Returns a single byte of the code.
+		/// </summary>
+		/// <remarks>
+		/// For readers that want the bytes without a copy of the whole code. A code can be a
+		/// gigabit long, so <see cref="ToByteArray"/> is not always a reasonable way to read one.
+		/// </remarks>
+		/// <param name="index">The byte index.</param>
+		public byte GetByte(int index)
+		{
+			if (index < 0 || index >= _byteArray.Length)
+				throw new ArgumentOutOfRangeException(nameof(index));
+
+			return _byteArray[index];
+		}
+
+		/// <summary>
+		/// Copies part of the code into an existing buffer.
+		/// </summary>
+		/// <remarks>
+		/// The way to move a large code somewhere without allocating a second copy of it first.
+		/// </remarks>
+		/// <param name="destination">The buffer to copy into.</param>
+		/// <param name="destinationIndex">Where in the buffer to start writing.</param>
+		/// <param name="sourceByteIndex">Which byte of the code to start from.</param>
+		/// <param name="byteCount">How many bytes to copy.</param>
+		public void CopyTo(byte[] destination, int destinationIndex, int sourceByteIndex, int byteCount)
+		{
+			if (destination == null)
+				throw new ArgumentNullException(nameof(destination));
+
+			if (sourceByteIndex < 0 || sourceByteIndex + byteCount > _byteArray.Length)
+				throw new ArgumentOutOfRangeException(nameof(sourceByteIndex));
+
+			if (destinationIndex < 0 || destinationIndex + byteCount > destination.Length)
+				throw new ArgumentOutOfRangeException(nameof(destinationIndex));
+
+			Array.Copy(_byteArray, sourceByteIndex, destination, destinationIndex, byteCount);
+		}
+
+		/// <summary>
+		/// Returns the code's bits as a byte array.
+		/// </summary>
+		/// <remarks>
+		/// A copy. A code is immutable, so handing out its backing array would let any caller
+		/// change a value that other code has already compared, fingerprinted, or used as a
+		/// dictionary key. Callers inside this assembly that only read can use
+		/// <see cref="ByteArray"/> and skip the copy.
+		/// </remarks>
 		public byte[] ToByteArray()
 		{
-			return _byteArray;
+			byte[] byteArray = new byte[_byteArray.Length];
+			Array.Copy(_byteArray, 0, byteArray, 0, _byteArray.Length);
+
+			return byteArray;
 		}
 		#endregion
 
@@ -358,6 +391,19 @@ namespace BigRedProf.Data.Core
 
 
 		#region private static methods
+		/// <summary>
+		/// Sets a bit. Callable only while a code is being constructed -- a code is a value and
+		/// does not change afterwards.
+		/// </summary>
+		private void SetBit(int offset, Bit bit)
+		{
+			int offsetIntoCurrentByte = GetByteOffsetAt(offset);
+			if (bit == 1)
+				_byteArray[offsetIntoCurrentByte] |= GetMaskForByteAt(offset);
+			else
+				_byteArray[offsetIntoCurrentByte] &= (byte) ~GetMaskForByteAt(offset);
+		}
+
 		private static int GetByteOffsetAt(int bitOffset)
 		{
 			return bitOffset / 8;
@@ -371,11 +417,6 @@ namespace BigRedProf.Data.Core
 		private static byte GetMaskForByteAt(int bitOffset)
 		{
 			return (byte) (1 << (bitOffset % 8));
-		}
-
-		private static byte GetInvertedMaskForByteAt(int bitOffset)
-		{
-			return (byte)(~GetMaskForByteAt(bitOffset));
 		}
 
 		private static Bit[] ConvertStringToBitArray(string bits)

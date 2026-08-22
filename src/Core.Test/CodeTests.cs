@@ -12,7 +12,7 @@ namespace BigRedProf.Data.Test
 		public void ByteArrayConstructorShouldWork()
 		{
 			Code code = new Code(new byte[] { 127, 0b01011011 });
-			
+
 			Assert.Equal(16, code.Length);
 
 			Assert.Equal<Bit>(1, code[0]);
@@ -168,63 +168,6 @@ namespace BigRedProf.Data.Test
 		}
 
 		[Fact]
-		public void IndexerShouldSetCorrectValues()
-		{
-			Code code = new Code(0, 0, 0, 0, 0, 0, 0, 0, 0);
-
-			code[0] = 0;
-			Assert.Equal<Bit>(0, code[0]);
-
-			code[1] = 1;
-			Assert.Equal<Bit>(1, code[1]);
-
-			code[2] = 0;
-			Assert.Equal<Bit>(0, code[2]);
-
-			code[3] = 1;
-			Assert.Equal<Bit>(1, code[3]);
-
-			code[4] = 0;
-			Assert.Equal<Bit>(0, code[4]);
-
-			code[5] = 1;
-			Assert.Equal<Bit>(1, code[5]);
-
-			code[6] = 0;
-			Assert.Equal<Bit>(0, code[6]);
-
-			code[7] = 0;
-			Assert.Equal<Bit>(0, code[7]);
-
-			code[8] = 1;
-			Assert.Equal<Bit>(1, code[8]);
-		}
-
-		[Fact]
-		public void IndexerShouldChangeValues()
-		{
-			Code code = new Code(1, 0, 0, 1, 0, 1);
-
-			code[0] = 0;
-			Assert.Equal<Bit>(0, code[0]);
-
-			code[1] = 1;
-			Assert.Equal<Bit>(1, code[1]);
-
-			code[2] = 0;
-			Assert.Equal<Bit>(0, code[2]);
-
-			code[3] = 1;
-			Assert.Equal<Bit>(1, code[3]);
-
-			code[4] = 0;
-			Assert.Equal<Bit>(0, code[4]);
-
-			code[5] = 1;
-			Assert.Equal<Bit>(1, code[5]);
-		}
-
-		[Fact]
 		public void CodeIndexerShouldGetCorrectValues()
 		{
 			Code code = new Code("1010101010");
@@ -232,29 +175,61 @@ namespace BigRedProf.Data.Test
 			Assert.Equal("1", code[0, 1]);
 		}
 
+		#endregion
+
+		#region reading tests
 		[Fact]
-		public void CodeIndexerShouldSetCorrectValues()
+		[Trait("Region", "methods")]
+		public void GetByteShouldReturnTheByte()
 		{
-			Code code = "0000 0000 0000";
-
-			code[0, 4] = "1010";
-			code[4, 4] = "1111";
-			code[8, 4] = "1100";
-
-			Code expectedCode = "1010 1111 1100";
-			Assert.Equal(expectedCode, code);
+			Code code = new Code("10101010 11110000");
+		
+			Assert.Equal(2, code.ByteLength);
+			Assert.Equal(code.ToByteArray()[0], code.GetByte(0));
+			Assert.Equal(code.ToByteArray()[1], code.GetByte(1));
+			Assert.Throws<ArgumentOutOfRangeException>(() => code.GetByte(2));
 		}
 
 		[Fact]
-		public void CodeIndexerShouldChangeValues()
+		[Trait("Region", "methods")]
+		public void CopyToShouldCopyTheRequestedBytes()
 		{
-			Code code = new Code(0, 0, 0, 0, 1, 1, 1, 1);
+			Code code = new Code("10101010 11110000 00001111");
+			byte[] buffer = new byte[4];
+		
+			code.CopyTo(buffer, 1, 1, 2);
+		
+			Assert.Equal(0, buffer[0]);
+			Assert.Equal(code.GetByte(1), buffer[1]);
+			Assert.Equal(code.GetByte(2), buffer[2]);
+			Assert.Equal(0, buffer[3]);
+		}
 
-			code[0, 3] = new Code("101");
-			code[5, 3] = new Code("010");
+		[Fact]
+		[Trait("Region", "methods")]
+		public void CopyToShouldRejectRangesOutsideTheCodeOrTheBuffer()
+		{
+			Code code = new Code("10101010 11110000");
+		
+			Assert.Throws<ArgumentNullException>(() => code.CopyTo(null, 0, 0, 1));
+			Assert.Throws<ArgumentOutOfRangeException>(() => code.CopyTo(new byte[2], 0, 1, 2));
+			Assert.Throws<ArgumentOutOfRangeException>(() => code.CopyTo(new byte[1], 0, 0, 2));
+		}
+		#endregion
 
-			Code expectedCode = new Code(1, 0, 1, 0, 1, 0, 1, 0);
-			Assert.Equal<Code>(expectedCode, code);
+		#region ToByteArray tests
+		[Fact]
+		[Trait("Region", "methods")]
+		public void ToByteArrayShouldReturnACopy()
+		{
+			// A code is immutable, so it must not hand out its backing array.
+			Code code = new Code("1010 1010");
+		
+			byte[] bytes = code.ToByteArray();
+			bytes[0] = 0xFF;
+		
+			Assert.Equal<Code>("1010 1010", code);
+			Assert.NotEqual((byte) 0xFF, code.ToByteArray()[0]);
 		}
 		#endregion
 

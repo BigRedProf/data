@@ -36,6 +36,23 @@
 		public const string Code = "124c3883-2b87-4df2-b28d-70fd5c96d178";
 
 		/// <summary>
+		/// The schema identifier for the <see cref="Datum"/> type.
+		/// </summary>
+		/// <remarks>
+		/// Inherited from the former ModelWithSchemaAndLength, whose wire format was already
+		/// identical: schema identifier, then length, then payload. The length is now taken from
+		/// the code rather than supplied by the caller, so it can no longer disagree with what was
+		/// actually written.
+		///
+		/// The former ModelWithSchema identifier, adce8290-2438-420d-9658-49296cf456f3, is retired
+		/// and must never be reused. It named an unframed pairing, which a datum holding a code
+		/// cannot express: without a length there is no way to tell where the code ends, so such a
+		/// datum could only be read by consulting the pack rat for its schema -- which is exactly
+		/// the dependency a datum exists to avoid.
+		/// </remarks>
+		public const string Datum = "c02015c9-fe26-4c65-93bc-2c67da6fb3c3";
+
+		/// <summary>
 		/// The schema identifier for the <see cref="DateTimeWithKind"/> type including the kind.
 		/// </summary>
 		/// <remarks>
@@ -77,9 +94,9 @@
 		public const string EfficientWholeNumber63 = "6a29f5c6-fb2b-4e5c-8d77-89371cd4a1f0";
 
 		/// <summary>
-		/// The schema identifier for the <see cref="FlexModel"/> type.
+		/// The schema identifier for the <see cref="FlexDatum"/> type.
 		/// </summary>
-		public const string FlexModel = "94059e98-41f8-4adc-b29e-1c0630645809";
+		public const string FlexDatum = "94059e98-41f8-4adc-b29e-1c0630645809";
 		
 		/// <summary>
 		/// The schema identifier for the <see cref="Guid"/> type.
@@ -105,16 +122,6 @@
 		/// The schema identifier for the <see cref="Int64"/> type.
 		/// </summary>
 		public const string Int64 = "05d2e9ce-16cb-4fa0-832a-f933d9bfe1d6";
-
-		/// <summary>
-		/// The schema identifier for the <see cref="ModelWithSchema"/> type.
-		/// </summary>
-		public const string ModelWithSchema = "adce8290-2438-420d-9658-49296cf456f3";
-
-		/// <summary>
-		/// The schema identifier for the <see cref="ModelWithSchemaAndLength"/> type.
-		/// </summary>
-		public const string ModelWithSchemaAndLength = "c02015c9-fe26-4c65-93bc-2c67da6fb3c3";
 
 		/// <summary>
 		/// The schema identifier for the <see cref="Multihash"/> type.

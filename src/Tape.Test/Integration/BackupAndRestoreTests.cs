@@ -82,9 +82,9 @@ namespace BigRedProf.Data.Tape.Test.Integration
 			PackRat<Code> codePackRat = piedPiper.GetPackRat<Code>(CoreSchema.Code);
 
 			BackupWizard backupWizard = BackupWizard.CreateNew(library, seriesId, seriesName, seriesDescription);
-			backupWizard.Writer.WriteCode(piedPiper.EncodeModel<Code>("0", CoreSchema.Code));
-			backupWizard.Writer.WriteCode(piedPiper.EncodeModel<Code>("00", CoreSchema.Code));
-			backupWizard.Writer.WriteCode(piedPiper.EncodeModel<Code>("10101", CoreSchema.Code));
+			backupWizard.Writer.WriteCode(piedPiper.PackModel<Code>("0", CoreSchema.Code));
+			backupWizard.Writer.WriteCode(piedPiper.PackModel<Code>("00", CoreSchema.Code));
+			backupWizard.Writer.WriteCode(piedPiper.PackModel<Code>("10101", CoreSchema.Code));
 
 			RestorationWizard restorationWizard = RestorationWizard.OpenExistingTapeSeries(library, seriesId, 0);
 			Code code1 = codePackRat.UnpackModel(restorationWizard.CodeReader);

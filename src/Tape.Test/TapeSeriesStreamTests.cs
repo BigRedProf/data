@@ -190,8 +190,7 @@ namespace BigRedProf.Data.Tape.Test
 
 			Tape initialTape = GetLastTape(librarian, seriesId);
 			TapeLabel initialLabel = initialTape.ReadLabel();
-			initialLabel.AddTrait(new Trait<int>(TapeTrait.TapePosition, Tape.MaxContentLength - 4));
-			initialTape.WriteLabel(initialLabel);
+			initialTape.WriteLabel(initialLabel.WithTapePosition(Tape.MaxContentLength - 4));
 
 			byte[] bytes = new byte[2];
 			bytes[0] = 0b01010101;
@@ -317,8 +316,7 @@ namespace BigRedProf.Data.Tape.Test
 
 			Tape tape = GetLastTape(librarian, seriesId);
 			TapeLabel label = tape.ReadLabel();
-			label.AddTrait(new Trait<int>(TapeTrait.TapePosition, 0));
-			tape.WriteLabel(label);
+			tape.WriteLabel(label.WithTapePosition(0));
 
 			using (TapeSeriesStream readStream = new TapeSeriesStream(librarian, seriesId, TapeSeriesStream.OpenMode.Read))
 			{

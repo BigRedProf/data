@@ -198,7 +198,7 @@ namespace BigRedProf.Data.Test
 
         [Fact]
         [Trait("Region", "methods")]
-        public void EncodeModel_ShouldThrowWhenModelIsNull()
+        public void PackModelToCode_ShouldThrowWhenModelIsNull()
         {
             IPiedPiper piedPiper = new PiedPiper();
             piedPiper.RegisterCorePackRats();
@@ -206,14 +206,14 @@ namespace BigRedProf.Data.Test
             Assert.Throws<ArgumentNullException>(
                 () =>
                 {
-                    piedPiper.EncodeModel<string>(null, CoreSchema.TextUtf8);
+                    piedPiper.PackModel<string>(null, CoreSchema.TextUtf8);
                 }
             );
         }
 
 		[Fact]
 		[Trait("Region", "methods")]
-		public void EncodeModel_ShouldThrowWhenSchemaIdIsNull()
+		public void PackModelToCode_ShouldThrowWhenSchemaIdIsNull()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
 			piedPiper.RegisterCorePackRats();
@@ -221,14 +221,14 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					piedPiper.EncodeModel<string>("foo", null);
+					piedPiper.PackModel<string>("foo", null);
 				}
 			);
 		}
 
 		[Fact]
         [Trait("Region", "methods")]
-        public void EncodeModel_And_DecodeModel_ShouldWork()
+        public void PackModelToCode_And_UnpackModelFromCode_ShouldWork()
         {
             IPiedPiper piedPiper = new PiedPiper();
             piedPiper.RegisterCorePackRats();
@@ -241,7 +241,7 @@ namespace BigRedProf.Data.Test
 
 		[Fact]
 		[Trait("Region", "methods")]
-		public void DecodeModel_ShouldThrowWhenCodeIsNull()
+		public void UnpackModelFromCode_ShouldThrowWhenCodeIsNull()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
 			piedPiper.RegisterCorePackRats();
@@ -249,14 +249,14 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					piedPiper.DecodeModel<string>(null, CoreSchema.TextUtf8);
+					piedPiper.UnpackModel<string>((Code)null, CoreSchema.TextUtf8);
 				}
 			);
 		}
 
 		[Fact]
         [Trait("Region", "methods")]
-        public void DecodeModel_ShouldThrowWhenSchemaIdIsNull()
+        public void UnpackModelFromCode_ShouldThrowWhenSchemaIdIsNull()
         {
             IPiedPiper piedPiper = new PiedPiper();
             piedPiper.RegisterCorePackRats();
@@ -264,7 +264,7 @@ namespace BigRedProf.Data.Test
             Assert.Throws<ArgumentNullException>(
                 () =>
                 {
-                    piedPiper.DecodeModel<string>("100", null);
+                    piedPiper.UnpackModel<string>("100", null);
                 }
             );
         }
@@ -536,8 +536,8 @@ namespace BigRedProf.Data.Test
 		#region private methods
 		private void TestModelEncodeAndDecode<M>(IPiedPiper piedPiper, M model, string schemaId)
 		{
-			Code encodedModel = piedPiper.EncodeModel<M>(model, schemaId);
-			M decodedModel = piedPiper.DecodeModel<M>(encodedModel, schemaId);
+			Code encodedModel = piedPiper.PackModel<M>(model, schemaId);
+			M decodedModel = piedPiper.UnpackModel<M>(encodedModel, schemaId);
 			Assert.Equal(model, decodedModel);
 		}
 

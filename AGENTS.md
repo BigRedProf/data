@@ -7,8 +7,9 @@ is the single source of shared instructions for agents and contributors;
 `BigRedProf.Data` is the base library of the BigRedProf stack — the sibling
 `content`, `stories`, and `digihouse` repositories all consume its published
 packages. Changes here ripple outward, so treat public contracts carefully. The
-domain concepts (bit, code, pack rat, pied piper, flex model, tokenizer, tape)
-are defined in `README.md`; design notes live under `docs/`.
+domain concepts (bit, code, schema, datum, pack rat, pied piper, trait, flex
+datum, tokenizer, tape) are defined in `README.md`; design notes live under
+`docs/`, starting with `docs/ontology-draft-datum.md`.
 
 ---
 

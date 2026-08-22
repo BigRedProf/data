@@ -152,8 +152,7 @@ namespace BigRedProf.Data.Tape.Test
 			Tape initialTape = librarian.FetchTapesInSeries(seriesId).Single();
 			TapeLabel initialLabel = initialTape.ReadLabel();
 			int nearCapacityPosition = Tape.MaxContentLength - 8;
-			initialLabel.AddTrait(new Trait<int>(TapeTrait.TapePosition, nearCapacityPosition));
-			initialTape.WriteLabel(initialLabel);
+			initialTape.WriteLabel(initialLabel.WithTapePosition(nearCapacityPosition));
 
 			BackupWizard reopenedWizard = BackupWizard.OpenExisting(library, seriesId);
 			Code content = new Code("10101010 11110000");

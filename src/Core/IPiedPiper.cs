@@ -88,18 +88,22 @@ namespace BigRedProf.Data.Core
 		void RegisterTokenizers(Assembly assembly);
 
 		/// <summary>
-		/// Defines a trait by associating a <see cref="TraitDefinition"/> with a given trait 
-		/// identifier.
+		/// Defines a trait: the question a trait identifier asks, and the schema of its answer.
 		/// </summary>
-		/// <param name="traitDefintion">The trait definition.</param>
-		void DefineTrait(TraitDefinition traitDefintion);
+		/// <remarks>
+		/// A trait identifier is bound to its schema forever. Redefining one throws, because
+		/// changing the schema of an answer is asking a different question, and a different
+		/// question needs a different identifier.
+		/// </remarks>
+		/// <param name="trait">The trait.</param>
+		void DefineTrait(Trait trait);
 
 		/// <summary>
-		/// Returns the <see cref="TraitDefinition"/> for a given trait identifier.
+		/// Returns the <see cref="Trait"/> for a given trait identifier.
 		/// </summary>
 		/// <param name="traitId">The trait identifier.</param>
-		/// <returns>The trait definition.</returns>
-		TraitDefinition GetTraitDefinition(AttributeFriendlyGuid traitId);
+		/// <returns>The trait.</returns>
+		Trait GetTrait(AttributeFriendlyGuid traitId);
 
 		bool IsTraitDefined(AttributeFriendlyGuid traitId);
 
@@ -200,22 +204,56 @@ namespace BigRedProf.Data.Core
 		);
 
 		/// <summary>
-		/// Encodes a model using the <see cref="PackRat{M}"/> registered for the provided schema.
+		/// Packs a model into a standalone <see cref="Code"/> using the <see cref="PackRat{M}"/>
+		/// registered for the provided schema.
 		/// </summary>
+		/// <remarks>
+		/// This is the same operation as
+		/// <see cref="PackModel{M}(CodeWriter, M, AttributeFriendlyGuid)"/>, differing only in
+		/// where the bits are written.
+		/// </remarks>
 		/// <typeparam name="M">The model type.</typeparam>
 		/// <param name="model">The model.</param>
 		/// <param name="schemaId">The schema identifier.</param>
 		/// <returns>The code.</returns>
-		Code EncodeModel<M>(M model, AttributeFriendlyGuid schemaId);
+		Code PackModel<M>(M model, AttributeFriendlyGuid schemaId);
 
 		/// <summary>
-		/// Decodes a model using the <see cref="PackRat{M}"/> registered for the provided schema.
+		/// Unpacks a model from a standalone <see cref="Code"/> using the
+		/// <see cref="PackRat{M}"/> registered for the provided schema.
 		/// </summary>
-		/// <typeparam name="M"></typeparam>
-		/// <param name="code">The encoded model.</param>
+		/// <typeparam name="M">The model type.</typeparam>
+		/// <param name="code">The packed model.</param>
 		/// <param name="schemaId">The schema identifier.</param>
 		/// <returns>The model.</returns>
-		M DecodeModel<M>(Code code, AttributeFriendlyGuid schemaId);
+		M UnpackModel<M>(Code code, AttributeFriendlyGuid schemaId);
+
+		/// <summary>
+		/// Packs a model into a <see cref="Datum"/>: its code, paired with the schema identifier
+		/// under which that code is to be read.
+		/// </summary>
+		/// <typeparam name="M">The model type.</typeparam>
+		/// <param name="model">The model.</param>
+		/// <param name="schemaId">The schema identifier.</param>
+		/// <returns>The datum.</returns>
+		/// <summary>
+		/// Packs a model of a type not known at compile time into a standalone <see cref="Code"/>.
+		/// </summary>
+		/// <param name="model">The model.</param>
+		/// <param name="schemaId">The schema identifier.</param>
+		/// <returns>The code.</returns>
+		Code PackModel(object model, AttributeFriendlyGuid schemaId);
+
+		/// <summary>
+		/// Unpacks a model of a type not known at compile time from a standalone
+		/// <see cref="Code"/>.
+		/// </summary>
+		/// <param name="code">The packed model.</param>
+		/// <param name="schemaId">The schema identifier.</param>
+		/// <returns>The model.</returns>
+		object UnpackModel(Code code, AttributeFriendlyGuid schemaId);
+
+		Datum PackDatum<M>(M model, AttributeFriendlyGuid schemaId);
 
 		/// <summary>
 		/// Stores a <see cref="Code"/> to an array of bytes. The resulting byte array will include

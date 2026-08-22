@@ -37,21 +37,23 @@ namespace BigRedProf.Data.Tape
 			// TODO: Not sure this belongs on a label. Perhaps should delegate to TapeProvider?
 			get
 			{
-				FlexModel label = ReadLabel();
-				if (label.TryGetTrait<int>(TapeTrait.TapePosition, out int position))
+				TapeLabel label = ReadLabel();
+				if (label.FlexDatum.TryGetTrait<int>(TapeTrait.TapePosition, TapeProvider.PiedPiper, out int position))
 					return position;
 				
 				throw new InvalidOperationException("Tape position is not defined in the label.");
 			}
 			internal set
 			{
-				FlexModel label = ReadLabel();
-				label.AddTrait(new Trait<int>(TapeTrait.TapePosition, value));
+				TapeLabel label = ReadLabel();
+				FlexDatumBuilder builder = label.FlexDatum.ToBuilder(TapeProvider.PiedPiper);
+				builder.AddTrait(TapeTrait.TapePosition, value);
 				int existingContentLength;
-				bool hasContentLength = label.TryGetTrait<int>(CoreTrait.ContentLength, out existingContentLength);
+				bool hasContentLength = label.FlexDatum.TryGetTrait<int>(
+					CoreTrait.ContentLength, TapeProvider.PiedPiper, out existingContentLength);
 				if (!hasContentLength || value > existingContentLength)
-					label.AddTrait(new Trait<int>(CoreTrait.ContentLength, value));
-				WriteLabel(label);
+					builder.AddTrait(CoreTrait.ContentLength, value);
+				WriteLabel(TapeLabel.Over(TapeProvider.PiedPiper, builder.Build()));
 			}
 		}
 		#endregion
@@ -70,7 +72,7 @@ namespace BigRedProf.Data.Tape
 
 			provider.AddTapeInternal(tape);
 
-			TapeLabel tapeLabel = new TapeLabel()
+			TapeLabel tapeLabel = TapeLabel.Empty(provider.PiedPiper)
 				.WithTapeId(tapeId);
 			tape.WriteLabel(tapeLabel);
 			
@@ -86,7 +88,7 @@ namespace BigRedProf.Data.Tape
 			return TapeHelper.ReadLabel(this);
 		}
 
-		public void WriteLabel(FlexModel label)
+		public void WriteLabel(TapeLabel label)
 		{
 			if (label == null)
 				throw new ArgumentNullException(nameof(label), "Label cannot be null.");

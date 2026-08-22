@@ -1,0 +1,82 @@
+[
+ [
+  "34",
+  "Flex datum: unknown traits must be skippable and preservable",
+  "https://github.com/BigRedProf/data/issues/34"
+ ],
+ [
+  "35",
+  "Flex datum: canonical trait ordering",
+  "https://github.com/BigRedProf/data/issues/35"
+ ],
+ [
+  "36",
+  "Introduce Datum as (SchemaId, Code); retire ModelWithSchema and ModelWithSchemaAndLength",
+  "https://github.com/BigRedProf/data/issues/36"
+ ],
+ [
+  "37",
+  "Rename FlexModel to FlexDatum",
+  "https://github.com/BigRedProf/data/issues/37"
+ ],
+ [
+  "38",
+  "Rename TraitDefinition to Trait and Trait<M> to TraitValue; document the trait rules",
+  "https://github.com/BigRedProf/data/issues/38"
+ ],
+ [
+  "39",
+  "Collapse EncodeModel/DecodeModel into PackModel/UnpackModel overloads",
+  "https://github.com/BigRedProf/data/issues/39"
+ ],
+ [
+  "40",
+  "Make FlexDatum immutable, with a builder and structural equality",
+  "https://github.com/BigRedProf/data/issues/40"
+ ],
+ [
+  "41",
+  "Convert TapeLabel from FlexModel subclass to a view over a FlexDatum",
+  "https://github.com/BigRedProf/data/issues/41"
+ ],
+ [
+  "42",
+  "Add trait value enumeration to FlexDatum",
+  "https://github.com/BigRedProf/data/issues/42"
+ ],
+ [
+  "43",
+  "Use EfficientWholeNumber31 for per-trait lengths",
+  "https://github.com/BigRedProf/data/issues/43"
+ ],
+ [
+  "44",
+  "Evaluate tokenized trait identifiers",
+  "https://github.com/BigRedProf/data/issues/44"
+ ],
+ [
+  "45",
+  "Rename consumers' Models directories, namespaces, and assemblies",
+  "https://github.com/BigRedProf/data/issues/45"
+ ],
+ [
+  "46",
+  "Write down the rules for evolving a structured schema",
+  "https://github.com/BigRedProf/data/issues/46"
+ ],
+ [
+  "47",
+  "Consider a shared CoreTrait.Kind",
+  "https://github.com/BigRedProf/data/issues/47"
+ ],
+ [
+  "48",
+  "Documentation and exception types for the flex datum",
+  "https://github.com/BigRedProf/data/issues/48"
+ ],
+ [
+  "49",
+  "Make Code immutable",
+  "https://github.com/BigRedProf/data/issues/49"
+ ]
+]

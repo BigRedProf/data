@@ -66,7 +66,7 @@ namespace BigRedProf.Data.Core
 		}
 		public Multihash GetMultihash(MultihashAlgorithm algorithm)
 		{
-			Code encodedTextTrail = _piedPiper.EncodeModel(this, CoreSchema.TextTrail);
+			Code encodedTextTrail = _piedPiper.PackModel(this, CoreSchema.TextTrail);
 			return Multihash.FromCode(encodedTextTrail, algorithm);
 		}
 		#endregion
