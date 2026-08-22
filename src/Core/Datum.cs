@@ -1,4 +1,5 @@
 using System;
+using BigRedProf.Data.Core.Internal;
 
 namespace BigRedProf.Data.Core
 {
@@ -57,7 +58,14 @@ namespace BigRedProf.Data.Core
 		/// <summary>
 		/// Interprets this datum, unpacking its code under its schema.
 		/// </summary>
-		/// <typeparam name="M">The model type.</typeparam>
+		/// <remarks>
+		/// The unpack itself is weakly typed, because the model type is the caller's question
+		/// rather than the datum's: a reader that does not know what a datum represents can ask
+		/// for <see cref="object"/> and find out afterwards, which is the ordinary case when a
+		/// datum arrives from somewhere. Asking for a specific type still works, and so does
+		/// asking for an enum whose schema is integral.
+		/// </remarks>
+		/// <typeparam name="M">The type the caller wants the model as.</typeparam>
 		/// <param name="piedPiper">The pied piper.</param>
 		/// <returns>The model this datum represents.</returns>
 		public M Unpack<M>(IPiedPiper piedPiper)
@@ -65,7 +73,14 @@ namespace BigRedProf.Data.Core
 			if (piedPiper == null)
 				throw new ArgumentNullException(nameof(piedPiper));
 
-			return piedPiper.UnpackModel<M>(_code, _schemaId);
+			object model = piedPiper.UnpackModel(_code, _schemaId);
+			if (ModelCoercion.TryCoerce<M>(model, out M coerced))
+				return coerced;
+
+			throw new InvalidOperationException(
+				$"This datum's model cannot be presented as type '{typeof(M).Name}'. " +
+				$"Actual type: '{ModelCoercion.DescribeType(model)}'."
+			);
 		}
 		#endregion
 
