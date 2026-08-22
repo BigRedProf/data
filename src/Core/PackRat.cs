@@ -69,7 +69,9 @@ namespace BigRedProf.Data.Core
 
 		object IWeaklyTypedPackRat.UnpackModel(CodeReader reader)
 		{
-			return UnpackModel(reader);
+			// A pack rat unpacks a model. Models that may be absent travel through
+			// UnpackNullableModel, so there is nothing to hand back but a model here.
+			return UnpackModel(reader)!;
 		}
 		#endregion
 

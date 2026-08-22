@@ -1,5 +1,6 @@
 using BigRedProf.Data.Core;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace BigRedProf.Data.Tape
 {
@@ -164,12 +165,12 @@ namespace BigRedProf.Data.Tape
 		/// <summary>
 		/// Interprets a trait on the underlying flex datum if it is present.
 		/// </summary>
-		public bool TryGetTrait<M>(AttributeFriendlyGuid traitId, out M value)
+		public bool TryGetTrait<M>(AttributeFriendlyGuid traitId, [MaybeNullWhen(false)] out M value)
 		{
 			return _flexDatum.TryGetTrait<M>(traitId, _piedPiper, out value);
 		}
 
-		public bool TryGetSeriesDescription(out string description)
+		public bool TryGetSeriesDescription([MaybeNullWhen(false)] out string description)
 		{
 			return _flexDatum.TryGetTrait<string>(TapeTrait.SeriesDescription, _piedPiper, out description);
 		}
@@ -179,7 +180,7 @@ namespace BigRedProf.Data.Tape
 			return _flexDatum.TryGetTrait<int>(CoreTrait.ContentLength, _piedPiper, out contentLength);
 		}
 
-		public bool TryGetClientCheckpoint(out Code checkpoint)
+		public bool TryGetClientCheckpoint([MaybeNullWhen(false)] out Code checkpoint)
 		{
 			return _flexDatum.TryGetTrait<Code>(TapeTrait.ClientCheckpointCode, _piedPiper, out checkpoint);
 		}

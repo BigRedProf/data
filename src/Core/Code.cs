@@ -221,6 +221,35 @@ namespace BigRedProf.Data.Core
 		public int ByteLength => _byteArray.Length;
 
 		/// <summary>
+		/// Returns a read-only view over the code's bytes.
+		/// </summary>
+		/// <remarks>
+		/// No copy. A code is immutable, so a read-only view over its storage is safe to hand out,
+		/// and a code can be a gigabit long -- <see cref="ToByteArray"/> is not always a reasonable
+		/// way to read one.
+		///
+		/// The view covers whole bytes. When <see cref="Length"/> is not a multiple of eight, the
+		/// unused high bits of the final byte are zero, so two codes of equal length always have
+		/// identical views.
+		/// </remarks>
+		public ReadOnlySpan<byte> AsSpan()
+		{
+			return new ReadOnlySpan<byte>(_byteArray);
+		}
+
+		/// <summary>
+		/// Returns a read-only view over the code's bytes that can be stored and passed around.
+		/// </summary>
+		/// <remarks>
+		/// As <see cref="AsSpan"/>, for callers that need a view outliving a single stack frame --
+		/// a field, an async method, or an iterator.
+		/// </remarks>
+		public ReadOnlyMemory<byte> AsMemory()
+		{
+			return new ReadOnlyMemory<byte>(_byteArray);
+		}
+
+		/// <summary>
 		/// Returns a single byte of the code.
 		/// </summary>
 		/// <remarks>
@@ -294,9 +323,9 @@ namespace BigRedProf.Data.Core
 		#endregion
 
 		#region object methods
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
-			Code that = obj as Code;
+			Code? that = obj as Code;
 			if(that == null)
 				return false;
 
@@ -357,7 +386,7 @@ namespace BigRedProf.Data.Core
 		#endregion
 
 		#region operator overloads
-		public static bool operator ==(Code left, Code right)
+		public static bool operator ==(Code? left, Code? right)
 		{
 			if (object.ReferenceEquals(left, right))
 				return true;
@@ -371,7 +400,7 @@ namespace BigRedProf.Data.Core
 			return left.Equals(right);
 		}
 
-		public static bool operator !=(Code left, Code right)
+		public static bool operator !=(Code? left, Code? right)
 		{
 			return !(left == right);
 		}

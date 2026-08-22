@@ -137,7 +137,7 @@ namespace BigRedProf.Data.Tape.Cli
 		{
 			Debug.Assert(label != null);
 
-			string tapeName;
+			string? tapeName;
 			if (label.TryGetTrait<string>(CoreTrait.Name, out tapeName))
 			{
 				if (!string.IsNullOrWhiteSpace(tapeName))
@@ -152,7 +152,7 @@ namespace BigRedProf.Data.Tape.Cli
 			Debug.Assert(label != null);
 
 			Guid seriesId;
-			string seriesName;
+			string? seriesName;
 			int seriesNumber;
 			bool hasSeriesId = label.TryGetTrait<Guid>(CoreTrait.SeriesId, out seriesId);
 			bool hasSeriesName = label.TryGetTrait<string>(CoreTrait.SeriesName, out seriesName);
