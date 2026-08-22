@@ -29,7 +29,7 @@ namespace BigRedProf.Data.Core.Internal.PackRats
 			{
 				UntypedTrait untypedTrait = untypedTraits[i];
 				Guid schema = PiedPiper.GetTraitDefinition(untypedTrait.TraitId).SchemaId;
-				Code code = ((PiedPiper)PiedPiper).EncodeModel(untypedTrait.Model, schema);
+				Code code = ((PiedPiper)PiedPiper).PackModel(untypedTrait.Model, schema);
 				encodedTraits[i] = code;
 			}
 
@@ -88,7 +88,7 @@ namespace BigRedProf.Data.Core.Internal.PackRats
 					UntypedTrait untypedTrait = new UntypedTrait();
 					untypedTrait.TraitId = traitId;
 					Guid schema = PiedPiper.GetTraitDefinition(untypedTrait.TraitId).SchemaId;
-					object decodedModel = ((PiedPiper)PiedPiper).DecodeModel(encodedModel, schema);
+					object decodedModel = ((PiedPiper)PiedPiper).UnpackModel(encodedModel, schema);
 					untypedTrait.Model = decodedModel;
 
 					model.InternalUntypedTraits.Add(traitId, untypedTrait);

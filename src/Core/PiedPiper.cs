@@ -1,4 +1,4 @@
-using BigRedProf.Data.Core.Internal.PackRats;
+﻿using BigRedProf.Data.Core.Internal.PackRats;
 using BigRedProf.Data.Core.Internal;
 using BigRedProf.Data.Core.PackRats;
 using System;
@@ -481,7 +481,7 @@ namespace BigRedProf.Data.Core
 		}
 
 		/// <inheritdoc/>
-		public Code EncodeModel<M>(M model, AttributeFriendlyGuid schemaId)
+		public Code PackModel<M>(M model, AttributeFriendlyGuid schemaId)
 		{
 			if (model == null)
 				throw new ArgumentNullException(nameof(model));
@@ -501,7 +501,7 @@ namespace BigRedProf.Data.Core
 		}
 
 		/// <inheritdoc/>
-		public M DecodeModel<M>(Code code, AttributeFriendlyGuid schemaId)
+		public M UnpackModel<M>(Code code, AttributeFriendlyGuid schemaId)
 		{
 			if (code == null)
 				throw new ArgumentNullException(nameof(code));
@@ -554,7 +554,7 @@ namespace BigRedProf.Data.Core
 		#endregion
 
 		#region internal methods
-		internal Code EncodeModel(object model, AttributeFriendlyGuid schemaId)
+		internal Code PackModel(object model, AttributeFriendlyGuid schemaId)
 		{
 			if (model == null)
 				throw new ArgumentNullException(nameof(model));
@@ -573,7 +573,7 @@ namespace BigRedProf.Data.Core
 			return code;
 		}
 
-		internal object DecodeModel(Code code, AttributeFriendlyGuid schemaId)
+		internal object UnpackModel(Code code, AttributeFriendlyGuid schemaId)
 		{
 			if (code == null)
 				throw new ArgumentNullException(nameof(code));

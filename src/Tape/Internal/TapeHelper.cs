@@ -16,7 +16,7 @@ namespace BigRedProf.Data.Tape.Internal
 			byte[] bytes = tape.TapeProvider.ReadLabelInternal(tape.Id);
 			Code code = new Code(bytes);
 
-			FlexModel flexModel = piedPiper.DecodeModel<FlexModel>(code, CoreSchema.FlexModel);
+			FlexModel flexModel = piedPiper.UnpackModel<FlexModel>(code, CoreSchema.FlexModel);
 			TapeLabel tapeLabel = TapeLabel.FromFlexModel(flexModel);
 			return tapeLabel;
 		}
@@ -31,7 +31,7 @@ namespace BigRedProf.Data.Tape.Internal
 
 			var piedPiper = tape.TapeProvider.PiedPiper;
 
-			var code = piedPiper.EncodeModel(label, CoreSchema.FlexModel);
+			var code = piedPiper.PackModel(label, CoreSchema.FlexModel);
 			byte[] bytes = code.ToByteArray();
 
 			tape.TapeProvider.WriteLabelInternal(tape.Id, bytes);

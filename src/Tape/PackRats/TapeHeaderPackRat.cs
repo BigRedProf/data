@@ -85,7 +85,7 @@ namespace BigRedProf.Data.Tape.PackRats
 			writer.WriteCode("00000000 00000000 00000000 00000000");
 
 			// Label
-			Code packedLabel = PiedPiper.EncodeModel<FlexModel>(model.Label, CoreSchema.FlexModel);
+			Code packedLabel = PiedPiper.PackModel<FlexModel>(model.Label, CoreSchema.FlexModel);
 			if (packedLabel.Length > (model.BytesAllocatedForLabel * 8))
 			{
 				throw new InvalidOperationException(

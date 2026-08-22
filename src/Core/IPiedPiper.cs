@@ -200,22 +200,29 @@ namespace BigRedProf.Data.Core
 		);
 
 		/// <summary>
-		/// Encodes a model using the <see cref="PackRat{M}"/> registered for the provided schema.
+		/// Packs a model into a standalone <see cref="Code"/> using the <see cref="PackRat{M}"/>
+		/// registered for the provided schema.
 		/// </summary>
+		/// <remarks>
+		/// This is the same operation as
+		/// <see cref="PackModel{M}(CodeWriter, M, AttributeFriendlyGuid)"/>, differing only in
+		/// where the bits are written.
+		/// </remarks>
 		/// <typeparam name="M">The model type.</typeparam>
 		/// <param name="model">The model.</param>
 		/// <param name="schemaId">The schema identifier.</param>
 		/// <returns>The code.</returns>
-		Code EncodeModel<M>(M model, AttributeFriendlyGuid schemaId);
+		Code PackModel<M>(M model, AttributeFriendlyGuid schemaId);
 
 		/// <summary>
-		/// Decodes a model using the <see cref="PackRat{M}"/> registered for the provided schema.
+		/// Unpacks a model from a standalone <see cref="Code"/> using the
+		/// <see cref="PackRat{M}"/> registered for the provided schema.
 		/// </summary>
-		/// <typeparam name="M"></typeparam>
-		/// <param name="code">The encoded model.</param>
+		/// <typeparam name="M">The model type.</typeparam>
+		/// <param name="code">The packed model.</param>
 		/// <param name="schemaId">The schema identifier.</param>
 		/// <returns>The model.</returns>
-		M DecodeModel<M>(Code code, AttributeFriendlyGuid schemaId);
+		M UnpackModel<M>(Code code, AttributeFriendlyGuid schemaId);
 
 		/// <summary>
 		/// Stores a <see cref="Code"/> to an array of bytes. The resulting byte array will include
