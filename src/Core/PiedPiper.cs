@@ -52,6 +52,7 @@ namespace BigRedProf.Data.Core
 			RegisterPackRat<bool>(new BooleanPackRat(this), CoreSchema.Boolean);
 			RegisterPackRat<byte>(new BytePackRat(this), CoreSchema.Byte);
 			RegisterPackRat<Code>(new CodePackRat(this), CoreSchema.Code);
+			RegisterPackRat<Datum>(new DatumPackRat(this), CoreSchema.Datum);
 			RegisterPackRat<DateTime>(new DateTimePackRat(this), CoreSchema.DateTimeWithKind);
 			RegisterPackRat<DateTime>(new DateTimePackRat(this), CoreSchema.DateTimeWithoutKind);
 			RegisterPackRat<double>(new DoublePackRat(this), CoreSchema.Double);
@@ -60,8 +61,6 @@ namespace BigRedProf.Data.Core
 			RegisterPackRat<Guid>(new GuidPackRat(this), CoreSchema.Guid);
 			RegisterPackRat<int>(new Int32PackRat(this), CoreSchema.Int32);
 			RegisterPackRat<long>(new Int64PackRat(this), CoreSchema.Int64);
-			RegisterPackRat<ModelWithSchemaAndLength>(new ModelWithSchemaAndLengthPackRat(this), CoreSchema.ModelWithSchemaAndLength);
-			RegisterPackRat<ModelWithSchema>(new ModelWithSchemaPackRat(this), CoreSchema.ModelWithSchema);
 			RegisterPackRat<Multihash>(new MultihashPackRat(this), CoreSchema.MultihashSchema);
 			RegisterPackRat<float>(new SinglePackRat(this), CoreSchema.Single);
 			RegisterPackRat<string>(new TextPackRat(this, Encoding.ASCII), CoreSchema.TextAscii);
@@ -518,6 +517,12 @@ namespace BigRedProf.Data.Core
 			}
 
 			return model;
+		}
+
+		/// <inheritdoc/>
+		public Datum PackDatum<M>(M model, AttributeFriendlyGuid schemaId)
+		{
+			return new Datum(schemaId, PackModel<M>(model, schemaId));
 		}
 
 		/// <inheritdoc/>

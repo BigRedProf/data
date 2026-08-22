@@ -225,6 +225,16 @@ namespace BigRedProf.Data.Core
 		M UnpackModel<M>(Code code, AttributeFriendlyGuid schemaId);
 
 		/// <summary>
+		/// Packs a model into a <see cref="Datum"/>: its code, paired with the schema identifier
+		/// under which that code is to be read.
+		/// </summary>
+		/// <typeparam name="M">The model type.</typeparam>
+		/// <param name="model">The model.</param>
+		/// <param name="schemaId">The schema identifier.</param>
+		/// <returns>The datum.</returns>
+		Datum PackDatum<M>(M model, AttributeFriendlyGuid schemaId);
+
+		/// <summary>
 		/// Stores a <see cref="Code"/> to an array of bytes. The resulting byte array will include
 		/// a prefix that encodes the length of the code so that this method can be used in tandem
 		/// with <see cref="LoadCodeFromByteArray(IPiedPiper, byte[])"/> to roundtrip codes.
