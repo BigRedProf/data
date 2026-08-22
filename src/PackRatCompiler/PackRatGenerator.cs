@@ -232,21 +232,35 @@ namespace BigRedProf.Data.PackRatCompiler
 			writer.WriteLine(");");
 		}
 
+		/// <summary>
+		/// Validates that field positions are usable as permanent wire identities.
+		/// </summary>
+		/// <remarks>
+		/// A position is an identity within its schema, and a filled-in record carries no
+		/// position markers -- a part is identified by being second, and by nothing else. So
+		/// positions must be at least 1 and strictly increasing, and no two fields may share one.
+		///
+		/// Positions are deliberately NOT required to be contiguous. A retired position must stay
+		/// retired: if removing the second of three fields forced the third to be renumbered, then
+		/// every code already written under this schema would silently mean something different
+		/// while the schema identifier stayed the same. Leaving a hole where a part used to be is
+		/// the only safe way to drop one, so a hole has to be expressible.
+		/// </remarks>
 		private void ValidatePackRatFields(INamedTypeSymbol modelClass, IList<PackFieldInfo> fields)
 		{
+			int previousPosition = 0;
 			for (int i = 0; i < fields.Count; ++i)
 			{
 				PackFieldInfo field = fields[i];
 
-				if (field.Position != i + 1)
+				if (field.Position < 1)
 				{
 					_compilationContext.ReportError(
 						CompilerError.InvalidFieldPosition,
 						String.Format(
-							"Field '{0}' in model '{1}' has invalid field position. Expected: {2}. Actual: {3}",
+							"Field '{0}' in model '{1}' has invalid field position {2}. Positions start at 1.",
 							field.Name,
 							modelClass.ToDisplayString(),
-							i + 1,
 							field.Position
 						),
 						modelClass.ContainingModule.ToDisplayString(),
@@ -254,6 +268,24 @@ namespace BigRedProf.Data.PackRatCompiler
 						field.SourceColumn
 					);
 				}
+				else if (field.Position == previousPosition)
+				{
+					_compilationContext.ReportError(
+						CompilerError.DuplicateFieldPosition,
+						String.Format(
+							"Field '{0}' in model '{1}' reuses field position {2}. A position is an "
+								+ "identity within its schema and belongs to exactly one field.",
+							field.Name,
+							modelClass.ToDisplayString(),
+							field.Position
+						),
+						modelClass.ContainingModule.ToDisplayString(),
+						field.SourceLineNumber,
+						field.SourceColumn
+					);
+				}
+
+				previousPosition = field.Position;
 			}
 		}
 		#endregion

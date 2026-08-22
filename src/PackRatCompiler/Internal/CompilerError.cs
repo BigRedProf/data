@@ -11,6 +11,7 @@ namespace BigRedProf.Data.PackRatCompiler.Internal
 		#region constants
 		public const int CSharpCompilation = 101;
 		public const int InvalidFieldPosition = 102;
+		public const int DuplicateFieldPosition = 103;
 		public const int MSBuildWorkspaceCreation = 901;
 		#endregion
 	}

@@ -29,6 +29,20 @@ namespace BigRedProf.Data.PackRatCompiler.Test
 
 		[Fact]
 		[Trait("Region", "methods")]
+		public void GeneratePackRat_ShouldWorkForModelWithARetiredFieldPosition()
+		{
+			// Positions need not be contiguous. A retired position stays retired, because
+			// renumbering the parts after it would silently change what every code already
+			// written under this schema means.
+			PackRatCompilerTestHelper.TestGeneratePackRat(
+				_compilationContextFixture.CompilationContext,
+				"_Resources/Models/RetiredFieldTestModel.cs",
+				"_Resources/ExpectedPackRats/RetiredFieldTestModelPackRat.cs"
+			);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
 		public void GeneratePackRat_ShouldWorkForNullableTestModel()
 		{
 			PackRatCompilerTestHelper.TestGeneratePackRat(

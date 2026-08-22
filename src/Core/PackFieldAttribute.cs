@@ -30,6 +30,16 @@ namespace BigRedProf.Data.Core
 		/// <summary>
 		/// Determines the order in which fields are packed. Use 1 for the first field.
 		/// </summary>
+		/// <remarks>
+		/// A position is a permanent identity within its schema, not a display order. Nothing in a
+		/// packed code marks where one part ends and the next begins except the schema itself, so
+		/// a part is identified by being second and by nothing else.
+		///
+		/// Positions must be at least 1 and no two fields may share one. They need not be
+		/// contiguous: retiring a field means leaving its position empty forever, because
+		/// renumbering the parts after it would silently change what every previously written code
+		/// means. See <see cref="GeneratePackRatAttribute"/> for the full rules of change.
+		/// </remarks>
 		public int Position
 		{
 			get;
