@@ -177,13 +177,16 @@ namespace BigRedProf.Data.Tape.Internal
 			// Read existing region so we can preserve untouched bits
 			byte[] dst = tapeProvider.ReadTapeInternal(tapeId, startByte, affectedBytes);
 
+			// A read-only window over the content: no copy, and array-speed indexing in the loop.
+			ReadOnlySpan<byte> src = content.AsSpan();
+
 			// Overlay bit-by-bit (clear & set)
 			for (int i = 0; i < length; i++)
 			{
 				int sIndex = contentOffset + i;
 				int sByte = sIndex >> 3;
 				int sBit = sIndex & 7;
-				int bit = (content.GetByte(sByte) >> sBit) & 1;
+				int bit = (src[sByte] >> sBit) & 1;
 
 				int tIndex = startBit + i;
 				int dByte = tIndex >> 3;
