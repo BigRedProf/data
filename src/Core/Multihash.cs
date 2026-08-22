@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -78,7 +79,7 @@ namespace BigRedProf.Data.Core
 		#endregion
 
 		#region object methods
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			return Equals(obj as Multihash);
 		}
@@ -114,7 +115,7 @@ namespace BigRedProf.Data.Core
 		#endregion
 
 		#region IEquatable<Multihash> methods
-		public bool Equals(Multihash other)
+		public bool Equals(Multihash? other)
 		{
 			if (ReferenceEquals(other, null)) return false;
 			if (ReferenceEquals(this, other)) return true;
@@ -123,7 +124,7 @@ namespace BigRedProf.Data.Core
 		#endregion
 
 		#region operator overloads
-		public static bool operator ==(Multihash a, Multihash b)
+		public static bool operator ==(Multihash? a, Multihash? b)
 		{
 			if (ReferenceEquals(a, b))
 				return true;
@@ -134,7 +135,7 @@ namespace BigRedProf.Data.Core
 			return a.Equals(b);
 		}
 
-		public static bool operator !=(Multihash a, Multihash b)
+		public static bool operator !=(Multihash? a, Multihash? b)
 		{
 			return !(a == b);
 		}
@@ -256,7 +257,7 @@ namespace BigRedProf.Data.Core
 			return result;
 		}
 
-		public static bool TryParse(string text, out Multihash value)
+		public static bool TryParse(string? text, [MaybeNullWhen(false)] out Multihash value)
 		{
 			if (text == null)
 			{

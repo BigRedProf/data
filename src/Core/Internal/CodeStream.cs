@@ -10,7 +10,7 @@ namespace BigRedProf.Data.Core.Internal
 	{
 		#region fields
 		private MemoryStream _memoryStream;
-		private Code _code;
+		private Code? _code;
 		#endregion
 
 		#region constructors
@@ -46,8 +46,9 @@ namespace BigRedProf.Data.Core.Internal
 		#region methods
 		public Code ToCode()
 		{
+			// Flush assigns _code down every path, which the compiler cannot see from here.
 			Flush();
-			return _code;
+			return _code!;
 		}
 		#endregion
 

@@ -228,7 +228,7 @@ namespace BigRedProf.Data.Core
 
 		private void UpdateBitAwareStream()
 		{
-			BitAwareStream bitAwareStream = _stream as BitAwareStream;
+			BitAwareStream? bitAwareStream = _stream as BitAwareStream;
 			if (bitAwareStream != null)
 			{
 				bitAwareStream.CurrentByte = _currentByte;

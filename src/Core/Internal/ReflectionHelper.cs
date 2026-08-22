@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 
@@ -9,7 +10,10 @@ namespace BigRedProf.Data.Core.Internal
 	internal class ReflectionHelper
 	{
 		#region functions
-		public static bool TryCreateTypeInAssemblyWithAttribute<MType, MAttribute>(Assembly assembly, out MType result)
+		public static bool TryCreateTypeInAssemblyWithAttribute<MType, MAttribute>(
+			Assembly assembly,
+			[MaybeNullWhen(false)] out MType result
+		)
 			where MAttribute : Attribute
 		{
 			Type[] typesInAssembly = assembly.GetTypes();

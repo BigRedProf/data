@@ -3,6 +3,7 @@ using BigRedProf.Data.Core.Internal;
 using BigRedProf.Data.Core.PackRats;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -111,7 +112,7 @@ namespace BigRedProf.Data.Core
 
 			if (!ReflectionHelper.TryCreateTypeInAssemblyWithAttribute<AssemblyRegistrar, AssemblyRegistrarAttribute>(
 				assembly,
-				out AssemblyRegistrar assemblyRegistrar)
+				out AssemblyRegistrar? assemblyRegistrar)
 			)
 			{
 				throw new ArgumentException("The assembly has no [AssemblyRegistrar] class.", nameof(assembly));
@@ -127,7 +128,7 @@ namespace BigRedProf.Data.Core
 				throw new ArgumentNullException(nameof(schemaId));
 
 			IWeaklyTypedPackRat nonGenericPackRat = GetPackRat(schemaId);
-			PackRat<T> packRat = nonGenericPackRat as PackRat<T>;
+			PackRat<T>? packRat = nonGenericPackRat as PackRat<T>;
 			if (packRat == null)
 			{
 				throw new InvalidOperationException(
@@ -184,7 +185,7 @@ namespace BigRedProf.Data.Core
 			if (!_tokenizers.TryGetValue(tokenizerId, out object tokenizerAsObject))
 				throw new InvalidOperationException($"Tokenizer '{tokenizerId}' is not registered.");
 
-			Tokenizer<TModel> tokenizer = tokenizerAsObject as Tokenizer<TModel>;
+			Tokenizer<TModel>? tokenizer = tokenizerAsObject as Tokenizer<TModel>;
 			if (tokenizer == null)
 			{
 				throw new InvalidOperationException(
@@ -312,6 +313,7 @@ namespace BigRedProf.Data.Core
 		}
 
 		/// <inheritdoc/>
+		[return: MaybeNull]
 		public M UnpackNullableModel<M>(CodeReader reader, AttributeFriendlyGuid schemaId, ByteAligned byteAligned)
 		{
 			if (reader == null)
@@ -409,7 +411,7 @@ namespace BigRedProf.Data.Core
 		}
 
 		/// <inheritdoc/>
-		public IList<M> UnpackList<M>(
+		public IList<M>? UnpackList<M>(
 			CodeReader reader,
 			AttributeFriendlyGuid elementSchemaId,
 			bool allowNullLists,
@@ -454,7 +456,8 @@ namespace BigRedProf.Data.Core
 					}
 					else
 					{
-						list.Add(default);
+						// The caller passed allowNullElements, so a null element is the answer.
+						list.Add(default!);
 					}
 
 					if (byteAligned == ByteAligned.Yes)

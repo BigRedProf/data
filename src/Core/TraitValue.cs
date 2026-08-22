@@ -49,7 +49,7 @@ namespace BigRedProf.Data.Core
 		#endregion
 
 		#region IEquatable<TraitValue> methods
-		public bool Equals(TraitValue other)
+		public bool Equals(TraitValue? other)
 		{
 			if (other == null)
 				return false;
@@ -59,7 +59,7 @@ namespace BigRedProf.Data.Core
 		#endregion
 
 		#region object methods
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			return Equals(obj as TraitValue);
 		}
