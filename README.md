@@ -38,8 +38,11 @@ humans and agents alike. Note the solution lives at `src/Data.sln`, not at the
 repository root.
 
 `BigRedProf.Data.Core`, `BigRedProf.Data.PackRatCompiler` and
-`BigRedProf.Data.Tape` are published to GitHub Packages by CI on a push to
-`main`. `task pack` builds them locally and deliberately cannot push. See
+`BigRedProf.Data.Tape` are published to [nuget.org](https://www.nuget.org) by CI
+when a `v*` tag is pushed. Merges to `main` build and test but publish nothing:
+a release is a tag, not a merge. The version comes from the tag via MinVer, so
+to release, tag `v<major>.<minor>.<patch>` and push the tag. `task pack` builds
+the packages locally and deliberately cannot push. See
 [script/README.md](script/README.md) for the (short) script layer.
 
 ## Glossary

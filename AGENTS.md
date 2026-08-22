@@ -53,10 +53,13 @@ Data specifics:
   `REPO_CONVENTIONS.md`.
 - There is **no container image** here — this repository ships libraries and a
   CLI, not a service, so there is no `image` or `publish` task.
-- Three packages are published to GitHub Packages by CI on a push to `main`:
-  `BigRedProf.Data.Core`, `BigRedProf.Data.PackRatCompiler` (the `prc` tool that
-  sibling repos restore), and `BigRedProf.Data.Tape`. `task pack` only builds
-  them locally and deliberately cannot push.
+- Three packages are published to **nuget.org** by CI, and only when a `v*` tag
+  is pushed: `BigRedProf.Data.Core`, `BigRedProf.Data.PackRatCompiler` (the `prc`
+  tool that sibling repos restore), and `BigRedProf.Data.Tape`. Merges to `main`
+  build and test but publish nothing — a release is a tag, not a merge, because
+  nuget.org versions are immutable and effectively permanent. The version itself
+  comes from that tag via MinVer, so there is no version number to edit anywhere.
+  `task pack` only builds the packages locally and deliberately cannot push.
 - There is no `.config/dotnet-tools.json`, so `restore` does not run
   `dotnet tool restore`. Add both together if a local tool is ever introduced.
 
