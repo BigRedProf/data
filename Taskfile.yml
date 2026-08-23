@@ -77,6 +77,19 @@ tasks:
     desc: Tool and version diagnostics (checks Task/.NET)
     cmds: ['{{.PWSH}} script/doctor.ps1']
 
+  pack:local:
+    # Testing a package change across the sibling repositories used to mean publishing a
+    # prerelease and waiting for nuget.org to index it -- minutes per attempt, and a version
+    # number spent forever whether the change was any good or not. This packs the real
+    # packages, in Release, into a folder feed the siblings restore from instead.
+    #
+    # Not a project reference: BigRedProf.Data.PackRatCompiler is a dotnet tool, so it can
+    # only be exercised through a feed. Every pack gets a unique version, because NuGet's
+    # global packages cache is keyed on id and version and would otherwise keep serving the
+    # copy it already unpacked.
+    desc: 'Pack the NuGet packages into the shared local feed, for testing without publishing'
+    cmds: ['{{.PWSH}} script/pack-local.ps1 {{.CLI_ARGS}}']
+
   release:
     # Publishing stays CI's job -- nothing here pushes a package. What this pushes is the
     # `v*` tag that makes CI publish, which is the step that is easy to get wrong and
