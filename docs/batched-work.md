@@ -31,11 +31,15 @@ changes is how many separate occasions the guarding costs.
    2. implement, test, `task verify`, push, open a pull request **into the integration branch**;
    3. Codex reviews it;
    4. address every finding or reply saying why not — reply on the thread and resolve it;
-   5. merge into the integration branch, then run `task verify` on the integration branch itself.
+   5. **wait for the build check to pass.** Triggering CI is not the same as gating on it: no
+      ruleset covers these branches, so nothing stops a merge while the check is pending or red.
+      The waiting is the agent's, and skipping it puts the batch back where it was before the
+      trigger existed;
+   6. merge into the integration branch, then run `task verify` on the integration branch itself.
 4. The agent marks the integration pull request ready for review.
 5. The director reviews, and merges to `main`.
 
-Step 3.5's second half is the part that is easy to skip and worth not skipping: each feature
+Step 3.6's second half is the part that is easy to skip and worth not skipping: each feature
 branch was verified against the integration branch as it stood when the branch was cut, which is
 not necessarily how it stands now. Two changes can each be correct and still not compose.
 
@@ -76,6 +80,11 @@ is verified" was true only of one laptop. The trigger now includes `integration/
 of the gate does travel. Any repository adopting this workflow needs the same one-line change
 before its first batch, and the way to notice is to look for the check on the first pull request
 rather than to assume it.
+
+That makes the check *run*; it does not make it a *gate*, which is why step 3.5 exists. Extending
+the ruleset to `integration/**` would enforce it properly and is worth doing if this workflow
+becomes routine — it needs a repository settings change rather than a commit, so it is the
+director's to make, not the agent's.
 
 **Sync a feature branch from the integration tip before merging it, then verify again.** *Learned
 on the first run,* where it mattered immediately: #30 moved every test project to `tests/`, and
