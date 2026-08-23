@@ -87,10 +87,10 @@ Data specifics:
 
 - The build **target** is `src/Data.sln`. Note the solution lives under `src/`,
   not at the repository root.
-- Tests are real and substantial: `task test` runs `src/Core.Test`,
-  `src/PackRatCompiler.Test`, and `src/Tape.Test`. They sit under `src/` rather
-  than a top-level `tests/` directory, a known deviation from
-  `REPO_CONVENTIONS.md`.
+- Tests are real and substantial: `task test` runs `tests/Core.Test`,
+  `tests/PackRatCompiler.Test`, and `tests/Tape.Test`. The solution stays under
+  `src/` and reaches sideways into `tests/`, so discovery still follows from
+  `TARGET` in `Taskfile.yml`.
 - There is **no container image** here — this repository ships libraries and a
   CLI, not a service, so there is no `image` or `publish` task.
 - Three packages are published to **nuget.org** by CI, and only when a `v*` tag
