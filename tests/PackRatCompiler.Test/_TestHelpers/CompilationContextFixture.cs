@@ -64,7 +64,18 @@ namespace BigRedProf.Data.Test._TestHelpers
 		}
 		#endregion
 
-		#region methods
+
+		#region properties
+		public CompilationContext CompilationContext
+		{
+			get
+			{
+				return _compilationContext;
+			}
+		}
+		#endregion
+
+		#region private functions
 		private static string GetCoreProjectPath()
 		{
 			AssemblyMetadataAttribute? metadata = typeof(CompilationContextFixture).Assembly
@@ -81,16 +92,6 @@ namespace BigRedProf.Data.Test._TestHelpers
 			}
 
 			return metadata.Value!;
-		}
-		#endregion
-
-		#region properties
-		public CompilationContext CompilationContext
-		{
-			get
-			{
-				return _compilationContext;
-			}
 		}
 		#endregion
 
