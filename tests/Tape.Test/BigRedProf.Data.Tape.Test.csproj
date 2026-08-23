@@ -22,7 +22,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Tape\BigRedProf.Data.Tape.csproj" />
+		<ProjectReference Include="..\..\src\Tape\BigRedProf.Data.Tape.csproj" />
 	</ItemGroup>
 
 </Project>
