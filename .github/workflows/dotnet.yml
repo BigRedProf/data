@@ -16,7 +16,12 @@ on:
     branches: [ "main" ]
     tags: [ "v*" ]
   pull_request:
-    branches: [ "main" ]
+    # Integration branches collect several pull requests before any of them
+    # reaches main, so the work inside a batch is reviewed and merged without
+    # main's rules applying. Without this, every one of those merges happens
+    # with no build check at all and the batch is verified only on the way out
+    # -- which is exactly when a break is most expensive to attribute.
+    branches: [ "main", "integration/**" ]
 
 jobs:
   build:
