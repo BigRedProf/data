@@ -78,11 +78,16 @@ try
 	# PackRatCompiler is a PackAsTool project with GeneratePackageOnBuild, which makes pack skip
 	# its implicit build while the tool's publish step still expects the Release outputs to be
 	# there. Without this, a clean checkout fails with MSB3030 rather than packing.
+	# The same version override as the pack below. GeneratePackageOnBuild means pack will not
+	# rebuild, so without this prc.dll carries the repository-derived version while the package
+	# claims the local one -- and a consumer testing version-dependent behaviour would be
+	# reading metadata that does not match what it restored.
 	Write-Step "Building Release before packing"
 	Invoke-Checked -Command 'dotnet' -Arguments @(
 		'build', 'src/Data.sln',
 		'-c', 'Release',
-		'--nologo'
+		'--nologo',
+		"-p:MinVerVersionOverride=$Version"
 	)
 
 	Write-Step "Packing $Version into $Feed"
