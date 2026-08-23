@@ -254,6 +254,19 @@ namespace BigRedProf.Data.Core
 		/// <returns>The model.</returns>
 		object UnpackModel(Code code, AttributeFriendlyGuid schemaId);
 
+		/// <summary>
+		/// Packs a model into a <see cref="Datum"/>: its code, paired with the schema identifier
+		/// under which that code is to be read.
+		/// </summary>
+		/// <remarks>
+		/// The pack itself is weakly typed, mirroring <see cref="Datum.Unpack{M}"/>: a caller
+		/// holding a model as <see cref="object"/>, which is the ordinary case when packing
+		/// whatever arrived, can pack it without naming its type.
+		/// </remarks>
+		/// <typeparam name="M">The type the caller happens to hold the model as.</typeparam>
+		/// <param name="model">The model.</param>
+		/// <param name="schemaId">The schema identifier.</param>
+		/// <returns>The datum.</returns>
 		Datum PackDatum<M>(M model, AttributeFriendlyGuid schemaId);
 
 		/// <summary>

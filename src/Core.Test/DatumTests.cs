@@ -51,6 +51,22 @@ namespace BigRedProf.Data.Core.Test
 
 		[Fact]
 		[Trait("Region", "methods")]
+		public void PackDatum_ShouldWorkWhenTheModelIsHeldAsObject()
+		{
+			// The ordinary case when packing whatever arrived: a service takes an object and a
+			// schema identifier and has no type to name.
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterCorePackRats();
+		
+			object model = "Memorial Stadium";
+		
+			Datum datum = piedPiper.PackDatum(model, CoreSchema.TextUtf8);
+		
+			Assert.Equal("Memorial Stadium", datum.Unpack<string>(piedPiper));
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
 		public void Unpack_ShouldWorkWithoutKnowingTheModelType()
 		{
 			// The ordinary case for a datum that arrived from somewhere: the reader knows how to
