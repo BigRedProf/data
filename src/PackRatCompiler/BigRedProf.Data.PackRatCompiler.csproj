@@ -22,11 +22,11 @@
 	</PropertyGroup>
 	
 	<ItemGroup>
-	  <PackageReference Include="CommandLineParser" Version="2.9.1" />
-	  <PackageReference Include="Microsoft.Build.Locator" Version="1.5.5" />
-	  <PackageReference Include="Microsoft.CodeAnalysis" Version="4.11.0" />
-	  <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.11.0" />
-	  <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.11.0" />
+	  <PackageReference Include="CommandLineParser" />
+	  <PackageReference Include="Microsoft.Build.Locator" />
+	  <PackageReference Include="Microsoft.CodeAnalysis" />
+	  <PackageReference Include="Microsoft.CodeAnalysis.Common" />
+	  <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" />
 	</ItemGroup>
 	
 	<ItemGroup>

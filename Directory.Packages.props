@@ -1,0 +1,71 @@
+<Project>
+
+	<!--
+	Package versions for every project in this repository, in one place.
+
+	Without this, a version lives in each csproj that references it, and a
+	cross-repository upgrade means finding all of them. Migrating the stack to
+	BigRedProf.Data 0.9 meant doing exactly that, five times, across four
+	repositories, and every pass was a chance to miss one.
+
+	The csprojs keep a bare <PackageReference Include="..." /> with no version.
+	MSBuild resolves it from the <PackageVersion> below. A csproj that needs a
+	different version says so explicitly with VersionOverride, which makes the
+	exception visible instead of making the rule invisible.
+
+	NOTE: this does NOT cover .config/dotnet-tools.json. A dotnet tool carries
+	its own version in the manifest and nothing here manages it, so a repository
+	with a tool manifest still has two places to change. This repository has no
+	manifest; the sibling repositories that restore `prc` do, and both files
+	should point at each other there.
+	-->
+
+	<PropertyGroup>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+
+		<!--
+		Deliberately off. Transitive pinning promotes every transitive dependency
+		to a version this file controls, which turns an upgrade of one package
+		into a decision about its whole graph. Turn it on when there is a specific
+		dependency to pin, not pre-emptively.
+		-->
+		<CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
+	</PropertyGroup>
+
+	<!--
+	Build and packaging.
+	-->
+	<ItemGroup>
+		<PackageVersion Include="MinVer" Version="7.0.0" />
+	</ItemGroup>
+
+	<!--
+	The pack rat compiler. Microsoft.CodeAnalysis and its companions move
+	together and must stay on the same version as each other.
+	-->
+	<ItemGroup>
+		<PackageVersion Include="CommandLineParser" Version="2.9.1" />
+		<PackageVersion Include="Microsoft.Build.Locator" Version="1.5.5" />
+		<PackageVersion Include="Microsoft.CodeAnalysis" Version="4.11.0" />
+		<PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.11.0" />
+		<PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.11.0" />
+	</ItemGroup>
+
+	<!--
+	Testing.
+
+	These were drifting: the three test projects were created at different times
+	and carried three different versions of each of these packages: xunit at
+	2.4.1 and 2.9.3, Microsoft.NET.Test.Sdk at 16.9.4, 17.1.0 and 17.11.1,
+	coverlet.collector at 3.0.2, 3.1.2 and 6.0.2. Central management makes one
+	version per package the default rather than a thing to notice, so they are
+	unified here on the newest of each.
+	-->
+	<ItemGroup>
+		<PackageVersion Include="coverlet.collector" Version="6.0.2" />
+		<PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+		<PackageVersion Include="xunit" Version="2.9.3" />
+		<PackageVersion Include="xunit.runner.visualstudio" Version="3.0.1" />
+	</ItemGroup>
+
+</Project>
