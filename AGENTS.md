@@ -43,6 +43,31 @@ List everything with `task --list`.
 `verify` is the canonical success criterion. It is fast by design (build +
 unit tests).
 
+---
+
+## Pull Requests
+
+An automated reviewer (Codex) comments on every pull request, usually within a
+minute or two of it opening. **Read that review before calling a pull request
+ready, and before merging.** It posts inline review comments rather than a
+status check, so nothing blocks on it by default:
+
+```bash
+gh api repos/BigRedProf/data/pulls/<number>/comments --jq '.[] | "\(.path):\(.line)
+\(.body)"'
+```
+
+This is not ceremony. Across the v1 ontology work it caught, on three separate
+pull requests, defects that the tests could not: a wire format that quietly
+became incompatible, an immutable type handing out its own backing array, and a
+package that could not be built from a clean checkout. Twice the finding was in
+a path local testing structurally could not reach, because the machine's state
+was hiding it.
+
+Address each finding or say why not, then resolve the thread. `main` requires
+conversation resolution, so an unread review blocks the merge button rather
+than being merged past.
+
 Data specifics:
 
 - The build **target** is `src/Data.sln`. Note the solution lives under `src/`,
