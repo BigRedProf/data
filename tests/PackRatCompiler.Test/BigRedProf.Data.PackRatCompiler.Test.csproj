@@ -55,7 +55,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PackRatCompiler\BigRedProf.Data.PackRatCompiler.csproj" />
+    <!--
+      These tests open BigRedProf.Data.Core as a real MSBuild project, so they need its .csproj
+      path at runtime. Resolving it by walking up from AppContext.BaseDirectory means counting
+      the bin/<configuration>/<framework> levels, which is a property of the build rather than
+      of the repository; adding a target framework or redirecting output silently breaks it.
+      MSBuild already knows where this project sits, so it resolves the path at build time and
+      hands it over as assembly metadata.
+    -->
+    <AssemblyMetadata Include="CoreProjectPath"
+                      Value="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\src\Core\BigRedProf.Data.Core.csproj'))" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PackRatCompiler\BigRedProf.Data.PackRatCompiler.csproj" />
   </ItemGroup>
 
 </Project>
