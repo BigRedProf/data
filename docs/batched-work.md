@@ -1,8 +1,8 @@
 # Batched work
 
-> **Status.** Agreed 2026-08-23, not yet exercised. Written down before the first batch so the
-> rules exist independently of whoever remembers them. Revise it after the first run rather than
-> defending it.
+> **Status.** Agreed 2026-08-23 and first exercised the same day, on
+> `integration/v0.10-tests-and-traits` (issues #30, #31, #47). The shape held; the corrections the
+> first run produced are folded in below and marked *learned on the first run*.
 
 ## The problem it solves
 
@@ -22,8 +22,10 @@ changes is how many separate occasions the guarding costs.
 
 1. The director names the issues in the batch.
 2. The agent opens an **integration branch** from `main` — the branch that collects the batch.
-   It also opens the integration pull request into `main` immediately, as a **draft**, so the
-   batch is visible while it accumulates rather than arriving fully formed.
+   It also opens the integration pull request into `main` as a **draft**, so the batch is visible
+   while it accumulates rather than arriving fully formed. *Learned on the first run:* this cannot
+   happen until the integration branch carries at least one commit, since GitHub will not open a
+   pull request with no diff. In practice it goes up as soon as the first change lands.
 3. For each issue in the batch:
    1. a feature branch off the *current tip* of the integration branch;
    2. implement, test, `task verify`, push, open a pull request **into the integration branch**;
@@ -61,16 +63,35 @@ and never from a stale local copy. Merge each one promptly. The longer a branch 
 of the batch it has not seen.
 
 **The branch protection rules do not travel.** The ruleset applies to the default branch, so
-pull requests *into* the integration branch have no required build check and no required
-conversation resolution. Codex still reviews them — that part is verified below — but nothing
-enforces reading it. The gate is real only at the last step, where the whole batch faces it at
-once. Between here and there the discipline is the agent's, and stated so plainly that failing
-it is a choice rather than an oversight.
+pull requests *into* the integration branch have no required conversation resolution and nothing
+that enforces reading a review. Codex still reviews them — that part is verified below. The gate
+is real only at the last step, where the whole batch faces it at once. Between here and there the
+discipline is the agent's, and stated so plainly that failing it is a choice rather than an
+oversight.
+
+*Learned on the first run:* the **build check** did not travel either, and that was not a rules
+problem but a workflow one. `.github/workflows/dotnet.yml` triggered on `pull_request` into
+`main` alone, so the first pull request of the batch ran no CI whatsoever — "each feature branch
+is verified" was true only of one laptop. The trigger now includes `integration/**`, so this half
+of the gate does travel. Any repository adopting this workflow needs the same one-line change
+before its first batch, and the way to notice is to look for the check on the first pull request
+rather than to assume it.
+
+**Sync a feature branch from the integration tip before merging it, then verify again.** *Learned
+on the first run,* where it mattered immediately: #30 moved every test project to `tests/`, and
+#47's branch — cut earlier — edited a test file at its old path. Git's rename detection carried
+the edit across correctly, but that is a thing to confirm rather than assume, and the confirmation
+is `task verify` on the merged result.
 
 **A blocked issue does not block the batch.** If an issue turns out to need a decision, it is
 parked: its branch stays open, the specific question goes to the director, and the rest of the
 batch proceeds without it. Whether something is parkable or worth waiting on is the agent's
 call — the point is that one contentious item never holds five others hostage.
+
+**Not every issue produces a pull request.** *Learned on the first run:* #31 was an observation
+rather than a defect, and the work it wanted was evidence. Thirty runs across three environments
+plus one experiment that disproved its hypothesis resolved it with no code change at all. An issue
+answered is an issue done; step 3 above describes the common case, not the only one.
 
 ## Where the agent stops and asks
 
