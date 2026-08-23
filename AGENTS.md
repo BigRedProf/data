@@ -50,17 +50,32 @@ unit tests).
 An automated reviewer (Codex) comments on every pull request, usually within a
 minute or two of it opening. **Read that review before calling a pull request
 ready, and before merging.** It posts inline review comments rather than a
-status check, so nothing blocks on it by default:
+status check, so nothing blocks on it by default.
+
+Ask two things, in this order. Whether it has reviewed at all:
 
 ```bash
-gh api repos/BigRedProf/data/pulls/<number>/comments --jq '.[] | "\(.path):\(.line)
+gh api repos/BigRedProf/data/pulls/<number>/reviews   --jq '.[] | select(.user.login | test("codex")) | "\(.state)
 \(.body)"'
 ```
 
-This is not ceremony. Across the v1 ontology work it caught, on three separate
-pull requests, defects that the tests could not: a wire format that quietly
-became incompatible, an immutable type handing out its own backing array, and a
-package that could not be built from a clean checkout. Twice the finding was in
+and then what it found:
+
+```bash
+gh api repos/BigRedProf/data/pulls/<number>/comments   --jq '.[] | "\(.path):\(.line)
+\(.body)"'
+```
+
+Both, and in that order, because **an empty findings list means nothing on its
+own**: it reads identically whether the review was clean or has not arrived
+yet. Only a submitted review tells the two apart. Treating silence as approval
+is the exact mistake this section exists to prevent.
+
+This is not ceremony. Across the v1 ontology work it caught, on four separate
+pull requests, defects the tests could not: a wire format that quietly became
+incompatible, an immutable type handing out its own backing array, a package
+that could not be built from a clean checkout, and a release script that would
+publish a version different from the tag it confirmed. Twice the finding was in
 a path local testing structurally could not reach, because the machine's state
 was hiding it.
 
