@@ -50,11 +50,19 @@ try
 		$version = $version.Substring(1)
 	}
 
-	# major.minor.patch, optionally a prerelease of dot-separated alphanumerics.
-	$semVer = '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z]+(\.[0-9A-Za-z]+)*)?$'
+	# Canonical SemVer, because anything else means the tag and the published package can
+	# disagree -- permanently. NuGet normalizes 01.2.3 to 1.2.3, so that tag would publish a
+	# version nobody confirmed; and it rejects a numeric prerelease with a leading zero like
+	# 1.2.3-01 outright, so that tag would push a release the workflow cannot complete.
+	#
+	# Hence: no leading zeroes in the core numbers, and none in a numeric prerelease
+	# identifier either. Alphanumeric identifiers such as rc.5 or alpha01 are unaffected.
+	$core = '(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)'
+	$preReleaseIdentifier = '(0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)'
+	$semVer = "^$core(-$preReleaseIdentifier(\.$preReleaseIdentifier)*)?$"
 	if ($version -notmatch $semVer)
 	{
-		throw "'$Version' is not a version. Expected major.minor.patch, optionally -prerelease: 0.9.0, 0.9.0-rc.5."
+		throw "'$Version' is not a canonical version. Expected major.minor.patch with no leading zeroes, optionally a prerelease: 0.9.0, 0.9.0-rc.5."
 	}
 
 	$tag = "v$version"
@@ -133,6 +141,24 @@ try
 	}
 
 	# ---- do it --------------------------------------------------------------------------
+	# The check above happened before verify ran and before a human answered a prompt, either
+	# of which can take long enough for main to move. Tagging the commit that was reviewed is
+	# the whole point, and publishing is irreversible, so ask again with the window now
+	# measured in milliseconds rather than minutes.
+	Write-Step "Rechecking that main has not moved"
+	Invoke-Checked -Command 'git' -Arguments @('fetch', '--quiet', '--tags', 'origin')
+
+	$remoteHeadNow = (git rev-parse origin/main).Trim()
+	if ($remoteHeadNow -ne $localHead)
+	{
+		throw "origin/main moved to $($remoteHeadNow.Substring(0, 7)) while this was running. Nothing was tagged; pull and start again so the tag names what you reviewed."
+	}
+
+	if (@(git tag --list $tag).Count -gt 0 -or @(git ls-remote --tags origin "refs/tags/$tag").Count -gt 0)
+	{
+		throw "Tag $tag appeared while this was running. Nothing was tagged."
+	}
+
 	Write-Step "Tagging and pushing"
 	Invoke-Checked -Command 'git' -Arguments @('tag', '-a', $tag, '-m', "$version")
 	try
