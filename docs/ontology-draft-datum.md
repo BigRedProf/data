@@ -41,11 +41,21 @@ they are.
 
 ### 2. The code
 
-A **code** is a sequence of one or more bits.
+A **code** is a sequence of bits.
 
 `01000001` is a code. So is `1`. So is a mile of Morse tape. A code has a length and an order,
 and that exhausts what a code is. In particular, **a code does not mean anything**. Anyone who
 tells you `01000001` is the letter *A* has smuggled in an agreement you have not made yet.
+
+The sequence may be **empty**, and that is worth saying out loud because it is easy to rule out
+by accident. The empty code is the code that says nothing. It has a length, zero, and no order to
+speak of, and it is as much a code as any other — in the way that an empty shelf is still a shelf.
+
+What makes it worth allowing is not tidiness. Some subjects have nothing to record. An event that
+means *this happened*, and nothing further, is answered completely by naming which event it was;
+there is nothing left for bits to carry. Forbid the empty code and such an event cannot be written
+down at all without inventing a bit that means nothing, which is a worse outcome than admitting
+that sometimes there is nothing to say.
 
 ### 3. The schema
 
@@ -321,7 +331,7 @@ including the kinds of things we have been building with.
 | term | definition |
 |---|---|
 | **bit** | one of two discrete states |
-| **code** | a sequence of one or more bits |
+| **code** | a sequence of bits, possibly empty |
 | **schema** | a correspondence between codes and what they stand for |
 | **structured schema** | a schema that reads its code as an ordered sequence of parts, naming a schema for each position |
 | **part** | one position in a structured schema's sequence; identified by position alone |

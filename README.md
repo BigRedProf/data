@@ -52,7 +52,7 @@ The full account, and the reasoning behind these names, is in
 
 **bit** - precisely one of two discrete states; uses the symbols **0** and **1**
 
-**code** - a sequence of one or more bits (think cryptographic messages, NOT computer instructions); a code by itself does not mean anything
+**code** - a sequence of bits (think cryptographic messages, NOT computer instructions); a code by itself does not mean anything. The sequence may be empty: an event meaning "this happened" and nothing further is answered by naming which event it was, leaving nothing for bits to carry
 
 **schema** - the agreement that gives a code meaning: a correspondence between codes and the things those codes stand for
 

@@ -121,6 +121,48 @@ namespace BigRedProf.Data.Core.Test
 		}
 		#endregion
 
+		#region empty code tests
+		[Fact]
+		[Trait("Region", "methods")]
+		public void ADatumMayHaveAnEmptyCode()
+		{
+			// A schema with no parts: the event means "this happened" and the schema identifier
+			// carries the whole message. Digihouse signals GestureInitiated exactly this way.
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterCorePackRats();
+		
+			Datum datum = new Datum(CoreSchema.TextUtf8, new Code(0));
+			Code code = piedPiper.PackModel<Datum>(datum, CoreSchema.Datum);
+			Datum roundTripped = piedPiper.UnpackModel<Datum>(code, CoreSchema.Datum);
+		
+			Assert.Equal(datum, roundTripped);
+			Assert.Equal(0, roundTripped.Code.Length);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void AnEmptyDatumShouldNotSwallowWhatFollowsIt()
+		{
+			// The framing has to survive a payload of nothing, or one such event would eat the
+			// next thing in the stream.
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterCorePackRats();
+		
+			Datum nothingToSay = new Datum(CoreSchema.TextUtf8, new Code(0));
+			Datum somethingToSay = piedPiper.PackDatum<string>("Lincoln", CoreSchema.TextUtf8);
+		
+			Code stream =
+				piedPiper.PackModel<Datum>(nothingToSay, CoreSchema.Datum)
+				+ piedPiper.PackModel<Datum>(somethingToSay, CoreSchema.Datum);
+		
+			using (CodeReader reader = new CodeReader(new System.IO.MemoryStream(stream.ToByteArray())))
+			{
+				Assert.Equal(nothingToSay, piedPiper.UnpackModel<Datum>(reader, CoreSchema.Datum));
+				Assert.Equal("Lincoln", piedPiper.UnpackModel<Datum>(reader, CoreSchema.Datum).Unpack<string>(piedPiper));
+			}
+		}
+		#endregion
+
 		#region equality tests
 		[Fact]
 		[Trait("Region", "object methods")]

@@ -24,8 +24,8 @@ namespace BigRedProf.Data.Core
 		/// <param name="length">The length of the code, in bits.</param>
 		public CodeBuilder(int length)
 		{
-			if (length <= 0)
-				throw new ArgumentOutOfRangeException(nameof(length), "A code must be at least 1 bit long.");
+			if (length < 0)
+				throw new ArgumentOutOfRangeException(nameof(length), "A code cannot have a negative length.");
 
 			if (length > Code.MaxLength)
 				throw new ArgumentOutOfRangeException(nameof(length), "A code cannot exceed 1 gigabit in length.");
