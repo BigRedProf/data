@@ -234,6 +234,62 @@ namespace BigRedProf.Data.Test
 		}
 		#endregion
 
+		#region empty code edge tests
+		[Fact]
+		[Trait("Region", "constructors")]
+		public void ThePartialByteConstructorShouldAcceptAnEmptyCode()
+		{
+			// There is no last byte to set, so lastByte has nothing to be. Reaching for one
+			// indexed off the end of an empty array.
+			Code empty = new Code(new byte[0], 0, 0);
+		
+			Assert.Equal(0, empty.Length);
+			Assert.Equal(new Code(0), empty);
+		
+			// KCode forwards to that same constructor.
+			Assert.Equal(0, new KCode(new byte[0], 0, 0).Length);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void SetRangeShouldAcceptAnEmptyCodeAtTheEnd()
+		{
+			// Writing nothing at the end is a no-op rather than an error, matching the slicing
+			// rule where offset == Length is a legal point. Generic range-copying code should not
+			// have to special-case the empty case.
+			CodeBuilder builder = new CodeBuilder(4);
+			builder.SetRange(4, new Code(0));
+		
+			Assert.Equal<Code>("0000", builder.Build());
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void AnEmptyBuilderShouldAcceptAnEmptyRange()
+		{
+			// Offset 0 is the only place an empty builder has, and it was rejecting it.
+			CodeBuilder builder = new CodeBuilder(0);
+			builder.SetRange(0, new Code(0));
+		
+			Assert.Equal(new Code(0), builder.Build());
+			Assert.Throws<ArgumentOutOfRangeException>(() => builder.SetRange(0, new Code("1")));
+			Assert.Throws<ArgumentOutOfRangeException>(() => builder.SetRange(1, new Code(0)));
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void AnEmptyCodeShouldSurviveThePackRatRoundTrip()
+		{
+			// The public way to move a code around, and the one a tape or a byte array uses.
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterCorePackRats();
+		
+			byte[] bytes = piedPiper.SaveCodeToByteArray(new Code(0));
+		
+			Assert.Equal(new Code(0), piedPiper.LoadCodeFromByteArray(bytes));
+		}
+		#endregion
+
 		#region reading tests
 		[Fact]
 		[Trait("Region", "methods")]
