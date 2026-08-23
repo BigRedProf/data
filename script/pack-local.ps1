@@ -74,6 +74,17 @@ try
 	# ---- pack -----------------------------------------------------------------------------
 	# Release, because that is what a consumer of a published package would get. A Debug
 	# package can differ in ways that only show up once it is too late to matter.
+	# The explicit Release build is REQUIRED, not redundant, exactly as it is for `task pack`.
+	# PackRatCompiler is a PackAsTool project with GeneratePackageOnBuild, which makes pack skip
+	# its implicit build while the tool's publish step still expects the Release outputs to be
+	# there. Without this, a clean checkout fails with MSB3030 rather than packing.
+	Write-Step "Building Release before packing"
+	Invoke-Checked -Command 'dotnet' -Arguments @(
+		'build', 'src/Data.sln',
+		'-c', 'Release',
+		'--nologo'
+	)
+
 	Write-Step "Packing $Version into $Feed"
 	Invoke-Checked -Command 'dotnet' -Arguments @(
 		'pack', 'src/Data.sln',
@@ -84,10 +95,15 @@ try
 	)
 
 	# ---- keep the feed from growing forever ------------------------------------------------
-	# Only local packages are pruned; anything else in the folder is left alone.
+	# Symbol packages are produced alongside every package (SymbolPackageFormat=snupkg in
+	# Directory.Build.props), so pruning only .nupkg would cap half the feed and let the other
+	# half grow without limit. Both are matched, and grouped per package id AND extension so
+	# keeping five means five of each rather than five of whichever sorted first.
+	#
+	# Only local packages are touched; anything else in the folder is left alone.
 	$keep = 5
-	$groups = Get-ChildItem -Path $Feed -Filter '*-local.*.nupkg' |
-		Group-Object { ($_.Name -split '\.[0-9]+\.[0-9]+\.[0-9]+-local\.')[0] }
+	$groups = Get-ChildItem -Path $Feed -Include '*-local.*.nupkg', '*-local.*.snupkg' -File -Recurse -Depth 0 |
+		Group-Object { ($_.Name -split '\.[0-9]+\.[0-9]+\.[0-9]+-local\.')[0] + $_.Extension }
 	foreach ($group in $groups)
 	{
 		$stale = $group.Group | Sort-Object LastWriteTime -Descending | Select-Object -Skip $keep
