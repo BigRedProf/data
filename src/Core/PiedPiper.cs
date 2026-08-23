@@ -525,7 +525,14 @@ namespace BigRedProf.Data.Core
 		/// <inheritdoc/>
 		public Datum PackDatum<M>(M model, AttributeFriendlyGuid schemaId)
 		{
-			return new Datum(schemaId, PackModel<M>(model, schemaId));
+			if (model == null)
+				throw new ArgumentNullException(nameof(model));
+
+			// Weakly typed on purpose, mirroring Datum.Unpack. The model type is the caller's
+			// convenience rather than the datum's business, and callers holding a model as
+			// object -- which is the ordinary case when packing whatever arrived -- would
+			// otherwise need a PackRat<object> that cannot exist.
+			return new Datum(schemaId, PackModel((object) model, schemaId));
 		}
 
 		/// <inheritdoc/>
