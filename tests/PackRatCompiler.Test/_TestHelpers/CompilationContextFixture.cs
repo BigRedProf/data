@@ -1,5 +1,6 @@
 using BigRedProf.Data.PackRatCompiler;
 using Microsoft.Build.Locator;
+using System.Reflection;
 
 namespace BigRedProf.Data.Test._TestHelpers
 {
@@ -17,6 +18,10 @@ namespace BigRedProf.Data.Test._TestHelpers
 	/// </remarks>
 	public sealed class CompilationContextFixture : IDisposable
 	{
+		#region constants
+		private const string CoreProjectPathKey = "CoreProjectPath";
+		#endregion
+
 		#region class constructors
 		static CompilationContextFixture()
 		{
@@ -51,12 +56,31 @@ namespace BigRedProf.Data.Test._TestHelpers
 
 			_compilationContext = new CompilationContext(_stdoutStreamWriter, _stdoutStreamWriter);
 
-			// Resolved from the test assembly rather than the working directory: the MSBuild
-			// workspace builds out of process, so the working directory is not ours to assume.
-			string projectPath = Path.GetFullPath(
-				Path.Combine(AppContext.BaseDirectory, @"../../../../Core/BigRedProf.Data.Core.csproj")
-			);
-			_compilationContext.AddProject(new FileInfo(projectPath));
+			// Supplied by the build rather than computed from the working directory: the MSBuild
+			// workspace builds out of process, so the working directory is not ours to assume,
+			// and walking up from the output directory only works for one particular output
+			// layout. See the AssemblyMetadata item in this project's .csproj.
+			_compilationContext.AddProject(new FileInfo(GetCoreProjectPath()));
+		}
+		#endregion
+
+		#region methods
+		private static string GetCoreProjectPath()
+		{
+			AssemblyMetadataAttribute? metadata = typeof(CompilationContextFixture).Assembly
+				.GetCustomAttributes<AssemblyMetadataAttribute>()
+				.SingleOrDefault(a => a.Key == CoreProjectPathKey);
+
+			if (metadata == null)
+			{
+				throw new InvalidOperationException(
+					$"The test assembly carries no '{CoreProjectPathKey}' metadata. It is supplied " +
+					"by an AssemblyMetadata item in BigRedProf.Data.PackRatCompiler.Test.csproj, " +
+					"which these tests cannot run without."
+				);
+			}
+
+			return metadata.Value!;
 		}
 		#endregion
 

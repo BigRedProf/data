@@ -5,15 +5,15 @@ VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BigRedProf.Data.Core", "Core\BigRedProf.Data.Core.csproj", "{1BD0B7C0-3075-4ACF-8D25-A0D34F52A619}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BigRedProf.Data.Core.Test", "Core.Test\BigRedProf.Data.Core.Test.csproj", "{E2EEDE9D-D6E8-4EB2-9558-81176087C355}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BigRedProf.Data.Core.Test", "..\tests\Core.Test\BigRedProf.Data.Core.Test.csproj", "{E2EEDE9D-D6E8-4EB2-9558-81176087C355}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BigRedProf.Data.PackRatCompiler", "PackRatCompiler\BigRedProf.Data.PackRatCompiler.csproj", "{2FADFE18-FEB5-4456-B706-EF6E1E9CE600}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BigRedProf.Data.PackRatCompiler.Test", "PackRatCompiler.Test\BigRedProf.Data.PackRatCompiler.Test.csproj", "{22BCF77A-E452-42DB-B5C3-A64568B81451}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BigRedProf.Data.PackRatCompiler.Test", "..\tests\PackRatCompiler.Test\BigRedProf.Data.PackRatCompiler.Test.csproj", "{22BCF77A-E452-42DB-B5C3-A64568B81451}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BigRedProf.Data.Tape", "Tape\BigRedProf.Data.Tape.csproj", "{028D8547-F268-4CE3-BE2A-A3CBC65CCBC3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BigRedProf.Data.Tape.Test", "Tape.Test\BigRedProf.Data.Tape.Test.csproj", "{B0DE2C53-0453-4558-BDE2-0CB22B69703C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BigRedProf.Data.Tape.Test", "..\tests\Tape.Test\BigRedProf.Data.Tape.Test.csproj", "{B0DE2C53-0453-4558-BDE2-0CB22B69703C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BigRedProf.Data.Tape.Cli", "Tape.Cli\BigRedProf.Data.Tape.Cli.csproj", "{EE6E93BB-CACE-46FF-B9C2-E7C56185DE10}"
 EndProject
