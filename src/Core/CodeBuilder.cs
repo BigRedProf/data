@@ -96,7 +96,7 @@ namespace BigRedProf.Data.Core
 			if (code == null)
 				throw new ArgumentNullException(nameof(code));
 
-			if (offset < 0 || offset >= _length)
+			if (offset < 0 || offset > _length)
 				throw new ArgumentOutOfRangeException(nameof(offset));
 
 			if (offset + code.Length > _length)

@@ -119,6 +119,10 @@ namespace BigRedProf.Data.Core
 		public Code(byte[] byteArray, int length, byte lastByte)
 			: this(byteArray, length)
 		{
+			// The empty code has no last byte, so there is nothing for lastByte to be.
+			if (_byteArray.Length == 0)
+				return;
+
 			_byteArray[_byteArray.Length - 1] = lastByte;
 			ZeroUnusedBitsInLastByte();
 		}
