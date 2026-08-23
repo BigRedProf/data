@@ -62,21 +62,30 @@ namespace BigRedProf.Data.Test
 		}
 
 		[Fact]
-		public void ZeroLengthCodesShouldThrow()
+		public void NegativeLengthCodesShouldThrow()
 		{
+			// Zero is allowed -- see AnEmptyCodeShouldBeAllowed. Negative is not a length.
 			Assert.Throws<ArgumentOutOfRangeException>(
 				() =>
 				{
-					new Code();
+					new Code(-1);
 				}
 			);
 
-			Assert.Throws<ArgumentException>(
+			Assert.Throws<ArgumentOutOfRangeException>(
 				() =>
 				{
-					new Code(" ");
+					new CodeBuilder(-1);
 				}
 			);
+		}
+
+		[Fact]
+		public void WhitespaceOnlyStringShouldBeTheEmptyCode()
+		{
+			// Whitespace is skipped when reading a code out of a string, so a string of it
+			// carries no bits at all.
+			Assert.Equal(new Code(0), new Code(" "));
 		}
 
 		[Fact]
@@ -175,6 +184,54 @@ namespace BigRedProf.Data.Test
 			Assert.Equal("1", code[0, 1]);
 		}
 
+		#endregion
+
+		#region empty code tests
+		[Fact]
+		[Trait("Region", "constructors")]
+		public void AnEmptyCodeShouldBeAllowed()
+		{
+			// The code that says nothing. A schema with no parts produces one, and an event
+			// meaning "this happened" is answered completely by naming which event it was.
+			Assert.Equal(0, new Code(0).Length);
+			Assert.Equal(0, new Code(new Bit[0]).Length);
+			Assert.Equal(0, ((Code) "").Length);
+			Assert.Equal(0, new CodeBuilder(0).Build().Length);
+		}
+
+		[Fact]
+		[Trait("Region", "object methods")]
+		public void EmptyCodesShouldBeEqualAndPrintAsNothing()
+		{
+			Assert.Equal(new Code(0), new Code(new Bit[0]));
+			Assert.Equal(new Code(0).GetHashCode(), new Code(new Bit[0]).GetHashCode());
+			Assert.Equal(string.Empty, new Code(0).ToString());
+			Assert.NotEqual(new Code(0), new Code("0"));
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void AnEmptyCodeShouldHaveNoBytesAndNoBits()
+		{
+			Code empty = new Code(0);
+		
+			Assert.Equal(0, empty.ByteLength);
+			Assert.Empty(empty.ToByteArray());
+			Assert.Equal(0, empty.AsSpan().Length);
+			Assert.Throws<ArgumentOutOfRangeException>(() => empty[0]);
+		}
+
+		[Fact]
+		[Trait("Region", "indexers")]
+		public void AZeroLengthSliceShouldBeTheEmptyCode()
+		{
+			Code code = new Code("1011");
+		
+			Assert.Equal(new Code(0), code[0, 0]);
+			Assert.Equal(new Code(0), code[4, 0]);
+			Assert.Throws<ArgumentOutOfRangeException>(() => code[5, 0]);
+			Assert.Throws<ArgumentOutOfRangeException>(() => code[0, -1]);
+		}
 		#endregion
 
 		#region reading tests

@@ -28,12 +28,17 @@ namespace BigRedProf.Data.Core
 		/// <summary>
 		/// Creates a new zeroed-out <see cref="Code"/> of the specified length.
 		/// </summary>
+		/// <remarks>
+		/// A length of zero is allowed. The empty code is the code that says nothing, and it is
+		/// what a schema with no parts produces: an event meaning "this happened", where the
+		/// schema carries the whole message and there is nothing left for bits to add.
+		/// </remarks>
 		/// <param name="length">The length of code, in bits.</param>
 		/// <exception cref="ArgumentOutOfRangeException"></exception>
 		public Code(int length)
 		{
-			if(length <= 0)
-				throw new ArgumentOutOfRangeException(nameof(length), "A code must be at least 1 bit long.");
+			if(length < 0)
+				throw new ArgumentOutOfRangeException(nameof(length), "A code cannot have a negative length.");
 
 			if(length > MaxLength)
 				throw new ArgumentOutOfRangeException(nameof(length), "A code cannot exceed 1 gigabit in length.");
@@ -174,11 +179,14 @@ namespace BigRedProf.Data.Core
 		{
 			get
 			{
-				if (offset < 0 || offset >= Length)
+				if (offset < 0 || offset > Length)
 					throw new ArgumentOutOfRangeException(nameof(offset));
 
-				if (length == 0 || offset + length > Length)
+				if (length < 0 || offset + length > Length)
 					throw new ArgumentOutOfRangeException(nameof(length));
+
+				if (length == 0)
+					return new Code(0);
 
 				CodeBuilder builder = new CodeBuilder(length);
 
@@ -316,6 +324,9 @@ namespace BigRedProf.Data.Core
 		/// </summary>
 		private void ZeroUnusedBitsInLastByte()
 		{
+			if (_byteArray.Length == 0)
+				return;
+
 			int usedBitsInLastByte = _length % 8;
 			if (usedBitsInLastByte != 0)
 				_byteArray[_byteArray.Length - 1] &= (byte)((1 << usedBitsInLastByte) - 1);
@@ -465,9 +476,6 @@ namespace BigRedProf.Data.Core
 				else
 					throw new ArgumentException($"Illegal character '{c}' in code.", nameof(bits));
 			}
-
-			if (bitList.Count == 0)
-				throw new ArgumentException("A code must contain at least one bit.", nameof(bits));
 
 			return bitList.ToArray();
 		}

@@ -190,6 +190,31 @@ namespace BigRedProf.Data.Test
 		}
 		#endregion
 
+		#region empty code tests
+		[Fact]
+		[Trait("Region", "methods")]
+		public void ATraitMayBeAnsweredByTheEmptyCode()
+		{
+			// Same case one level down: a trait whose answer has nothing to say. The trait
+			// identifier is the whole message.
+			IPiedPiper piedPiper = CreatePiedPiper();
+		
+			FlexDatum flexDatum = new FlexDatumBuilder(piedPiper)
+				.AddTraitValue(new TraitValue(Trait1, new Code(0)))
+				.AddTrait(Trait2, 43)
+				.Build();
+		
+			Code code = piedPiper.PackModel<FlexDatum>(flexDatum, CoreSchema.FlexDatum);
+			FlexDatum roundTripped = piedPiper.UnpackModel<FlexDatum>(code, CoreSchema.FlexDatum);
+		
+			Assert.Equal(flexDatum, roundTripped);
+			Assert.True(roundTripped.TryGetTraitCode(Trait1, out Code empty));
+			Assert.Equal(0, empty.Length);
+			// The trait after it still reads, so the framing survived a payload of nothing.
+			Assert.Equal(43, roundTripped.GetTrait<int>(Trait2, piedPiper));
+		}
+		#endregion
+
 		#region canonical order tests
 		[Fact]
 		[Trait("Region", "canonical order")]

@@ -59,8 +59,12 @@ namespace BigRedProf.Data.Core
 			if (_isDisposed)
 				throw new ObjectDisposedException(nameof(CodeWriter));
 
-			if(bitCount < 1)
-				throw new ArgumentOutOfRangeException(nameof(bitCount), "The parameter must be at least 1.");
+			if(bitCount < 0)
+				throw new ArgumentOutOfRangeException(nameof(bitCount), "The parameter cannot be negative.");
+
+			// Reading nothing yields the empty code, and consumes nothing.
+			if (bitCount == 0)
+				return new Code(0);
 
 			Code code;
 			if (_offsetIntoCurrentByte == 0)

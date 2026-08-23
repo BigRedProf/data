@@ -79,10 +79,14 @@ namespace BigRedProf.Data.Test
 			Stream stream = new MemoryStream(bytes);
 			CodeReader codeReader = new CodeReader(stream);
 
+			// Reading nothing is legitimate and yields the empty code, consuming nothing.
+			Assert.Equal(new Code(0), codeReader.Read(0));
+			Assert.Equal<Code>("1", codeReader.Read(1));
+
 			Assert.Throws<ArgumentOutOfRangeException>(
 				() =>
 				{
-					codeReader.Read(0);
+					codeReader.Read(-1);
 				}
 			);
 
