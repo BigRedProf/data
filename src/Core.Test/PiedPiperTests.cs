@@ -533,6 +533,62 @@ namespace BigRedProf.Data.Test
 		}
 		#endregion
 
+		#region core trait tests
+		[Fact]
+		[Trait("Region", "methods")]
+		public void DefineCoreTraits_ShouldDefineKindAsAGuid()
+		{
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.DefineCoreTraits();
+
+			BigRedProf.Data.Core.Trait kind = piedPiper.GetTrait(CoreTrait.Kind);
+
+			Assert.Equal(new Guid(CoreSchema.Guid), kind.SchemaId);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void Kind_ShouldBeAnOrdinaryTrait()
+		{
+			// Kind carries no machinery: it is written, read, and absent exactly like any other
+			// answer. If this test ever needs special handling, something has made kind
+			// structural, which is the one thing it must never become.
+			IPiedPiper piedPiper = new PiedPiper();
+			piedPiper.RegisterCorePackRats();
+			piedPiper.DefineCoreTraits();
+			Guid chair = new Guid("2a1e0f52-6d9c-4a3b-9a0e-1c4f6b7d8e90");
+
+			FlexDatum withKind = new FlexDatumBuilder(piedPiper)
+				.AddTrait(CoreTrait.Kind, chair)
+				.Build();
+			FlexDatum withoutKind = new FlexDatumBuilder(piedPiper).Build();
+
+			Assert.Equal(chair, withKind.GetTrait<Guid>(CoreTrait.Kind, piedPiper));
+			Assert.False(withoutKind.TryGetTrait<Guid>(CoreTrait.Kind, piedPiper, out _));
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void CoreTraitIdentifiers_ShouldNeverChange()
+		{
+			// A trait identifier is bound to its schema forever, so a core identifier is not a
+			// value anyone may edit: changing one silently reinterprets every record ever
+			// written. Pinning the literals makes an accidental edit a failing test rather than
+			// a discovery made years later. To ask a different question, mint a new identifier.
+			Assert.Equal("7759e69c-15cd-44ee-a02e-3f29759fbe35", CoreTrait.Id);
+			Assert.Equal("0bc66d67-3976-436d-90a3-c4faa811ab34", CoreTrait.Name);
+			Assert.Equal("80f6f851-2f07-48de-9950-b21d8e1ef734", CoreTrait.Kind);
+			Assert.Equal("ce22d178-02ec-470c-b8de-60c71961dec2", CoreTrait.Content);
+			Assert.Equal("93a2dbed-065e-4f64-8ab0-8448a82a30ea", CoreTrait.ContentDigest);
+			Assert.Equal("6f182156-5ac4-4670-a1da-0d5339f64509", CoreTrait.ContentLength);
+			Assert.Equal("9080538a-aafc-4ab9-a90f-e1c0d2d3f814", CoreTrait.SeriesId);
+			Assert.Equal("cbeabd91-8580-45ed-97d4-c797c36d0611", CoreTrait.SeriesName);
+			Assert.Equal("9866367b-f1ae-4699-b123-32691149488b", CoreTrait.SeriesNumber);
+			Assert.Equal("8c110105-4569-4a7c-a0e9-9e417ac252d2", CoreTrait.SeriesHeadDigest);
+			Assert.Equal("35c4fbf0-d0e9-4e5c-822e-22bd4a64eb30", CoreTrait.SeriesParentDigest);
+		}
+		#endregion
+
 		#region private methods
 		private void TestModelEncodeAndDecode<M>(IPiedPiper piedPiper, M model, string schemaId)
 		{

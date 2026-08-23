@@ -768,11 +768,28 @@ Also landed: immutable `Code` with a `CodeBuilder` (#49).
 
 **Still open**, and deliberately so. Tokenized trait identifiers (#44) wait on `tokenizer-v2.md`.
 The consumers' directory rename (#45) is decided — `Data` — but lands in the `digihouse`,
-`stories`, and `content` repositories rather than this one. A shared `CoreTrait.Kind` (#47) is
-deferred on the strength of the trait rules themselves: an identifier is minted once and bound to
-its schema forever, so minting a core one with no consumer spends a permanent identifier on a
-guess, and guessing the answer's schema wrong would cost a second identifier plus a retired
-first.
+`stories`, and `content` repositories rather than this one.
+
+`CoreTrait.Kind` (#47) **was** deferred here, on the strength of the trait rules themselves: an
+identifier is minted once and bound to its schema forever, so minting a core one with no consumer
+spends a permanent identifier on a guess. That deferral has since been reversed, because the two
+things it feared being guesses turned out to be derivable.
+
+*What schema does the answer take?* A kind must be nameable by two parties who have never met, by
+anyone, without a central registry — which is the same requirement that already made trait
+identifiers and schema identifiers `Guid`s. It is not a name, because the library exists to keep
+human-readable labels off every copy; and it is not a schema identifier, because "which agreement
+reads this code" and "what is this a record of" are different facts, and conflating them would
+smuggle back the structural type a flex datum exists to escape.
+
+*One kind or several?* One. The multiplicity rule settles it: a subject has at most one answer per
+question, and "what categories does this belong to" is a **different question** rather than a
+second answer to this one. A consumer needing several classifications mints a trait for that
+question; it does not overload this one.
+
+What remains true is that nothing consumes it yet. But that cost falls the other way: without a
+shared identifier each downstream repository invents its own, and the interoperability the item
+exists for is gone before it is available. An unused trait identifier costs nothing at rest.
 
 ### Defects — fix regardless of the naming outcome
 
@@ -880,8 +897,9 @@ identifier and checked at compile time — would catch it, and is worth consider
 `GeneratePackRatAttribute`/`PackFieldAttribute`, and the append-under-framing rule is stated with
 its precondition rather than as general advice.
 
-**12. Consider a shared `CoreTrait.Kind`.**
-Convention only, beside `Id` and `Name`. Never structural, never required.
+**12. Consider a shared `CoreTrait.Kind`.** *Done.*
+Convention only, beside `Id` and `Name`. Never structural, never required. The answer is a single
+`Guid`; see the reversal recorded above for why each half of that is derived rather than chosen.
 
 **13. Document the index/payload split as a guarantee**, and fix `GetTrait` to throw
 `KeyNotFoundException`.
