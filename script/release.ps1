@@ -159,8 +159,11 @@ try
 		throw "Tag $tag appeared while this was running. Nothing was tagged."
 	}
 
+	# Tag the commit that passed the checks, by name, rather than whatever HEAD happens to be
+	# now. A checkout or a pull in another window during verify or the prompt would otherwise
+	# move HEAD out from under this, and the packages are immutable once published.
 	Write-Step "Tagging and pushing"
-	Invoke-Checked -Command 'git' -Arguments @('tag', '-a', $tag, '-m', "$version")
+	Invoke-Checked -Command 'git' -Arguments @('tag', '-a', $tag, $localHead, '-m', "$version")
 	try
 	{
 		Invoke-Checked -Command 'git' -Arguments @('push', 'origin', $tag)
