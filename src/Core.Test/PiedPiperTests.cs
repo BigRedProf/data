@@ -531,9 +531,6 @@ namespace BigRedProf.Data.Test
 				}
 			);
 		}
-		#endregion
-
-		#region core trait tests
 		[Fact]
 		[Trait("Region", "methods")]
 		public void DefineCoreTraits_ShouldDefineKindAsAGuid()
