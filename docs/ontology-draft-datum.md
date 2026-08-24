@@ -3,8 +3,9 @@
 > One of two parallel drafts written for [issue #33](https://github.com/BigRedProf/data/issues/33).
 > Draft A and Draft B say the same things about the same world in two different vocabularies.
 > Draft B is preserved as written; this draft has since been developed further.
-> **Status.** The ontology was accepted and most of Part 4 has landed on `feature/v1-ontology`;
-> see Part 4 for what shipped and what is still open. Parts 1 and 2 stand as written. Part 3's
+> **Status.** The ontology was accepted and Part 4 has landed, in this repository and in the three
+> that consume it; see Part 4 for what shipped, what was closed without doing, and the one item
+> that is a decision rather than work. Parts 1 and 2 stand as written. Part 3's
 > *Where the implementation diverges from the lecture* is kept in the present tense as the record
 > of what the abstract account found — several of the files and line numbers it cites no longer
 > exist, which is the point.
@@ -489,7 +490,7 @@ The second is what the thing actually is.
 | `EncodeModel` / `DecodeModel` | **deleted** | overloads of `PackModel` / `UnpackModel` |
 | `PackRat<M>`, `PackModel`, `UnpackModel` | unchanged | they act on runtime models |
 | `IPiedPiper`, pack rat, pied piper | unchanged | no ontological content |
-| digihouse `Models/`, `*.Models` assemblies | **under review** | see *What consumers call their data*, below |
+| consumers' `Models/` directories and `*.Models` assemblies | renamed to `Data` | see *Why `Data`*, below |
 
 Migration cost worth naming up front: `FlexDatum` touches `Tape` (`TapeHeader`, `TapeLabel`,
 `TapeHelper`) and the sibling `content`, `stories`, and `digihouse` repositories, which consume
@@ -688,8 +689,10 @@ the name hostage.
 These are two separate claims, and the first is far stronger than the second. That `Models/` names
 the wrong half is, I think, settled. What to call it instead is not.
 
-**The candidates are not data.** This is the trap worth naming explicitly, because it is the
-mirror image of the mistake this whole document is about:
+**The candidates are not data.** This was offered as the trap worth naming explicitly, on the
+grounds that it is the mirror image of the mistake this whole document is about. **The objection
+did not survive** — see *Why `Data`* below — but the shape of it is worth keeping, because it is
+the kind of argument that sounds like rigor:
 
 ```text
 runtime-first:            "a C# class representing something"  →  Models/
@@ -731,13 +734,41 @@ BigRedProf.Digihouse
     Rendering/
 ```
 
-**Decided: `Data`.** The deciding argument is one none of the three descriptions above captures.
-`Data` is the *library's own name*, so it makes the choice a convention rather than a one-off:
-every application and library in the stack grows its own `*.Data`, and
-`BigRedProf.Digihouse.Data` sits under `BigRedProf.Data` the way it reads. `Vocabulary` describes
-the contents slightly better and `Schemas` describes the bulk of them more precisely, but neither
-scales into a pattern the whole stack can follow, and a name that repeats itself across every
-repository teaches the habit far more effectively than a name that is merely accurate once.
+### Why `Data`
+
+**Decided: `Data`.** The answer has not changed since this section was first written; the reason
+has, and the reason is the part someone will read in a year.
+
+*The argument that was recorded here, and does not hold.* `Data` was chosen because it is the
+library's own name, so every repository grows its own `*.Data` and the repetition teaches the
+habit — where `Vocabulary` and `Schemas` were said not to "scale into a pattern the whole stack
+can follow." **That argument is symmetric and therefore decides nothing.**
+`BigRedProf.Digihouse.Vocabulary`, `BigRedProf.Stories.Vocabulary`, and
+`BigRedProf.Content.Vocabulary` repeat exactly as well and teach exactly as effectively. A tie
+cannot be broken by a property both candidates have.
+
+*The objection to `Data` that also does not hold.* The paragraph above says the contents are
+agreements *about* data rather than data, since by §4 no datum exists until something is packed.
+The trouble is that it proves far too much: a `Models/` directory does not contain models either,
+only declarations from which model instances can be made, and by the same standard every source
+tree ever written is misnamed. Source directories name **the category of thing their declarations
+describe**, not the physical contents of the files. `GoodMinted.cs` defines a durable kind of
+data; `DigihouseTrait.cs` defines identifiers carried by data; `AgentMagic.cs` defines token
+meanings used in data. Collectively: this component's data definitions.
+
+*The argument that does decide it.* `*.Data` names an **ownership boundary** — the durable data
+belonging to this component — where `*.Vocabulary` names a descriptive taxonomy. Every component
+owns data. Not every component reads naturally as defining a vocabulary. Only the first expresses
+the data-first architecture this document keeps rediscovering, which is why the pattern is worth
+having at all.
+
+Where that leaves the runners-up, honestly: `Vocabulary` covers traits and tokens beautifully and
+stretches around schemas, which are the dominant category — a schema specifies structured records,
+fields, and ordering rather than atomic terms, so the fit is idiomatic in data interchange and
+metaphorical to most readers. `Schemas` describes the bulk most precisely and fails at the edges,
+since a trait identifier and a token table are not schemas. `Agreements` is the most literally
+correct word in this document's own vocabulary and the most organizationally opaque:
+`Agreements/GoodMinted.cs` tells a newcomer nothing about what kind of agreement it is.
 
 The objection about ASP.NET's `Data/` convention stands and is accepted: these directories hold
 schema declarations and durable vocabulary, never a `DbContext` or a repository, and that
@@ -766,9 +797,22 @@ trait ordering (#35), `Datum` (#36), `FlexDatum` (#37), `Trait`/`TraitValue` (#3
 
 Also landed: immutable `Code` with a `CodeBuilder` (#49).
 
-**Still open**, and deliberately so. Tokenized trait identifiers (#44) wait on `tokenizer-v2.md`.
-The consumers' directory rename (#45) is decided — `Data` — but lands in the `digihouse`,
-`stories`, and `content` repositories rather than this one.
+**Still open**, and deliberately so. The consumers' directory rename (#45) is decided — `Data` —
+and lands in the `digihouse`, `stories`, and `content` repositories rather than this one. Two
+things there were not anticipated: the behavioural types had to move out first, and they could not
+move into digihouse's existing `Library`, because Unity loads exactly the assemblies whose
+dependencies it has and `Library` had since grown a dependency on `BigRedProf.Stories`.
+
+Tokenized trait identifiers (#44) are **closed, not deferred**. The identifier cost of a flex
+datum is real arithmetic, but it is not the card's problem: a form pays no identifiers because
+agreement is total, and a card pays one per entry because that is what buys partial agreement. The
+96 bytes are not overhead on the flex datum, they *are* the flex datum. Tokenizing them would make
+a datum readable only relative to a table the reader must already possess — the coordination a
+`Guid` exists to avoid — and would turn skip-and-preserve from a safety property into a silent
+corruption path, since an unknown token re-emitted under a different table means something else.
+If a compact flexible record is ever genuinely needed, §9 leaves the door open: a container may
+declare its own trait vocabulary in its framing, so the table travels *with* the data instead of
+being assumed. That is a new shape with its own name, not a change to the card.
 
 `CoreTrait.Kind` (#47) **was** deferred here, on the strength of the trait rules themselves: an
 identifier is minted once and bound to its schema forever, so minting a core one with no consumer
@@ -858,20 +902,39 @@ other, holding a code awaiting a schema.
 **10. Use `EfficientWholeNumber31` for per-trait lengths.**
 A pure win: same expressiveness, fewer bits. Breaking wire change, so land it with items 1 and 4.
 
-**11. Evaluate tokenized trait identifiers.**
-128 bits per trait is the dominant cost in a small flex datum. Depends on the `tokenizer-v2.md`
-work; explicitly *not* accompanied by putting schema identifiers on the wire.
+**11. Evaluate tokenized trait identifiers.** *Closed, without doing it.*
+128 bits per trait is the dominant cost in a small flex datum, and it is not the card's problem to
+solve: the form is where space is bought and the card is where flexibility is. See the note in
+*Decisions taken* above for why tokenizing them would cost a datum its ability to stand on its
+own, and skip-and-preserve its safety.
 
 ### Vocabulary and documentation
 
-**11a. Rename consumers' `Models` directories, namespaces, and assemblies to `Data`.**
-Every application and library in the stack grows its own `*.Data`, matching the base library's own
-name; see *What consumers call their data* for why that beat `Vocabulary` and `Schemas`.
-Scope: `digihouse/src/Models`, `stories/src/Models`, `content/src/Core/Models`. Move the files
-that are neither schema declarations nor durable vocabulary — `MarkRasterizer`, `MessageService`,
-and the runtime-only view structs — into a behavioral project first, so the rename is honest
-rather than merely approximate. Not a `BigRedProf.Data` change, but it belongs to this ontology
-and should be decided alongside it.
+**11a. Rename consumers' `Models` directories, namespaces, and assemblies to `Data`.** *Done.*
+Every component owns its durable data, so every one grows its own `*.Data`; see *Why `Data`* for
+what actually decided that over `Vocabulary` and `Schemas`, and for the argument originally
+recorded here that did not survive.
+
+The scope stated here was wrong in two places, which is worth keeping rather than quietly
+correcting. `stories` has no `src/Models`: it had `Core.Models`, `Logging.Models`, and
+`StoriesCli.Models`, and the first of those declares the namespace `BigRedProf.Stories.Models`
+rather than `BigRedProf.Stories.Core.Models` — so the assembly and the namespace had to be renamed
+along different axes. Two published package identifiers changed with it.
+
+The instruction to move the behavioural files out first was right, and understated. Of 156 files
+in `digihouse/src/Models`, 27 were behaviour. They were not there carelessly: Unity receives
+exactly one digihouse assembly, so it was the only place they could live *and be seen*. They could
+not simply move to the existing `Library` either, because `Library` had grown a dependency on
+`BigRedProf.Stories` and Unity refuses to load an assembly whose dependencies are absent — a
+failure a green type-check cannot detect, since compiling against an assembly does not require
+them and only loading does. Hence a third project, `Runtime`, whose one rule is that it may
+reference `Data` and nothing else.
+
+Two types that looked like behaviour stayed, and the second is the instructive one: `Unit`, which
+renders trait values, and `SurfaceMaterial`, which is written to a trait as an `int` — making its
+enum values wire format, so renumbering a member would silently reinterpret every record already
+written.
+
 *Done when:* every type in the renamed tree either declares a schema, defines wire vocabulary, or
 maps tokens; and nothing that does one of those three lives anywhere else.
 
