@@ -795,13 +795,17 @@ trait ordering (#35), `Datum` (#36), `FlexDatum` (#37), `Trait`/`TraitValue` (#3
 (#42), variable-length trait lengths (#43), retired field positions and the rules of schema change
 (#46), documentation and exception types (#48).
 
-Also landed: immutable `Code` with a `CodeBuilder` (#49).
+Also landed: immutable `Code` with a `CodeBuilder` (#49), and a shared `CoreTrait.Kind` (#47).
 
-**Still open**, and deliberately so. The consumers' directory rename (#45) is decided — `Data` —
-and lands in the `digihouse`, `stories`, and `content` repositories rather than this one. Two
-things there were not anticipated: the behavioural types had to move out first, and they could not
-move into digihouse's existing `Library`, because Unity loads exactly the assemblies whose
-dependencies it has and `Library` had since grown a dependency on `BigRedProf.Stories`.
+**Landed elsewhere**: the consumers' directory rename (#45), in the `digihouse`, `stories`, and
+`content` repositories rather than this one. Two things there were not anticipated. The
+behavioural types had to move out first, and they could not move into digihouse's existing
+`Library`: Unity loads exactly the assemblies whose dependencies it has, and `Library` had by then
+grown a dependency on `BigRedProf.Stories`. See item 11a for what that cost and what it taught.
+
+**Nothing in Part 4 is still open.** What remains is one decision rather than work — whether
+*choice* is a third way to compose a representation (#68), which is post-1.0 — and one thing
+closed without doing:
 
 Tokenized trait identifiers (#44) are **closed, not deferred**. The identifier cost of a flex
 datum is real arithmetic, but it is not the card's problem: a form pays no identifiers because
