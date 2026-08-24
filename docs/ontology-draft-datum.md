@@ -814,9 +814,22 @@ agreement is total, and a card pays one per entry because that is what buys part
 a datum readable only relative to a table the reader must already possess — the coordination a
 `Guid` exists to avoid — and would turn skip-and-preserve from a safety property into a silent
 corruption path, since an unknown token re-emitted under a different table means something else.
-If a compact flexible record is ever genuinely needed, §9 leaves the door open: a container may
-declare its own trait vocabulary in its framing, so the table travels *with* the data instead of
-being assumed. That is a new shape with its own name, not a change to the card.
+Closing this does not forbid a compact flexible record; it says the card is not where one belongs.
+Nothing in Part 1 rules such a shape out, and **nothing in Part 1 defines one either** — the sketch
+below is a direction, not a design, and is recorded so that whoever needs it starts from the
+constraint rather than from the saving.
+
+*The constraint any such shape must meet.* A flex datum stands on its own: an identifier means the
+same thing to a reader who has never met the writer, which is what makes an unrecognised trait
+safe to hold and re-emit. A compact shape may only shorten identifiers if the table resolving them
+**travels with the data** rather than being assumed — declared once per container and framed as
+part of it. Then the saving is paid once across many entries, and a reader still needs nothing it
+was not given.
+
+Whoever takes that up owes it three things this document has not supplied: a name of its own, a
+framing that says where the table sits and how a reader knows it is there, and an account of what
+happens when a container is truncated or concatenated. Until those exist it is not an alternative
+to the card, only an idea about one.
 
 `CoreTrait.Kind` (#47) **was** deferred here, on the strength of the trait rules themselves: an
 identifier is minted once and bound to its schema forever, so minting a core one with no consumer
