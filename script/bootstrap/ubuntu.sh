@@ -182,6 +182,18 @@ if command -v dotnet >/dev/null 2>&1; then
 	dotnet_version="$(resolved_dotnet_version || true)"
 fi
 
+# Git is a BUILD requirement here, not a developer convenience. MinVer derives
+# the package version from git history during every build, and with no git on
+# PATH it does not degrade -- it fails the build outright with MINVER1007, so
+# `task build`, `task test` and `task verify` all stop. A container that
+# bootstrapped without it gets a healthy-looking toolchain that cannot build.
+#
+# Presence is the whole check: MinVer names no minimum version, so inventing one
+# for toolchain.env would be a requirement we cannot justify. Note that a missing
+# .git DIRECTORY is a different and much softer thing -- MINVER1001, a warning
+# that falls back to 0.0.0-alpha.0, which builds and tests fine and only matters
+# to `task pack`.
+git_version="$(command_version git --version || true)"
 task_version="$(command_version task --version || true)"
 pwsh_version="$(command_version pwsh -NoProfile -Command '$PSVersionTable.PSVersion.ToString()' || true)"
 required_dotnet_version="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([0-9][0-9.]*\)".*/\1/p' "$repo_root/global.json" | head -n 1)"
@@ -193,6 +205,10 @@ install_dotnet=false
 if [[ -z "$dotnet_version" ]]; then
 	needed+=(".NET SDK compatible with global.json ($required_dotnet_version)")
 	install_dotnet=true
+fi
+if [[ -z "$git_version" ]]; then
+	needed+=("Git (MinVer reads the version from git history during the build)")
+	packages+=("git")
 fi
 if [[ -z "$task_version" ]] || ! version_at_least "$task_version" "$TASK_MIN_VERSION"; then
 	needed+=("Task >= $TASK_MIN_VERSION")
@@ -206,6 +222,7 @@ fi
 echo "BigRedProf.Data development bootstrap"
 echo
 echo " .NET SDK   : ${dotnet_version:-missing or incompatible}"
+echo " Git        : ${git_version:-missing}"
 echo " Task       : ${task_version:-missing}"
 echo " PowerShell : ${pwsh_version:-missing}"
 
