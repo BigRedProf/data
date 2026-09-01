@@ -352,3 +352,7 @@ MigrationBackup/
 
 # BigRedProf: per-developer environment overrides (Task loads this before .env)
 .env.local
+
+# BigRedProf: per-developer Claude Code settings (machine-specific paths).
+# The skills under .claude/skills and .agents/skills are shared and stay tracked.
+.claude/settings.local.json
