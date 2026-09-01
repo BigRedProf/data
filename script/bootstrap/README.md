@@ -24,8 +24,18 @@ bash ./script/bootstrap/ubuntu.sh
 ```
 
 The script uses APT for PowerShell (from Microsoft's package feed) and Task
-(from Task's official package feed). It requests `sudo` only for package
-operations.
+(from Task's official package feed).
+
+Installing packages needs root, which it obtains in whichever way is available.
+Run as an ordinary user it uses `sudo`, and only for package operations. Run as
+root it installs directly and never invokes `sudo` at all, so a container image
+does not have to carry `sudo` purely to satisfy this script:
+
+```dockerfile
+RUN bash ./script/bootstrap/ubuntu.sh --yes
+```
+
+As an ordinary user with no `sudo` installed, it stops and says so.
 
 The .NET SDK deliberately does **not** come from APT. `global.json` pins a
 feature band, and the `dotnet-sdk-8.0` package available on Ubuntu 24.04 is in a
