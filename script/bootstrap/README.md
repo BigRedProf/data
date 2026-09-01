@@ -23,8 +23,17 @@ Run from the repository root:
 bash ./script/bootstrap/ubuntu.sh
 ```
 
-The script uses APT, Microsoft's package feed for .NET and PowerShell, and
-Task's official package feed. It requests `sudo` only for package operations.
+The script uses APT for PowerShell (from Microsoft's package feed) and Task
+(from Task's official package feed). It requests `sudo` only for package
+operations.
+
+The .NET SDK deliberately does **not** come from APT. `global.json` pins a
+feature band, and the `dotnet-sdk-8.0` package available on Ubuntu 24.04 is in a
+lower one, so installing it produces an SDK that cannot satisfy this repository.
+Bootstrap instead runs Microsoft's `dotnet-install.sh` against `global.json`,
+installing exactly the pinned version into `/usr/share/dotnet` and linking it at
+`/usr/local/bin/dotnet`. It then confirms the result actually satisfies
+`global.json` before continuing, rather than assuming the install was enough.
 
 ## Options
 
