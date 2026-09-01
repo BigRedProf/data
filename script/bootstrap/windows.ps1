@@ -169,6 +169,7 @@ $globalJson = Get-Content -Raw (Join-Path $repoRoot "global.json") | ConvertFrom
 $requiredDotNetVersion = [version]$globalJson.sdk.version
 
 $dotnetVersion = Get-DotNetVersion
+$gitVersion = Get-CommandVersion "git" @("--version")
 $taskVersion = Get-CommandVersion "task" @("--version")
 $pwshVersion = Get-CommandVersion "pwsh" @("-NoProfile", "-Command", '$PSVersionTable.PSVersion.ToString()')
 
@@ -176,6 +177,12 @@ $needed = [System.Collections.Generic.List[string]]::new()
 if ($null -eq $dotnetVersion)
 {
 	$needed.Add(".NET SDK compatible with global.json ($requiredDotNetVersion)")
+}
+# Presence only, no version floor -- MinVer needs git on PATH to derive the
+# build version and names no minimum. See the Git block in script/doctor.ps1.
+if ($null -eq $gitVersion)
+{
+	$needed.Add("Git (MinVer reads the version from git history during the build)")
 }
 if ($null -eq $taskVersion -or $taskVersion -lt $requiredTaskVersion)
 {
@@ -189,6 +196,7 @@ if ($null -eq $pwshVersion -or $pwshVersion -lt $requiredPwshVersion)
 Write-Host "BigRedProf.Data development bootstrap"
 Write-Host ""
 Write-Host (" .NET SDK   : " + $(if ($null -eq $dotnetVersion) { "missing or incompatible" } else { $dotnetVersion }))
+Write-Host (" Git        : " + $(if ($null -eq $gitVersion) { "missing" } else { $gitVersion }))
 Write-Host (" Task       : " + $(if ($null -eq $taskVersion) { "missing" } else { $taskVersion }))
 Write-Host (" PowerShell : " + $(if ($null -eq $pwshVersion) { "missing" } else { $pwshVersion }))
 
@@ -261,6 +269,18 @@ if ($needed.Count -gt 0)
 		else
 		{
 			Install-ChocolateyPackage "dotnet-8.0-sdk"
+		}
+	}
+
+	if ($null -eq $gitVersion)
+	{
+		if ($packageManager -eq "winget")
+		{
+			Install-WinGetPackage "Git.Git"
+		}
+		else
+		{
+			Install-ChocolateyPackage "git"
 		}
 	}
 

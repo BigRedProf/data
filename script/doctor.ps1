@@ -76,6 +76,27 @@ else
 	$ok = $false
 }
 
+# --- Git --------------------------------------------------------------------
+# Git is checked because the BUILD needs it, not because developers do. MinVer
+# derives the package version from git history on every build and fails with
+# MINVER1007 when git is absent from PATH, so `task build`, `task test` and
+# `task verify` all stop. Without this check doctor reports a healthy toolchain
+# that cannot build a single project -- which is exactly what a freshly
+# bootstrapped Ubuntu container used to be.
+#
+# No minimum version: MinVer states none, and a floor invented here would be a
+# requirement nobody can point at.
+if (Test-CommandExists "git")
+{
+	$gitVersionRaw = (& git --version).Trim()
+	Write-Host (" Git         : " + $gitVersionRaw)
+}
+else
+{
+	Write-Host " Git         : <missing> -- run the development bootstrap"
+	$ok = $false
+}
+
 # --- Task -------------------------------------------------------------------
 if (Test-CommandExists "task")
 {

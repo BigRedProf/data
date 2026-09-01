@@ -1,8 +1,16 @@
 # Development Bootstrap
 
 The bootstrap scripts provision the machine-level tools required to build this
-repository: the .NET SDK selected by `global.json`, Task, and PowerShell 7.
+repository: the .NET SDK selected by `global.json`, Git, Task, and PowerShell 7.
 They do not replace Task as the repository's build orchestration layer.
+
+Git is on that list because the **build** needs it, not merely because the
+source lives in it. MinVer derives the package version from git history on every
+build, and with no `git` on `PATH` it fails the build outright with `MINVER1007`
+rather than degrading — so `task build`, `task test` and `task verify` all stop.
+`task doctor` checks for it for the same reason. A missing `.git` *directory* is
+much softer: `MINVER1001`, a warning that falls back to `0.0.0-alpha.0`, which
+builds and tests fine and only matters to `task pack`.
 
 ## Windows 10/11
 
@@ -23,8 +31,27 @@ Run from the repository root:
 bash ./script/bootstrap/ubuntu.sh
 ```
 
-The script uses APT, Microsoft's package feed for .NET and PowerShell, and
-Task's official package feed. It requests `sudo` only for package operations.
+The script uses APT for PowerShell (from Microsoft's package feed) and Task
+(from Task's official package feed).
+
+Installing packages needs root, which it obtains in whichever way is available.
+Run as an ordinary user it uses `sudo`, and only for package operations. Run as
+root it installs directly and never invokes `sudo` at all, so a container image
+does not have to carry `sudo` purely to satisfy this script:
+
+```dockerfile
+RUN bash ./script/bootstrap/ubuntu.sh --yes
+```
+
+As an ordinary user with no `sudo` installed, it stops and says so.
+
+The .NET SDK deliberately does **not** come from APT. `global.json` pins a
+feature band, and the `dotnet-sdk-8.0` package available on Ubuntu 24.04 is in a
+lower one, so installing it produces an SDK that cannot satisfy this repository.
+Bootstrap instead runs Microsoft's `dotnet-install.sh` against `global.json`,
+installing exactly the pinned version into `/usr/share/dotnet` and linking it at
+`/usr/local/bin/dotnet`. It then confirms the result actually satisfies
+`global.json` before continuing, rather than assuming the install was enough.
 
 ## Options
 
