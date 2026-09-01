@@ -1,8 +1,16 @@
 # Development Bootstrap
 
 The bootstrap scripts provision the machine-level tools required to build this
-repository: the .NET SDK selected by `global.json`, Task, and PowerShell 7.
+repository: the .NET SDK selected by `global.json`, Git, Task, and PowerShell 7.
 They do not replace Task as the repository's build orchestration layer.
+
+Git is on that list because the **build** needs it, not merely because the
+source lives in it. MinVer derives the package version from git history on every
+build, and with no `git` on `PATH` it fails the build outright with `MINVER1007`
+rather than degrading — so `task build`, `task test` and `task verify` all stop.
+`task doctor` checks for it for the same reason. A missing `.git` *directory* is
+much softer: `MINVER1001`, a warning that falls back to `0.0.0-alpha.0`, which
+builds and tests fine and only matters to `task pack`.
 
 ## Windows 10/11
 
