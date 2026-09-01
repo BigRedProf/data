@@ -67,6 +67,42 @@ command_version()
 	"$command_name" "$@" 2>/dev/null | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | head -n 1
 }
 
+# Everything that installs a package needs root, and there are two ways to be it.
+#
+# In a container build the script is COMMONLY ALREADY ROOT, and such images
+# commonly do not ship sudo -- so demanding sudo there means installing a
+# package whose only purpose is to satisfy this script, which is what issue #78
+# is about. When already root there is nothing to escalate: run the command.
+#
+# Otherwise sudo is the only way up, and its absence is a hard stop rather than
+# something to work around.
+if [[ "$(id -u)" -eq 0 ]]; then
+	is_root=true
+else
+	is_root=false
+fi
+
+run_privileged()
+{
+	if [[ "$is_root" == true ]]; then
+		"$@"
+	else
+		sudo "$@"
+	fi
+}
+
+# Same, for the one command that needs the caller's environment carried across:
+# Task's setup script reads proxy and APT settings from it, and sudo strips
+# those by default. Already being root has no boundary to carry anything across.
+run_privileged_preserving_env()
+{
+	if [[ "$is_root" == true ]]; then
+		"$@"
+	else
+		sudo -E "$@"
+	fi
+}
+
 # Prints the SDK version that global.json actually resolves to, or nothing.
 #
 # The subtlety is that `dotnet --version` reports failure in a way that reads
@@ -114,12 +150,12 @@ install_dotnet_sdk()
 	curl -fsSL https://dot.net/v1/dotnet-install.sh -o "$install_script"
 
 	echo "Installing the .NET SDK pinned by global.json into $install_dir"
-	sudo bash "$install_script" --jsonfile "$repo_root/global.json" --install-dir "$install_dir" --no-path
+	run_privileged bash "$install_script" --jsonfile "$repo_root/global.json" --install-dir "$install_dir" --no-path
 
 	# -f because a stale link from an earlier install would otherwise be left
 	# pointing at an SDK that no longer satisfies global.json, and -n so an
 	# existing link to a directory is replaced rather than followed into.
-	sudo ln -sfn "$install_dir/dotnet" /usr/local/bin/dotnet
+	run_privileged ln -sfn "$install_dir/dotnet" /usr/local/bin/dotnet
 
 	# Bash caches the full path of commands it has looked up, and dotnet was looked
 	# up above -- before the symlink existed.
@@ -199,8 +235,9 @@ if ((${#needed[@]} > 0)); then
 		fi
 	fi
 
-	if ! command -v sudo >/dev/null 2>&1; then
-		echo "sudo is required to install system packages." >&2
+	if [[ "$is_root" != true ]] && ! command -v sudo >/dev/null 2>&1; then
+		echo "Installing system packages needs root, but this is not running as root and sudo is not installed." >&2
+		echo "Re-run the bootstrap as root, or install sudo." >&2
 		exit 1
 	fi
 
@@ -210,8 +247,8 @@ if ((${#needed[@]} > 0)); then
 	bootstrap_temp="$(mktemp -d)"
 	trap 'rm -rf "$bootstrap_temp"' EXIT
 
-	sudo apt-get update
-	sudo apt-get install -y ca-certificates curl wget apt-transport-https software-properties-common
+	run_privileged apt-get update
+	run_privileged apt-get install -y ca-certificates curl wget apt-transport-https software-properties-common
 
 	# Microsoft's feed is here for PowerShell alone. It is deliberately NOT the
 	# source of the .NET SDK any more -- see install_dotnet_sdk for why.
@@ -219,21 +256,21 @@ if ((${#needed[@]} > 0)); then
 		if ! dpkg-query -W -f='${Status}' packages-microsoft-prod 2>/dev/null | grep -q "install ok installed"; then
 			microsoft_package="$bootstrap_temp/packages-microsoft-prod.deb"
 			wget -q "https://packages.microsoft.com/config/ubuntu/$VERSION_ID/packages-microsoft-prod.deb" -O "$microsoft_package"
-			sudo dpkg -i "$microsoft_package"
+			run_privileged dpkg -i "$microsoft_package"
 		fi
 	fi
 
 	if [[ " ${packages[*]} " == *" task "* ]]; then
 		task_setup="$bootstrap_temp/task-setup.deb.sh"
 		curl -1sLf 'https://dl.cloudsmith.io/public/task/task/setup.deb.sh' -o "$task_setup"
-		sudo -E bash "$task_setup"
+		run_privileged_preserving_env bash "$task_setup"
 	fi
 
 	# Guarded because the SDK no longer travels in this array, so it can now be
 	# empty while there is still work to do.
 	if ((${#packages[@]} > 0)); then
-		sudo apt-get update
-		sudo apt-get install -y "${packages[@]}"
+		run_privileged apt-get update
+		run_privileged apt-get install -y "${packages[@]}"
 	fi
 
 	if [[ "$install_dotnet" == true ]]; then
