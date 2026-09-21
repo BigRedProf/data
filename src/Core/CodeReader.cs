@@ -118,6 +118,28 @@ namespace BigRedProf.Data.Core
 			_offsetIntoCurrentByte = 0;
 		}
 
+		/// <summary>
+		/// Fills the first <paramref name="count"/> bytes of <paramref name="buffer"/> from the
+		/// stream, throwing if it ends first.
+		/// </summary>
+		/// <remarks>
+		/// Stream.Read may return fewer bytes than asked for without being at the end, and a
+		/// network stream such as an HTTP request body routinely does. Taking one Read as the
+		/// whole answer silently zero-fills the rest and misaligns everything after it.
+		/// </remarks>
+		private void ReadExactly(byte[] buffer, int count)
+		{
+			int offset = 0;
+			while (offset < count)
+			{
+				int bytesRead = _stream.Read(buffer, offset, count - offset);
+				if (bytesRead == 0)
+					throw new InvalidOperationException("Attempted to read past end of stream.");
+
+				offset += bytesRead;
+			}
+		}
+
 		private Bit ReadBit()
 		{
 			if (_offsetIntoCurrentByte == 0)
@@ -146,7 +168,7 @@ namespace BigRedProf.Data.Core
 			byte[] bytes = new byte[bytesLength];
 			if (fullByteLength > 0)
 			{
-				_stream.Read(bytes, 0, fullByteLength);
+				ReadExactly(bytes, fullByteLength);
 				code = new Code(bytes, bitCount);
 			}
 			else
