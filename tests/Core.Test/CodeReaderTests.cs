@@ -163,11 +163,13 @@ namespace BigRedProf.Data.Test
 			// An HTTP request body hands a large payload over a few bytes at a time. Ignoring the
 			// count Read returns left the rest of the buffer zero-filled and every later field
 			// misaligned, which is how Stories.Api came to refuse every batch of client logs.
-			byte[] bytes = new byte[1000];
-			new Random(42).NextBytes(bytes);
+			//
+			// Ten bytes handed over three at a time take four reads. No byte is zero, so a gap
+			// the reader failed to fill cannot pass for data.
+			byte[] bytes = new byte[] { 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0xFE, 0xDC };
 			CodeReader codeReader = new CodeReader(new TrickleStream(bytes, 3));
 
-			Assert.Equal<Code>(new Code(bytes, 8000), codeReader.Read(8000));
+			Assert.Equal<Code>(new Code(bytes, 80), codeReader.Read(80));
 		}
 
 		[Fact]
