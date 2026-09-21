@@ -1,6 +1,7 @@
 using BigRedProf.Data.Core;
 using System;
 using System.IO;
+using BigRedProf.Data.Test._TestHelpers;
 using Xunit;
 
 namespace BigRedProf.Data.Test
@@ -153,6 +154,37 @@ namespace BigRedProf.Data.Test
 			Assert.Equal<Code>("00", codeReader.Read(2));
 			Assert.Equal<Code>("101", codeReader.Read(3));
 			Assert.Equal<Code>("0101", codeReader.Read(4));
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void Read_ShouldWorkWhenTheStreamReturnsFewerBytesThanAskedFor()
+		{
+			// An HTTP request body hands a large payload over a few bytes at a time. Ignoring the
+			// count Read returns left the rest of the buffer zero-filled and every later field
+			// misaligned, which is how Stories.Api came to refuse every batch of client logs.
+			byte[] bytes = new byte[1000];
+			new Random(42).NextBytes(bytes);
+			CodeReader codeReader = new CodeReader(new TrickleStream(bytes, 3));
+
+			Assert.Equal<Code>(new Code(bytes, 8000), codeReader.Read(8000));
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void Read_ShouldThrowWhenTheStreamEndsPartWayThroughACode()
+		{
+			// A short read that is really the end of the stream is a truncated payload, and must
+			// not quietly come back padded with zeroes.
+			byte[] bytes = new byte[] { 0xFF, 0xFF, 0xFF };
+			CodeReader codeReader = new CodeReader(new TrickleStream(bytes, 2));
+
+			Assert.Throws<InvalidOperationException>(
+				() =>
+				{
+					codeReader.Read(32);
+				}
+			);
 		}
 		#endregion
 
