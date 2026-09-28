@@ -7,6 +7,10 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 {
 	public class DiskTapeProvider : TapeProvider
 	{
+		#region constants
+			private const int MaxTapeByteLength = Tape.MaxContentLength / 8;
+		#endregion
+
 		#region fields
 			private readonly string _directoryPath;
 		#endregion
@@ -128,8 +132,18 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 				if (data == null)
 					throw new ArgumentNullException(nameof(data));
 
-				if (byteOffset < 0 || byteLength <= 0 || byteOffset + byteLength > data.Length)
-					throw new ArgumentOutOfRangeException("Invalid byte offset or length.");
+				// byteOffset is where on the TAPE the bytes go; data is written from its start. This
+				// used to compare the tape offset against the length of the data, so every write
+				// past the tape's first bytes was refused, and a series backed up to disk never got
+				// beyond its first frame. The memory provider has always read the arguments this way.
+				if (byteOffset < 0)
+					throw new ArgumentOutOfRangeException(nameof(byteOffset), "Byte offset cannot be negative.");
+
+				if (byteLength <= 0 || byteLength > data.Length)
+					throw new ArgumentOutOfRangeException(nameof(byteLength), "Byte length must be positive and no more than the data.");
+
+				if ((long)byteOffset + byteLength > MaxTapeByteLength)
+					throw new ArgumentOutOfRangeException(nameof(byteLength), "A write cannot go past the end of the tape.");
 
 				string filePath = GetFilePath(tapeId);
 				using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Write, FileShare.ReadWrite))
