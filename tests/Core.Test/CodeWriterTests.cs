@@ -245,8 +245,10 @@ namespace BigRedProf.Data.Test
 		{
 			// The helper already knows how long the stream is. Ending before that is a bug,
 			// not a short read to pad out.
-			CodeWriter codeWriter = new CodeWriter(new EarlyEndStream(1));
+			EarlyEndStream stream = new EarlyEndStream(1);
+			CodeWriter codeWriter = new CodeWriter(stream);
 			codeWriter.WriteCode("11111111 11111111");
+			long positionBefore = stream.Position;
 
 			Assert.Throws<EndOfStreamException>(
 				() =>
@@ -254,6 +256,8 @@ namespace BigRedProf.Data.Test
 					codeWriter.ToDebugCode();
 				}
 			);
+
+			Assert.Equal(positionBefore, stream.Position);
 		}
 		#endregion
 
