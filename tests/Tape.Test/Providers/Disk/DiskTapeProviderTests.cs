@@ -58,6 +58,30 @@ namespace BigRedProf.Data.Tape.Test.Providers.Disk
 
 		[Trait("Region", "DiskTapeProvider methods")]
 		[Fact]
+		public void Read_AcrossATruncatedTapeFile_ShouldReturnWrittenBytesThenZeros()
+		{
+			// Past the end of the tape file is still blank tape. Cut the file partway through
+			// bytes that were written, then read across that cut: the bytes still on disk come
+			// back, and the rest of the read is zeros.
+			TapeProvider provider = new DiskTapeProvider(_testDirectoryPath);
+			Tape.CreateNew(provider, TestTapeId);
+			byte[] content = new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 };
+			int byteOffset = 100;
+			provider.WriteTapeInternal(TestTapeId, content, byteOffset, content.Length);
+
+			string tapePath = Path.Combine(_testDirectoryPath, $"{TestTapeId}.tape");
+			int cut = byteOffset + 4;
+			using (FileStream truncate = new FileStream(tapePath, FileMode.Open, FileAccess.Write, FileShare.ReadWrite))
+			{
+				truncate.SetLength(cut);
+			}
+
+			byte[] expected = new byte[] { 0x11, 0x22, 0x33, 0x44, 0x00, 0x00, 0x00, 0x00 };
+			Assert.Equal(expected, provider.ReadTapeInternal(TestTapeId, byteOffset, content.Length));
+		}
+
+		[Trait("Region", "DiskTapeProvider methods")]
+		[Fact]
 		public void Write_PastTheEndOfTheTape_ShouldThrow()
 		{
 			TapeProvider provider = new DiskTapeProvider(_testDirectoryPath);
