@@ -1,4 +1,5 @@
 using BigRedProf.Data.Core;
+using BigRedProf.Data.Test._TestHelpers;
 using System;
 using System.IO;
 using System.Linq;
@@ -215,6 +216,115 @@ namespace BigRedProf.Data.Test
 			codeWriter = new CodeWriter(new MemoryStream());
 			codeWriter.WriteCode("10110001 00110110 10111101 0");
 			Assert.Equal<Code>("10001 00110110 1", codeWriter.ToDebugCode(3, 14));
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void ToDebugCode_ShouldGiveTheSameResultWhenTheStreamReturnsFewerBytesThanAskedFor()
+		{
+			// ToDebugCode is a debug helper, and it is compiled in every configuration, so this
+			// runs in Debug and Release. TrickleStream hands the bytes over a few at a time.
+			// The helper has to come back with the same code a normal stream produces.
+			byte[] bytes = new byte[] { 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0xFE, 0xDC };
+			Code code = new Code(bytes, bytes.Length * 8);
+
+			CodeWriter normalWriter = new CodeWriter(new MemoryStream());
+			normalWriter.WriteCode(code);
+			Code fromNormalStream = normalWriter.ToDebugCode();
+
+			CodeWriter trickleWriter = new CodeWriter(new TricklingMemoryStream(3));
+			trickleWriter.WriteCode(code);
+			Code fromTrickleStream = trickleWriter.ToDebugCode();
+
+			Assert.Equal(fromNormalStream, fromTrickleStream);
+		}
+
+		[Fact]
+		[Trait("Region", "methods")]
+		public void ToDebugCode_ShouldThrowWhenTheStreamEndsEarly()
+		{
+			// The helper already knows how long the stream is. Ending before that is a bug,
+			// not a short read to pad out.
+			CodeWriter codeWriter = new CodeWriter(new EarlyEndStream(1));
+			codeWriter.WriteCode("11111111 11111111");
+
+			Assert.Throws<EndOfStreamException>(
+				() =>
+				{
+					codeWriter.ToDebugCode();
+				}
+			);
+		}
+		#endregion
+
+		#region private classes
+		/// <summary>
+		/// A seekable stream CodeWriter can write, whose reads are served by
+		/// <see cref="TrickleStream"/> so one Read is never the whole buffer.
+		/// </summary>
+		private sealed class TricklingMemoryStream : MemoryStream
+		{
+			#region fields
+			private readonly int _maximumBytesPerRead;
+			#endregion
+
+			#region constructors
+			public TricklingMemoryStream(int maximumBytesPerRead)
+			{
+				_maximumBytesPerRead = maximumBytesPerRead;
+			}
+			#endregion
+
+			#region Stream methods
+			public override int Read(byte[] buffer, int offset, int count)
+			{
+				byte[] snapshot = ToArray();
+				int position = (int)Position;
+				if (position >= snapshot.Length)
+					return 0;
+
+				byte[] remaining = new byte[snapshot.Length - position];
+				Array.Copy(snapshot, position, remaining, 0, remaining.Length);
+
+				TrickleStream trickle = new TrickleStream(remaining, _maximumBytesPerRead);
+				int bytesRead = trickle.Read(buffer, offset, count);
+				Position = position + bytesRead;
+				return bytesRead;
+			}
+			#endregion
+		}
+
+		/// <summary>
+		/// Reports the bytes that were written, but stops producing them early so a reader
+		/// that trusts Length finds the stream already ended.
+		/// </summary>
+		private sealed class EarlyEndStream : MemoryStream
+		{
+			#region fields
+			private readonly int _readableByteCount;
+			#endregion
+
+			#region constructors
+			public EarlyEndStream(int readableByteCount)
+			{
+				_readableByteCount = readableByteCount;
+			}
+			#endregion
+
+			#region Stream methods
+			public override int Read(byte[] buffer, int offset, int count)
+			{
+				if (Position >= _readableByteCount)
+					return 0;
+
+				int remaining = _readableByteCount - (int)Position;
+				int allowed = count;
+				if (allowed > remaining)
+					allowed = remaining;
+
+				return base.Read(buffer, offset, allowed);
+			}
+			#endregion
 		}
 		#endregion
 	}
