@@ -110,8 +110,25 @@ namespace BigRedProf.Data.Core
 			byte[] newBuffer = new byte[streamLength / 8 + 1];
 			long currentStreamPosition = _stream.Position;
 			_stream.Seek(0, SeekOrigin.Begin);
-			_stream.Read(newBuffer, 0, newBuffer.Length - 1);
-			_stream.Seek(currentStreamPosition, SeekOrigin.Begin);
+
+			try
+			{
+				// The stream's length is already known, so ending before that many bytes is a bug.
+				int count = newBuffer.Length - 1;
+				int offset = 0;
+				while (offset < count)
+				{
+					int bytesRead = _stream.Read(newBuffer, offset, count - offset);
+					if (bytesRead == 0)
+						throw new EndOfStreamException();
+
+					offset += bytesRead;
+				}
+			}
+			finally
+			{
+				_stream.Seek(currentStreamPosition, SeekOrigin.Begin);
+			}
 			newBuffer[newBuffer.Length - 1] = _currentByte;
 
 			CodeReader codeReader = new CodeReader(new MemoryStream(newBuffer));

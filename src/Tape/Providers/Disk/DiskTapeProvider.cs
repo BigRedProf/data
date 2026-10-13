@@ -108,11 +108,24 @@ namespace BigRedProf.Data.Tape.Providers.Disk
 				using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 				{
 					fs.Seek(byteOffset, SeekOrigin.Begin);
-					int bytesRead = fs.Read(resultBytes, 0, byteLength);
 
-					// Zero-fill any unread bytes (e.g., reading past EOF)
-					if (bytesRead < byteLength)
-						Array.Clear(resultBytes, bytesRead, byteLength - bytesRead);
+					// A short read is not the end of the file. Keep going until every byte
+					// is in, or Read returns 0, which is a true end of file.
+					int totalBytesRead = 0;
+					while (totalBytesRead < byteLength)
+					{
+						int bytesRead = fs.Read(resultBytes, totalBytesRead, byteLength - totalBytesRead);
+						if (bytesRead == 0)
+							break;
+
+						totalBytesRead += bytesRead;
+					}
+
+					// Reading past the end of the file reads as blank tape (zeros) by contract,
+					// matching MemoryTapeProvider. Zero-fill only the rest after a true end of
+					// file, never after a partial read.
+					if (totalBytesRead < byteLength)
+						Array.Clear(resultBytes, totalBytesRead, byteLength - totalBytesRead);
 				}
 
 				return resultBytes;
