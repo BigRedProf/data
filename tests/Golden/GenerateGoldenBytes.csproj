@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Core\BigRedProf.Data.Core.csproj" />
+		<ProjectReference Include="..\..\src\Tape\BigRedProf.Data.Tape.csproj" />
+	</ItemGroup>
+
+</Project>
