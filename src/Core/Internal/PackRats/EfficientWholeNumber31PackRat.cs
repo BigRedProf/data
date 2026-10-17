@@ -24,10 +24,10 @@ namespace BigRedProf.Data.Core.Internal.PackRats
 		#endregion
 
 		#region PackRat methods
-		public override void PackModel(CodeWriter writer, int model)
+		public override void PackModel(BitStream stream, int model)
 		{
-			if(writer == null)
-				throw new ArgumentNullException(nameof(writer));
+			if(stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
 			if(model < MinLegalValue)
 			{
@@ -51,8 +51,8 @@ namespace BigRedProf.Data.Core.Internal.PackRats
 				//		in the range [1052708-2147483647]
 				//		0 ==> 32-bits total (1 marker, 31 data)
 				//		NOTE: This does leave 1052707 codes unused.
-				writer.WriteCode("0");
-				WriteData(writer, 31, model);
+				stream.WriteBits("0");
+				WriteData(stream, 31, model);
 				return;
 			}
 
@@ -61,8 +61,8 @@ namespace BigRedProf.Data.Core.Internal.PackRats
 				// tiny numbers 
 				//		in the range [0-3]
 				//		10 ==> 4-bits total (2 marker, 2 data)
-				writer.WriteCode("10");
-				WriteData(writer, 2, model);
+				stream.WriteBits("10");
+				WriteData(stream, 2, model);
 				return;
 			}
 
@@ -71,9 +71,9 @@ namespace BigRedProf.Data.Core.Internal.PackRats
 				// small numbers
 				//		in the range [4-35]
 				//		110 ==> 8-bits total (3 marker, 5 data)
-				writer.WriteCode("110");
+				stream.WriteBits("110");
 				model -= MinValueFor8BitPacking;
-				WriteData(writer, 5, model);
+				WriteData(stream, 5, model);
 				return;
 			}
 
@@ -82,9 +82,9 @@ namespace BigRedProf.Data.Core.Internal.PackRats
 				// medium numbers
 				//		in the range [36-4131]
 				//		1110 ==> 16-bits total (4 marker, 12 data) 
-				writer.WriteCode("1110");
+				stream.WriteBits("1110");
 				model -= MinValueFor16BitPacking;
-				WriteData(writer, 12, model);
+				WriteData(stream, 12, model);
 				return;
 			}
 
@@ -92,19 +92,19 @@ namespace BigRedProf.Data.Core.Internal.PackRats
 			// large numbers
 			//		in the range [4132-1052707]
 			//		1111 ==> 24-bits total (4 marker, 20 data)
-			writer.WriteCode("1111");
+			stream.WriteBits("1111");
 			model -= MinValueFor24BitPacking;
-			WriteData(writer, 20, model);
+			WriteData(stream, 20, model);
 		}
 
-		public override int UnpackModel(CodeReader reader)
+		public override int UnpackModel(BitStream stream)
 		{
-			if(reader == null)
-				throw new ArgumentNullException(nameof(reader));
+			if(stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
 			int model;
 
-			Bit bit = reader.Read(1)[0];
+			Bit bit = stream.ReadBits(1)[0];
 			if (bit == 0)
 			{
 				// huge numbers
@@ -112,40 +112,40 @@ namespace BigRedProf.Data.Core.Internal.PackRats
 				//		0 ==> 32-bits total (1 marker, 31 data)
 				//		NOTE: This does leave 1052707 codes unused.
 				//			And we will throw if it's one of those unused codes.
-				model = ReadData(reader, 31);
+				model = ReadData(stream, 31);
 				if (model < MinValueFor32BitPacking)
 					throw new InvalidOperationException("Invalid code.");
 				return model;
 			}
 
-			bit = reader.Read(1)[0];
+			bit = stream.ReadBits(1)[0];
 			if (bit == 0)
 			{
 				// tiny numbers 
 				//		in the range [0-3]
 				//		10 ==> 4-bits total (2 marker, 2 data)
-				model = ReadData(reader, 2);
+				model = ReadData(stream, 2);
 				return model;
 			}
 
-			bit = reader.Read(1)[0];
+			bit = stream.ReadBits(1)[0];
 			if (bit == 0)
 			{
 				// small numbers
 				//		in the range [4-35]
 				//		110 ==> 8-bits total (3 marker, 5 data)
-				model = ReadData(reader, 5);
+				model = ReadData(stream, 5);
 				model += MinValueFor8BitPacking;
 				return model;
 			}
 
-			bit = reader.Read(1)[0];
+			bit = stream.ReadBits(1)[0];
 			if (bit == 0)
 			{
 				// medium numbers
 				//		in the range [36-4131]
 				//		1110 ==> 16-bits total (4 marker, 12 data) 
-				model = ReadData(reader, 12);
+				model = ReadData(stream, 12);
 				model += MinValueFor16BitPacking;
 				return model;
 			}
@@ -153,31 +153,31 @@ namespace BigRedProf.Data.Core.Internal.PackRats
 			// large numbers are packed into 24 bits
 			//		in the range [4132-1052707]
 			//		1111 ==> 24-bits total (4 marker, 20 data)
-			model = ReadData(reader, 20);
+			model = ReadData(stream, 20);
 			model += MinValueFor24BitPacking;
 			return model;
 		}
 		#endregion
 
 		#region private methods
-		private void WriteData(CodeWriter writer, int bitCount, int model)
+		private void WriteData(BitStream stream, int bitCount, int model)
 		{
 			for (int i = 0; i < bitCount; ++i)
 			{
 				Bit bit = (model & 1);
-				writer.WriteCode(new Code(new Bit[] { bit }));
+				stream.WriteBits(new Code(new Bit[] { bit }));
 				model >>= 1;
 			}
 			Debug.Assert(model == 0);
 		}
 
-		private int ReadData(CodeReader reader, int bitCount)
+		private int ReadData(BitStream stream, int bitCount)
 		{
 			int model = 0;
 			int mask = 1;
 			for (int i = 0; i < bitCount; ++i)
 			{
-				if (reader.Read(1) == "1")
+				if (stream.ReadBits(1) == "1")
 					model |= mask;
 
 				unchecked

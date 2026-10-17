@@ -22,25 +22,25 @@ namespace BigRedProf.Data.Core.Internal.PackRats
         #endregion
 
         #region PackRat methods
-        public override void PackModel(CodeWriter writer, int model)
+        public override void PackModel(BitStream stream, int model)
         {
-            if (writer == null)
-                throw new ArgumentNullException(nameof(writer));
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
 
             if (model < 0 || model > _maxValue)
                 throw new ArgumentOutOfRangeException(nameof(model), $"Model value must be between 0 and {(1 << _bitLength) - 1} for {_bitLength}-bit whole number.");
 
             byte[] bytes = BitConverter.GetBytes(model);
             Code code = new Code(bytes, _bitLength);
-            writer.WriteCode(code);
+            stream.WriteBits(code);
         }
 
-        public override int UnpackModel(CodeReader reader)
+        public override int UnpackModel(BitStream stream)
         {
-            if (reader == null)
-                throw new ArgumentNullException(nameof(reader));
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
 
-            Code code = reader.Read(_bitLength);
+            Code code = stream.ReadBits(_bitLength);
             if (code.ByteArray == null || code.ByteArray.Length * 8 < _bitLength)
                 throw new InvalidOperationException("Invalid code length for whole number.");
 

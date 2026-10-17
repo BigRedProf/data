@@ -1,7 +1,4 @@
 using BigRedProf.Data.Core;
-using BigRedProf.Data.Tape.Internal;
-using BigRedProf.Data.Core.Internal;
-using System.IO;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -34,8 +31,7 @@ namespace BigRedProf.Data.Tape
 		private Multihash _currentSeriesHeadDigest;
 		private Multihash _currentTapeContentDigest;
 
-		private TapeSeriesStream? _seriesStream;
-		private CodeWriter? _codeWriter;
+		private TapeSeriesBitStream? _writer;
 		#endregion
 
 		#region constructors
@@ -68,12 +64,12 @@ namespace BigRedProf.Data.Tape
 		#endregion
 
 		#region properties
-		/// <summary>Gets a code writer for appending data to the series.</summary>
-		public CodeWriter Writer
+		/// <summary>Gets a bit stream for appending data to the series.</summary>
+		public BitStream Writer
 		{
 			get
 			{
-				return EnsureCodeWriter();
+				return EnsureWriter();
 			}
 		}
 		#endregion
@@ -185,7 +181,7 @@ namespace BigRedProf.Data.Tape
 		{
 			if (code == null)
 				throw new ArgumentNullException(nameof(code));
-			Writer.WriteCode(code);
+			Writer.WriteBits(code);
 		}
 
 		public Code GetLatestCheckpoint()
@@ -248,30 +244,29 @@ namespace BigRedProf.Data.Tape
 
 		private void FlushWriterStream()
 		{
-			_seriesStream?.Flush();
+			_writer?.Flush();
 		}
 
 		private void EnsureWriterDisposed()
 		{
-			_codeWriter?.Dispose();
+			_writer?.Dispose();
 		}
 
-		private CodeWriter EnsureCodeWriter()
+		private TapeSeriesBitStream EnsureWriter()
 		{
-			if (_codeWriter != null)
-				return _codeWriter;
+			if (_writer != null)
+				return _writer;
 
-			TapeSeriesStream stream = new TapeSeriesStream(_librarian, _seriesId, TapeSeriesStream.OpenMode.Append);
+			TapeSeriesBitStream stream = new TapeSeriesBitStream(_librarian, _seriesId, TapeSeriesBitStream.OpenMode.Append);
 			// Subscribe to tape changes and reactively finalize/seed labels.
 			stream.CurrentTapeChanged += OnCurrentTapeChanged;
+			stream.Closed += OnWriterClosed;
 
-			WizardCodeWriter writer = new WizardCodeWriter(this, stream);
-			_seriesStream = stream;
-			_codeWriter = writer;
-			return writer;
+			_writer = stream;
+			return stream;
 		}
 
-		private void OnCurrentTapeChanged(object? sender, TapeSeriesStream.RolloverEventArgs e)
+		private void OnCurrentTapeChanged(object? sender, TapeSeriesBitStream.RolloverEventArgs e)
 		{
 			// e.FinishedTape might be null if this is the very first tape creation from ctor,
 			// but in practice rollover only fires after we had a current tape.
@@ -308,14 +303,15 @@ namespace BigRedProf.Data.Tape
 			_currentTapeContentDigest = baselineDigest;
 		}
 
-		private void OnWriterDisposed()
+		private void OnWriterClosed(object? sender, EventArgs e)
 		{
-			if (_seriesStream != null)
+			if (_writer != null)
 			{
-				_seriesStream.CurrentTapeChanged -= OnCurrentTapeChanged;
+				_writer.CurrentTapeChanged -= OnCurrentTapeChanged;
+				_writer.Closed -= OnWriterClosed;
 			}
-			_codeWriter = null;
-			_seriesStream = null;
+
+			_writer = null;
 		}
 
 		private static Tape SelectLatestTape(IEnumerable<Tape> tapes)
@@ -349,38 +345,5 @@ namespace BigRedProf.Data.Tape
 		}
 		#endregion
 
-		#region private classes
-		private sealed class WizardCodeWriter : CodeWriter
-		{
-			private readonly BackupWizard _owner;
-			private bool _isDisposed;
-
-			public WizardCodeWriter(BackupWizard owner, Stream stream)
-				: base(stream)
-			{
-				_owner = owner ?? throw new ArgumentNullException(nameof(owner));
-				_isDisposed = false;
-			}
-
-			protected override void Dispose(bool disposing)
-			{
-				if (_isDisposed)
-				{
-					base.Dispose(disposing);
-					return;
-				}
-
-				try
-				{
-					base.Dispose(disposing);
-				}
-				finally
-				{
-					_owner.OnWriterDisposed();
-					_isDisposed = true;
-				}
-			}
-		}
-		#endregion
 	}
 }

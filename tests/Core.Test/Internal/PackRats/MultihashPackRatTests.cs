@@ -34,7 +34,7 @@ namespace BigRedProf.Data.Test
 			IPiedPiper piedPiper = CreatePiedPiper();
 			var packRat = new MultihashPackRat(piedPiper);
 
-			var writer = new CodeWriter(new MemoryStream());
+			var writer = new StreamBitWriter(new MemoryStream());
 
 			Assert.Throws<ArgumentNullException>(() =>
 			{

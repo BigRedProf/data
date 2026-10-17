@@ -22,36 +22,36 @@ namespace BigRedProf.Data.Core.Internal
 		#endregion
 
 		#region PackRat methods
-		public override void PackModel(CodeWriter writer, Multihash model)
+		public override void PackModel(BitStream stream, Multihash model)
 		{
-			if (writer == null)
-				throw new ArgumentNullException(nameof(writer));
+			if (stream == null)
+				throw new ArgumentNullException(nameof(stream));
 			if (model == null)
 				throw new ArgumentNullException(nameof(model));
 
-			_varIntPackRat.PackModel(writer, (int)model.Algorithm);
-			_varIntPackRat.PackModel(writer, model.Digest.Length);
+			_varIntPackRat.PackModel(stream, (int)model.Algorithm);
+			_varIntPackRat.PackModel(stream, model.Digest.Length);
 
-			writer.AlignToNextByteBoundary();
+			stream.AlignToNextByteBoundary();
 			foreach (var b in model.Digest)
 			{
-				_bytePackRat.PackModel(writer, b);
+				_bytePackRat.PackModel(stream, b);
 			}
 		}
 
-		public override Multihash UnpackModel(CodeReader reader)
+		public override Multihash UnpackModel(BitStream stream)
 		{
-			if (reader == null)
-				throw new ArgumentNullException(nameof(reader));
+			if (stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
-			var algorithmCode = _varIntPackRat.UnpackModel(reader);
-			var length = _varIntPackRat.UnpackModel(reader);
+			var algorithmCode = _varIntPackRat.UnpackModel(stream);
+			var length = _varIntPackRat.UnpackModel(stream);
 
-			reader.AlignToNextByteBoundary();
+			stream.AlignToNextByteBoundary();
 			var digest = new byte[length];
 			for (int i = 0; i < length; i++)
 			{
-				digest[i] = _bytePackRat.UnpackModel(reader);
+				digest[i] = _bytePackRat.UnpackModel(stream);
 			}
 
 			var algorithm = (MultihashAlgorithm)algorithmCode;

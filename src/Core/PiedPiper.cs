@@ -257,82 +257,82 @@ namespace BigRedProf.Data.Core
 		}
 
 		/// <inheritdoc/>
-		public void PackModel<M>(CodeWriter writer, M model, AttributeFriendlyGuid schemaId)
+		public void PackModel<M>(BitStream stream, M model, AttributeFriendlyGuid schemaId)
 		{
 			PackRat<M> modelPackRat = GetPackRat<M>(schemaId);
-			modelPackRat.PackModel(writer, model);
+			modelPackRat.PackModel(stream, model);
 		}
 
 		/// <inheritdoc/>
-		public M UnpackModel<M>(CodeReader reader, AttributeFriendlyGuid schemaId)
+		public M UnpackModel<M>(BitStream stream, AttributeFriendlyGuid schemaId)
 		{
 			PackRat<M> modelPackRat = GetPackRat<M>(schemaId);
-			M model = modelPackRat.UnpackModel(reader);
+			M model = modelPackRat.UnpackModel(stream);
 
 			return model;
 		}
 
 		/// <inheritdoc/>
-		public void PackModel(CodeWriter writer, object model, AttributeFriendlyGuid schemaId)
+		public void PackModel(BitStream stream, object model, AttributeFriendlyGuid schemaId)
 		{
 			IWeaklyTypedPackRat modelPackRat = GetPackRat(schemaId);
-			modelPackRat.PackModel(writer, model);
+			modelPackRat.PackModel(stream, model);
 		}
 
 		/// <inheritdoc/>
-		public object UnpackModel(CodeReader reader, AttributeFriendlyGuid schemaId)
+		public object UnpackModel(BitStream stream, AttributeFriendlyGuid schemaId)
 		{
 			IWeaklyTypedPackRat packRat = GetPackRat(schemaId);
-			object model = packRat.UnpackModel(reader);
+			object model = packRat.UnpackModel(stream);
 
 			return model;
 		}
 
 		/// <inheritdoc/>
 		public void PackNullableModel<M>(
-			CodeWriter writer,
+			BitStream stream,
 			M model,
 			AttributeFriendlyGuid schemaId,
 			ByteAligned byteAligned
 		)
 		{
-			if (writer == null)
-				throw new ArgumentNullException(nameof(writer));
+			if (stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
 			if (schemaId == null)
 				throw new ArgumentNullException(nameof(schemaId));
 
-			writer.WriteCode(model == null ? "0" : "1");
+			stream.WriteBits(model == null ? "0" : "1");
 			if (byteAligned == ByteAligned.Yes)
-				writer.AlignToNextByteBoundary();
+				stream.AlignToNextByteBoundary();
 
 			if (model != null)
 			{
 				PackRat<M> packRat = GetPackRat<M>(schemaId);
-				packRat.PackModel(writer, model);
+				packRat.PackModel(stream, model);
 			}
 		}
 
 		/// <inheritdoc/>
 		[return: MaybeNull]
-		public M UnpackNullableModel<M>(CodeReader reader, AttributeFriendlyGuid schemaId, ByteAligned byteAligned)
+		public M UnpackNullableModel<M>(BitStream stream, AttributeFriendlyGuid schemaId, ByteAligned byteAligned)
 		{
-			if (reader == null)
-				throw new ArgumentNullException(nameof(reader));
+			if (stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
 			if (schemaId == null)
 				throw new ArgumentNullException(nameof(schemaId));
 
 			M model = default;
 
-			bool isNull = reader.Read(1) == "0";
+			bool isNull = stream.ReadBits(1) == "0";
 			if (byteAligned == ByteAligned.Yes)
-				reader.AlignToNextByteBoundary();
+				stream.AlignToNextByteBoundary();
 
 			if (!isNull)
 			{
 				PackRat<M> packRat = GetPackRat<M>(schemaId);
-				model = packRat.UnpackModel(reader);
+				model = packRat.UnpackModel(stream);
 			}
 
 			return model;
@@ -340,7 +340,7 @@ namespace BigRedProf.Data.Core
 
 		/// <inheritdoc/>
 		public void PackList<M>(
-			CodeWriter writer,
+			BitStream stream,
 			IList<M> list,
 			AttributeFriendlyGuid elementSchemaId,
 			bool allowNullLists,
@@ -348,8 +348,8 @@ namespace BigRedProf.Data.Core
 			ByteAligned byteAligned
 		)
 		{
-			if (writer == null)
-				throw new ArgumentNullException(nameof(writer));
+			if (stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
 			if (!allowNullLists && list == null)
 			{
@@ -363,12 +363,12 @@ namespace BigRedProf.Data.Core
 				throw new ArgumentNullException(nameof(elementSchemaId));
 
 			if (allowNullLists)
-				writer.WriteCode(list == null ? "0" : "1");
+				stream.WriteBits(list == null ? "0" : "1");
 
 			if (list != null)
 			{
 				PackRat<int> efficientWholeNumber31PackRat = GetPackRat<int>(CoreSchema.EfficientWholeNumber31);
-				efficientWholeNumber31PackRat.PackModel(writer, list.Count);
+				efficientWholeNumber31PackRat.PackModel(stream, list.Count);
 
 				PackRat<M> elementPackRat = GetPackRat<M>(elementSchemaId);
 				if (allowNullElements)
@@ -377,35 +377,35 @@ namespace BigRedProf.Data.Core
 					for (int i = 0; i < list.Count; ++i)
 					{
 						elementNullArray[i] = (list[i] != null);
-						writer.WriteCode(list[i] != null ? "1" : "0");
+						stream.WriteBits(list[i] != null ? "1" : "0");
 					}
 
 					if (byteAligned == ByteAligned.Yes)
-						writer.AlignToNextByteBoundary();
+						stream.AlignToNextByteBoundary();
 
 					for (int i = 0; i < list.Count; ++i)
 					{
 						if (elementNullArray[i])
-							elementPackRat.PackModel(writer, list[i]);
+							elementPackRat.PackModel(stream, list[i]);
 
 						if (byteAligned == ByteAligned.Yes)
-							writer.AlignToNextByteBoundary();
+							stream.AlignToNextByteBoundary();
 					}
 				}
 				else
 				{
 					if (byteAligned == ByteAligned.Yes)
-						writer.AlignToNextByteBoundary();
+						stream.AlignToNextByteBoundary();
 
 					foreach (M element in list)
 					{
 						if (element == null && !allowNullElements)
 							throw new ArgumentException("Null element found in list.", nameof(list));
 
-						elementPackRat.PackModel(writer, element);
+						elementPackRat.PackModel(stream, element);
 
 						if (byteAligned == ByteAligned.Yes)
-							writer.AlignToNextByteBoundary();
+							stream.AlignToNextByteBoundary();
 					}
 				}
 			}
@@ -413,28 +413,28 @@ namespace BigRedProf.Data.Core
 
 		/// <inheritdoc/>
 		public IList<M>? UnpackList<M>(
-			CodeReader reader,
+			BitStream stream,
 			AttributeFriendlyGuid elementSchemaId,
 			bool allowNullLists,
 			bool allowNullElements,
 			ByteAligned byteAligned
 		)
 		{
-			if (reader == null)
-				throw new ArgumentNullException(nameof(reader));
+			if (stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
 			if (elementSchemaId == null)
 				throw new ArgumentNullException(nameof(elementSchemaId));
 
 			if (allowNullLists)
 			{
-				bool isNull = reader.Read(1) == "0";
+				bool isNull = stream.ReadBits(1) == "0";
 				if (isNull)
 					return null;
 			}
 
 			PackRat<int> efficientWholeNumber31PackRat = GetPackRat<int>(CoreSchema.EfficientWholeNumber31);
-			int elementCount = efficientWholeNumber31PackRat.UnpackModel(reader);
+			int elementCount = efficientWholeNumber31PackRat.UnpackModel(stream);
 
 			PackRat<M> elementPackRat = GetPackRat<M>(elementSchemaId);
 			IList<M> list = new List<M>(elementCount);
@@ -443,16 +443,16 @@ namespace BigRedProf.Data.Core
 			{
 				bool[] nullElementList = new bool[elementCount];
 				for (int i = 0; i < elementCount; ++i)
-					nullElementList[i] = reader.Read(1) == "1";
+					nullElementList[i] = stream.ReadBits(1) == "1";
 
 				if (byteAligned == ByteAligned.Yes)
-					reader.AlignToNextByteBoundary();
+					stream.AlignToNextByteBoundary();
 
 				for (int i = 0; i < elementCount; ++i)
 				{
 					if (nullElementList[i])
 					{
-						M element = elementPackRat.UnpackModel(reader);
+						M element = elementPackRat.UnpackModel(stream);
 						list.Add(element);
 					}
 					else
@@ -462,21 +462,21 @@ namespace BigRedProf.Data.Core
 					}
 
 					if (byteAligned == ByteAligned.Yes)
-						reader.AlignToNextByteBoundary();
+						stream.AlignToNextByteBoundary();
 				}
 			}
 			else
 			{
 				if (byteAligned == ByteAligned.Yes)
-					reader.AlignToNextByteBoundary();
+					stream.AlignToNextByteBoundary();
 
 				for (int i = 0; i < elementCount; ++i)
 				{
-					M element = elementPackRat.UnpackModel(reader);
+					M element = elementPackRat.UnpackModel(stream);
 					list.Add(element);
 
 					if (byteAligned == ByteAligned.Yes)
-						reader.AlignToNextByteBoundary();
+						stream.AlignToNextByteBoundary();
 				}
 			}
 
@@ -493,12 +493,12 @@ namespace BigRedProf.Data.Core
 				throw new ArgumentNullException(nameof(schemaId));
 
 			PackRat<M> packRat = GetPackRat<M>(schemaId);
-			CodeStream codeStream = new CodeStream();
-			using (CodeWriter codeWriter = new CodeWriter(codeStream))
+			Code code;
+			using (CodeBitStream codeStream = new CodeBitStream())
 			{
-				packRat.PackModel(codeWriter, model);
+				packRat.PackModel(codeStream, model);
+				code = codeStream.ToCode();
 			}
-			Code code = codeStream.ToCode();
 
 			return code;
 		}
@@ -515,7 +515,7 @@ namespace BigRedProf.Data.Core
 			M model;
 			PackRat<M> packRat = GetPackRat<M>(schemaId);
 			MemoryStream memoryStream = new MemoryStream(code.ByteArray);
-			using (CodeReader codeReader = new CodeReader(memoryStream))
+			using (StreamBitReader codeReader = new StreamBitReader(memoryStream))
 			{
 				model = packRat.UnpackModel(codeReader);
 			}
@@ -544,9 +544,9 @@ namespace BigRedProf.Data.Core
 
 			MemoryStream memoryStream = new MemoryStream((code.Length + 7) / 8);
 			PackRat<Code> packRat = GetPackRat<Code>(CoreSchema.Code);
-			using (CodeWriter writer = new CodeWriter(memoryStream))
+			using (StreamBitWriter stream = new StreamBitWriter(memoryStream))
 			{
-				packRat.PackModel(writer, code);
+				packRat.PackModel(stream, code);
 			}
 
 			return memoryStream.ToArray();
@@ -560,9 +560,9 @@ namespace BigRedProf.Data.Core
 			Code code;
 			MemoryStream memoryStream = new MemoryStream(byteArray);
 			PackRat<Code> packRat = GetPackRat<Code>(CoreSchema.Code);
-			using (CodeReader reader = new CodeReader(memoryStream))
+			using (StreamBitReader stream = new StreamBitReader(memoryStream))
 			{
-				code = packRat.UnpackModel(reader);
+				code = packRat.UnpackModel(stream);
 			}
 
 			return code;
@@ -580,12 +580,12 @@ namespace BigRedProf.Data.Core
 				throw new ArgumentNullException(nameof(schemaId));
 
 			IWeaklyTypedPackRat packRat = GetPackRat(schemaId);
-			CodeStream codeStream = new CodeStream();
-			using (CodeWriter codeWriter = new CodeWriter(codeStream))
+			Code code;
+			using (CodeBitStream codeStream = new CodeBitStream())
 			{
-				packRat.PackModel(codeWriter, model);
+				packRat.PackModel(codeStream, model);
+				code = codeStream.ToCode();
 			}
-			Code code = codeStream.ToCode();
 
 			return code;
 		}
@@ -602,7 +602,7 @@ namespace BigRedProf.Data.Core
 			object model;
 			IWeaklyTypedPackRat packRat = GetPackRat(schemaId);
 			MemoryStream memoryStream = new MemoryStream(code.ByteArray);
-			using (CodeReader codeReader = new CodeReader(memoryStream))
+			using (StreamBitReader codeReader = new StreamBitReader(memoryStream))
 			{
 				model = packRat.UnpackModel(codeReader);
 			}

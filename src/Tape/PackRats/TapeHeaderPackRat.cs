@@ -22,7 +22,7 @@ namespace BigRedProf.Data.Tape.PackRats
 		#endregion
 
 		#region PackRat methods
-		public override void PackModel(CodeWriter writer, TapeHeader model)
+		public override void PackModel(BitStream stream, TapeHeader model)
 		{
 			// let the first 100 bytes be human-readable for cat/head CLI commands
 			// Format: TAPE|v1|Series-Name|Series-Number|Guid
@@ -70,19 +70,19 @@ namespace BigRedProf.Data.Tape.PackRats
 			string x = stringBuilder.ToString();
 			if (x.Length != 101)
 				throw new InvalidOperationException($"Bad length. {x.Length} instead of 101. Indicated bug in code.");
-			TextPackRatHelper.PackTextWithoutLength(writer, x, Encoding.ASCII);
+			TextPackRatHelper.PackTextWithoutLength(stream, x, Encoding.ASCII);
 
 			// Version (actual)
-			PiedPiper.PackModel<int>(writer, model.Version, CoreSchema.Int32);
+			PiedPiper.PackModel<int>(stream, model.Version, CoreSchema.Int32);
 
 			// Bytes Allocated For Label (actual)
-			PiedPiper.PackModel<int>(writer, model.BytesAllocatedForLabel, CoreSchema.Int32);
+			PiedPiper.PackModel<int>(stream, model.BytesAllocatedForLabel, CoreSchema.Int32);
 
 			// skip final 16 bytes
-			writer.WriteCode("00000000 00000000 00000000 00000000");
-			writer.WriteCode("00000000 00000000 00000000 00000000");
-			writer.WriteCode("00000000 00000000 00000000 00000000");
-			writer.WriteCode("00000000 00000000 00000000 00000000");
+			stream.WriteBits("00000000 00000000 00000000 00000000");
+			stream.WriteBits("00000000 00000000 00000000 00000000");
+			stream.WriteBits("00000000 00000000 00000000 00000000");
+			stream.WriteBits("00000000 00000000 00000000 00000000");
 
 			// Label
 			Code packedLabel = PiedPiper.PackModel<FlexDatum>(model.Label, CoreSchema.FlexDatum);
@@ -94,18 +94,18 @@ namespace BigRedProf.Data.Tape.PackRats
 					"allocated for label."
 				);
 			}
-			PiedPiper.PackModel(writer, model.Label, CoreSchema.FlexDatum);
+			PiedPiper.PackModel(stream, model.Label, CoreSchema.FlexDatum);
 
 			// Label padding
 			int paddedBitLength = (model.BytesAllocatedForLabel * 8) - (packedLabel.Length);
 			if(paddedBitLength > 0) 
-				writer.WriteCode(new Code(paddedBitLength));
+				stream.WriteBits(new Code(paddedBitLength));
 		}
 
-		public override TapeHeader UnpackModel(CodeReader reader)
+		public override TapeHeader UnpackModel(BitStream stream)
 		{
 			// "TAPE" (for correctness)
-			string tape = PiedPiper.UnpackModel<string>(reader, CoreSchema.TextAscii);
+			string tape = PiedPiper.UnpackModel<string>(stream, CoreSchema.TextAscii);
 			// crap, we need a way of packing text without length prefix!!
 			if (tape != "TAPE")
 				throw new InvalidOperationException("Incorrect tape header. Missing 'TAPE' constant.");
@@ -133,21 +133,21 @@ namespace BigRedProf.Data.Tape.PackRats
 			// End-of-file (for show)
 			++bytesToSkip;
 
-			reader.Read(bytesToSkip * 8);
+			stream.ReadBits(bytesToSkip * 8);
 
 			// Version (actual)
-			int version = PiedPiper.UnpackModel<int>(reader, CoreSchema.Int32);
+			int version = PiedPiper.UnpackModel<int>(stream, CoreSchema.Int32);
 			model.Version = version;
 
 			// Bytes Allocated For Label (actual)
-			int bytesAllocatedForLabel = PiedPiper.UnpackModel<int>(reader, CoreSchema.Int32);
+			int bytesAllocatedForLabel = PiedPiper.UnpackModel<int>(stream, CoreSchema.Int32);
 			model.BytesAllocatedForLabel = bytesAllocatedForLabel;
 
 			// skip final 16 bytes
-			reader.Read(16 * 8);
+			stream.ReadBits(16 * 8);
 
 			// Label
-			model.Label = PiedPiper.UnpackModel<FlexDatum>(reader, CoreSchema.FlexDatum);
+			model.Label = PiedPiper.UnpackModel<FlexDatum>(stream, CoreSchema.FlexDatum);
 
 			return model;
 		}

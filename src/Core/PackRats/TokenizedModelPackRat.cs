@@ -40,24 +40,24 @@ namespace BigRedProf.Data.Core.PackRats
 
 		#region PackRat methods
 		/// <inheritdoc/>
-		public override void PackModel(CodeWriter writer, TModel model)
+		public override void PackModel(BitStream stream, TModel model)
 		{
-			if(writer == null)
-				throw new ArgumentNullException(nameof(writer));
+			if(stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
 			Code token = _tokenizer.GetToken(model);
 			PackRat<Code> codePackRat = PiedPiper.GetPackRat<Code>(CoreSchema.Code);
-			codePackRat.PackModel(writer, token);
+			codePackRat.PackModel(stream, token);
 		}
 
 		/// <inheritdoc/>
-		public override TModel UnpackModel(CodeReader reader)
+		public override TModel UnpackModel(BitStream stream)
 		{
-			if(reader == null)
-				throw new ArgumentNullException(nameof(reader));
+			if(stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
 			PackRat<Code> codePackRat = PiedPiper.GetPackRat<Code>(CoreSchema.Code);
-			Code token = codePackRat.UnpackModel(reader);
+			Code token = codePackRat.UnpackModel(stream);
 
 			TModel model;
 			if (!_tokenizer.TryGetModel(token, out model))

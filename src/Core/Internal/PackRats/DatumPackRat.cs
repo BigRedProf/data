@@ -24,27 +24,27 @@ namespace BigRedProf.Data.Core.Internal.PackRats
 		#endregion
 
 		#region PackRat methods
-		public override void PackModel(CodeWriter writer, Datum model)
+		public override void PackModel(BitStream stream, Datum model)
 		{
-			if (writer == null)
-				throw new ArgumentNullException(nameof(writer));
+			if (stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
 			if (model == null)
 				throw new ArgumentNullException(nameof(model));
 
-			PiedPiper.PackModel<Guid>(writer, model.SchemaId, CoreSchema.Guid);
-			PiedPiper.PackModel<int>(writer, model.Code.Length, CoreSchema.EfficientWholeNumber31);
-			writer.WriteCode(model.Code);
+			PiedPiper.PackModel<Guid>(stream, model.SchemaId, CoreSchema.Guid);
+			PiedPiper.PackModel<int>(stream, model.Code.Length, CoreSchema.EfficientWholeNumber31);
+			stream.WriteBits(model.Code);
 		}
 
-		public override Datum UnpackModel(CodeReader reader)
+		public override Datum UnpackModel(BitStream stream)
 		{
-			if (reader == null)
-				throw new ArgumentNullException(nameof(reader));
+			if (stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
-			Guid schemaId = PiedPiper.UnpackModel<Guid>(reader, CoreSchema.Guid);
-			int length = PiedPiper.UnpackModel<int>(reader, CoreSchema.EfficientWholeNumber31);
-			Code code = reader.Read(length);
+			Guid schemaId = PiedPiper.UnpackModel<Guid>(stream, CoreSchema.Guid);
+			int length = PiedPiper.UnpackModel<int>(stream, CoreSchema.EfficientWholeNumber31);
+			Code code = stream.ReadBits(length);
 
 			return new Datum(schemaId, code);
 		}

@@ -271,7 +271,7 @@ namespace BigRedProf.Data.Test
 
 		[Fact]
 		[Trait("Region", "methods")]
-		public void PackNullableModel_ShouldThrowWhenCodeWriterIsNull()
+		public void PackNullableModel_ShouldThrowWhenBitStreamIsNull()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
             piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), CoreSchema.Int32);
@@ -376,7 +376,7 @@ namespace BigRedProf.Data.Test
 
 		[Fact]
 		[Trait("Region", "methods")]
-		public void UnpackNullableModel_ShouldThrowWhenCodeReaderIsNull()
+		public void UnpackNullableModel_ShouldThrowWhenBitStreamIsNull()
 		{
 			IPiedPiper piedPiper = new PiedPiper();
 			piedPiper.RegisterPackRat<int>(new Int32PackRat(piedPiper), CoreSchema.Int32);
