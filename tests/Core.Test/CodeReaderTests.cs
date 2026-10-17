@@ -6,7 +6,7 @@ using Xunit;
 
 namespace BigRedProf.Data.Test
 {
-	public class CodeReaderTests
+	public class StreamBitReaderTests
 	{
 		#region constructors
 		[Fact]
@@ -16,7 +16,7 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					new CodeReader(null);
+					new StreamBitReader(null);
 				}
 			);
 		}
@@ -29,7 +29,7 @@ namespace BigRedProf.Data.Test
 		{
 			byte[] bytes = new byte[] { 0b00001101, 0b10101010 };
 			Stream stream = new MemoryStream(bytes);
-			CodeReader codeReader = new CodeReader(stream);
+			BitStream codeReader = new StreamBitReader(stream);
 			codeReader.Dispose();
 
 			Assert.Throws<ObjectDisposedException>(
@@ -46,12 +46,12 @@ namespace BigRedProf.Data.Test
 		{
 			byte[] bytes = new byte[] { 0b00001101, 0b10101010 };
 			Stream stream = new MemoryStream(bytes);
-			CodeReader codeReader = new CodeReader(stream);
-			codeReader.Read(3);	// read "101"
+			BitStream codeReader = new StreamBitReader(stream);
+			codeReader.ReadBits(3);	// read "101"
 
 			codeReader.AlignToNextByteBoundary();	// skip "10000"
 
-			Code code = codeReader.Read(8);	// read "01010101"
+			Code code = codeReader.ReadBits(8);	// read "01010101"
 			Assert.Equal<Code>("01010101", code);
 		}
 
@@ -61,13 +61,13 @@ namespace BigRedProf.Data.Test
 		{
 			byte[] bytes = new byte[] { 0b00001101, 0b10101010 };
 			Stream stream = new MemoryStream(bytes);
-			CodeReader codeReader = new CodeReader(stream);
+			BitStream codeReader = new StreamBitReader(stream);
 			codeReader.Dispose();
 
 			Assert.Throws<ObjectDisposedException>(
 				() =>
 				{
-					codeReader.Read(1);
+					codeReader.ReadBits(1);
 				}
 			);
 		}
@@ -78,30 +78,30 @@ namespace BigRedProf.Data.Test
 		{
 			byte[] bytes = new byte[] { 0b00001101, 0b10101010 };
 			Stream stream = new MemoryStream(bytes);
-			CodeReader codeReader = new CodeReader(stream);
+			BitStream codeReader = new StreamBitReader(stream);
 
 			// Reading nothing is legitimate and yields the empty code, consuming nothing.
-			Assert.Equal(new Code(0), codeReader.Read(0));
-			Assert.Equal<Code>("1", codeReader.Read(1));
+			Assert.Equal(new Code(0), codeReader.ReadBits(0));
+			Assert.Equal<Code>("1", codeReader.ReadBits(1));
 
 			Assert.Throws<ArgumentOutOfRangeException>(
 				() =>
 				{
-					codeReader.Read(-1);
+					codeReader.ReadBits(-1);
 				}
 			);
 
 			Assert.Throws<ArgumentOutOfRangeException>(
 				() =>
 				{
-					codeReader.Read(-1);
+					codeReader.ReadBits(-1);
 				}
 			);
 
 			Assert.Throws<ArgumentOutOfRangeException>(
 				() =>
 				{
-					codeReader.Read(-20000);
+					codeReader.ReadBits(-20000);
 				}
 			);
 		}
@@ -112,12 +112,12 @@ namespace BigRedProf.Data.Test
 		{
 			byte[] bytes = new byte[] { 0b00001101, 0b10101010 };
 			Stream stream = new MemoryStream(bytes);
-			CodeReader codeReader = new CodeReader(stream);
+			BitStream codeReader = new StreamBitReader(stream);
 
-			Assert.Throws<InvalidOperationException>(
+			Assert.Throws<EndOfStreamException>(
 				() =>
 				{
-					codeReader.Read((bytes.Length * 8) + 1);
+					codeReader.ReadBits((bytes.Length * 8) + 1);
 				}
 			);
 		}
@@ -128,14 +128,14 @@ namespace BigRedProf.Data.Test
 		{
 			byte[] bytes = new byte[] { 0b00001101, 0b10101010 };
 			Stream stream = new MemoryStream(bytes);
-			CodeReader codeReader = new CodeReader(stream);
+			BitStream codeReader = new StreamBitReader(stream);
 
-			Assert.Equal<Code>("10", codeReader.Read(2));
-			Assert.Equal<Code>("1100", codeReader.Read(4));
-			Assert.Equal<Code>("0", codeReader.Read(1));
-			Assert.Equal<Code>("00", codeReader.Read(2));   // wraps around byte boundary
-			Assert.Equal<Code>("101", codeReader.Read(3));
-			Assert.Equal<Code>("0101", codeReader.Read(4));
+			Assert.Equal<Code>("10", codeReader.ReadBits(2));
+			Assert.Equal<Code>("1100", codeReader.ReadBits(4));
+			Assert.Equal<Code>("0", codeReader.ReadBits(1));
+			Assert.Equal<Code>("00", codeReader.ReadBits(2));   // wraps around byte boundary
+			Assert.Equal<Code>("101", codeReader.ReadBits(3));
+			Assert.Equal<Code>("0101", codeReader.ReadBits(4));
 		}
 
 		[Fact]
@@ -144,16 +144,16 @@ namespace BigRedProf.Data.Test
 		{
 			byte[] bytes = new byte[] { 0b00001101, 0xFF, 0xFF, 0x00, 0x00, 0b10101010 };
 			Stream stream = new MemoryStream(bytes);
-			CodeReader codeReader = new CodeReader(stream);
+			BitStream codeReader = new StreamBitReader(stream);
 
-			Assert.Equal<Code>("10", codeReader.Read(2));
-			Assert.Equal<Code>("1100", codeReader.Read(4));
-			Assert.Equal<Code>("00", codeReader.Read(2));
-			Assert.Equal<Code>("11111111 11111111", codeReader.Read(16));
-			Assert.Equal<Code>("00000000 0000000", codeReader.Read(15));
-			Assert.Equal<Code>("00", codeReader.Read(2));
-			Assert.Equal<Code>("101", codeReader.Read(3));
-			Assert.Equal<Code>("0101", codeReader.Read(4));
+			Assert.Equal<Code>("10", codeReader.ReadBits(2));
+			Assert.Equal<Code>("1100", codeReader.ReadBits(4));
+			Assert.Equal<Code>("00", codeReader.ReadBits(2));
+			Assert.Equal<Code>("11111111 11111111", codeReader.ReadBits(16));
+			Assert.Equal<Code>("00000000 0000000", codeReader.ReadBits(15));
+			Assert.Equal<Code>("00", codeReader.ReadBits(2));
+			Assert.Equal<Code>("101", codeReader.ReadBits(3));
+			Assert.Equal<Code>("0101", codeReader.ReadBits(4));
 		}
 
 		[Fact]
@@ -167,9 +167,9 @@ namespace BigRedProf.Data.Test
 			// Ten bytes handed over three at a time take four reads. No byte is zero, so a gap
 			// the reader failed to fill cannot pass for data.
 			byte[] bytes = new byte[] { 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0xFE, 0xDC };
-			CodeReader codeReader = new CodeReader(new TrickleStream(bytes, 3));
+			BitStream codeReader = new StreamBitReader(new TrickleStream(bytes, 3));
 
-			Assert.Equal<Code>(new Code(bytes, 80), codeReader.Read(80));
+			Assert.Equal<Code>(new Code(bytes, 80), codeReader.ReadBits(80));
 		}
 
 		[Fact]
@@ -179,14 +179,22 @@ namespace BigRedProf.Data.Test
 			// A short read that is really the end of the stream is a truncated payload, and must
 			// not quietly come back padded with zeroes.
 			byte[] bytes = new byte[] { 0xFF, 0xFF, 0xFF };
-			CodeReader codeReader = new CodeReader(new TrickleStream(bytes, 2));
+			BitStream codeReader = new StreamBitReader(new TrickleStream(bytes, 2));
 
-			Assert.Throws<InvalidOperationException>(
+			EndOfStreamException end = Assert.Throws<EndOfStreamException>(
 				() =>
 				{
-					codeReader.Read(32);
+					codeReader.ReadBits(32);
 				}
 			);
+
+			InvalidOperationException faulted = Assert.Throws<InvalidOperationException>(
+				() =>
+				{
+					codeReader.ReadBits(1);
+				}
+			);
+			Assert.Same(end, faulted.InnerException);
 		}
 		#endregion
 
@@ -197,7 +205,7 @@ namespace BigRedProf.Data.Test
 		{
 			byte[] bytes = new byte[] { 0b00001101, 0xFF, 0xFF, 0x00, 0x00, 0b10101010 };
 			Stream stream = new MemoryStream(bytes);
-			CodeReader codeReader = new CodeReader(stream);
+			BitStream codeReader = new StreamBitReader(stream);
 
 			codeReader.Dispose();
 

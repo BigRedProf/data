@@ -72,7 +72,7 @@ namespace BigRedProf.Data.Core.Test.Internal.PackRats
 				piedPiper.PackModel<Datum>(opaque, CoreSchema.Datum)
 				+ piedPiper.PackModel<Datum>(readable, CoreSchema.Datum);
 
-			using (CodeReader reader = new CodeReader(new System.IO.MemoryStream(stream.ToByteArray())))
+			using (BitStream reader = new StreamBitReader(new System.IO.MemoryStream(stream.ToByteArray())))
 			{
 				Datum first = piedPiper.UnpackModel<Datum>(reader, CoreSchema.Datum);
 				Datum second = piedPiper.UnpackModel<Datum>(reader, CoreSchema.Datum);

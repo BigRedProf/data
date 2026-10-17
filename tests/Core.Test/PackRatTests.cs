@@ -28,7 +28,7 @@ namespace BigRedProf.Data.Test
 		public void PackNullableModel_ShouldThrowWhenPackRatIsNull()
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper(); 
-			CodeWriter writer = new CodeWriter(new MemoryStream());
+			BitStream writer = new StreamBitWriter(new MemoryStream());
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
@@ -43,7 +43,7 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
+			BitStream writer = new StreamBitWriter(writerStream);
 
 			piedPiper.PackNullableModel<string>(writer, null, CoreSchema.TextUtf8, ByteAligned.No);
 			Code expectedCode = "0";
@@ -51,9 +51,9 @@ namespace BigRedProf.Data.Test
 
 			writer.Dispose();
 			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
+			BitStream reader = new StreamBitReader(readerStream);
 			Assert.Equal(1, readerStream.Length);
-			Code actualCode = reader.Read(1);
+			Code actualCode = reader.ReadBits(1);
 			Assert.Equal(expectedCode, actualCode);
 		}
 
@@ -63,7 +63,7 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
+			BitStream writer = new StreamBitWriter(writerStream);
 
 			piedPiper.PackNullableModel<string>(writer, null, CoreSchema.TextUtf8, ByteAligned.Yes);
 			Code expectedCode = "0";
@@ -71,9 +71,9 @@ namespace BigRedProf.Data.Test
 
 			writer.Dispose();
 			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
+			BitStream reader = new StreamBitReader(readerStream);
 			Assert.Equal(1, readerStream.Length);
-			Code actualCode = reader.Read(1);
+			Code actualCode = reader.ReadBits(1);
 			Assert.Equal(expectedCode, actualCode);
 		}
 
@@ -83,15 +83,15 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
+			BitStream writer = new StreamBitWriter(writerStream);
 
 			piedPiper.PackNullableModel<bool>(writer, true, CoreSchema.Boolean, ByteAligned.No);
 
 			writer.Dispose();
 			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
+			BitStream reader = new StreamBitReader(readerStream);
 			Assert.Equal(1, readerStream.Length);
-			Code actualCode = reader.Read(2);
+			Code actualCode = reader.ReadBits(2);
 			Assert.Equal("11", actualCode);
 		}
 
@@ -101,7 +101,7 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
+			BitStream writer = new StreamBitWriter(writerStream);
 
 			piedPiper.PackNullableModel<bool>(writer, true, CoreSchema.Boolean, ByteAligned.Yes);
 			Code expectedCode = "10000000 1";
@@ -111,9 +111,9 @@ namespace BigRedProf.Data.Test
 
 			writer.Dispose();
 			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
+			BitStream reader = new StreamBitReader(readerStream);
 			Assert.Equal(2, readerStream.Length);
-			Code actualCode = reader.Read(9);
+			Code actualCode = reader.ReadBits(9);
 			Assert.Equal(expectedCode, actualCode);
 		}
 
@@ -135,7 +135,7 @@ namespace BigRedProf.Data.Test
 		public void UnpackNullableModel_ShouldThrowWhenPackRatIsNull()
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
-			CodeReader reader = new CodeReader(new MemoryStream());
+			BitStream reader = new StreamBitReader(new MemoryStream());
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
@@ -149,7 +149,7 @@ namespace BigRedProf.Data.Test
 		public void UnpackNullableModel_ShouldWorkForNullModels()
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
-			CodeReader reader = PackRatTestHelper.CreateCodeReader("0");
+			BitStream reader = PackRatTestHelper.CreateBitStream("0");
 
 			bool? actualModel = piedPiper.UnpackNullableModel<bool?>(reader, CoreSchema.Boolean, ByteAligned.No);
 
@@ -161,7 +161,7 @@ namespace BigRedProf.Data.Test
 		public void UnpackNullableModel_ShouldWorkForNullByteAlignedModels()
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
-			CodeReader reader = PackRatTestHelper.CreateCodeReader("0");
+			BitStream reader = PackRatTestHelper.CreateBitStream("0");
 
 			bool? actualModel = piedPiper.UnpackNullableModel<bool?>(reader, CoreSchema.Boolean, ByteAligned.Yes);
 
@@ -173,7 +173,7 @@ namespace BigRedProf.Data.Test
 		public void UnpackNullableModel_ShouldWorkForNonNullModels()
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
-			CodeReader reader = PackRatTestHelper.CreateCodeReader("11");
+			BitStream reader = PackRatTestHelper.CreateBitStream("11");
 
 			bool actualModel = piedPiper.UnpackNullableModel<bool>(reader, CoreSchema.Boolean, ByteAligned.No);
 
@@ -185,7 +185,7 @@ namespace BigRedProf.Data.Test
 		public void UnpackNullableModel_ShouldWorkForNonNullByteAlignedModels()
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
-			CodeReader reader = PackRatTestHelper.CreateCodeReader("10000000 1");
+			BitStream reader = PackRatTestHelper.CreateBitStream("10000000 1");
 
 			bool actualModel = piedPiper.UnpackNullableModel<bool>(reader, CoreSchema.Boolean, ByteAligned.Yes);
 
@@ -217,7 +217,7 @@ namespace BigRedProf.Data.Test
 		public void PackList_ShouldThrowWhenListIsNullAndNullListsAreNotAllowed()
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
-			CodeWriter codeWriter = new CodeWriter(new MemoryStream());
+			BitStream codeWriter = new StreamBitWriter(new MemoryStream());
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
@@ -238,7 +238,7 @@ namespace BigRedProf.Data.Test
 		public void PackList_ShouldThrowWhenListHasNullElementsAndNullElementsAreNotAllowed()
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
-			CodeWriter codeWriter = new CodeWriter(new MemoryStream());
+			BitStream codeWriter = new StreamBitWriter(new MemoryStream());
 			Assert.Throws<ArgumentException>(
 				() =>
 				{
@@ -260,7 +260,7 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
+			BitStream writer = new StreamBitWriter(writerStream);
 
 			piedPiper.PackList<string>(
 				writer,
@@ -275,9 +275,9 @@ namespace BigRedProf.Data.Test
 
 			writer.Dispose();
 			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
+			BitStream reader = new StreamBitReader(readerStream);
 			Assert.Equal(1, readerStream.Length);
-			Code actualCode = reader.Read(1);
+			Code actualCode = reader.ReadBits(1);
 			Assert.Equal(expectedCode, actualCode);
 		}
 
@@ -287,7 +287,7 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
+			BitStream writer = new StreamBitWriter(writerStream);
 
 			piedPiper.PackList<string>(
 				writer,
@@ -304,9 +304,9 @@ namespace BigRedProf.Data.Test
 
 			writer.Dispose();
 			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
+			BitStream reader = new StreamBitReader(readerStream);
 			Assert.Equal(8, readerStream.Length);
-			Code actualCode = reader.Read(64);
+			Code actualCode = reader.ReadBits(64);
 			Assert.Equal(expectedCode, actualCode);
 		}
 
@@ -316,7 +316,7 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
+			BitStream writer = new StreamBitWriter(writerStream);
 
 			piedPiper.PackList<bool>(
 				writer,
@@ -340,9 +340,9 @@ namespace BigRedProf.Data.Test
 
 			writer.Dispose();
 			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
+			BitStream reader = new StreamBitReader(readerStream);
 			Assert.Equal(6, readerStream.Length);
-			Code actualCode = reader.Read(41);
+			Code actualCode = reader.ReadBits(41);
 			Assert.Equal(expectedCode, actualCode);
 		}
 
@@ -352,7 +352,7 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
+			BitStream writer = new StreamBitWriter(writerStream);
 
 			piedPiper.PackList<string>(
 				writer,
@@ -370,9 +370,9 @@ namespace BigRedProf.Data.Test
 
 			writer.Dispose();
 			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
+			BitStream reader = new StreamBitReader(readerStream);
 			Assert.Equal(9, readerStream.Length);
-			Code actualCode = reader.Read(72);
+			Code actualCode = reader.ReadBits(72);
 			Assert.Equal(expectedCode, actualCode);
 		}
 
@@ -382,7 +382,7 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
+			BitStream writer = new StreamBitWriter(writerStream);
 
 			piedPiper.PackList<string>(
 				writer,
@@ -401,9 +401,9 @@ namespace BigRedProf.Data.Test
 
 			writer.Dispose();
 			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
+			BitStream reader = new StreamBitReader(readerStream);
 			Assert.Equal(9, readerStream.Length);
-			Code actualCode = reader.Read(72);
+			Code actualCode = reader.ReadBits(72);
 			Assert.Equal(expectedCode, actualCode);
 		}
 
@@ -413,7 +413,7 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
+			BitStream writer = new StreamBitWriter(writerStream);
 
 			piedPiper.PackList<string>(
 				writer,
@@ -432,9 +432,9 @@ namespace BigRedProf.Data.Test
 
 			writer.Dispose();
 			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
+			BitStream reader = new StreamBitReader(readerStream);
 			Assert.Equal(9, readerStream.Length);
-			Code actualCode = reader.Read(72);
+			Code actualCode = reader.ReadBits(72);
 			Assert.Equal(expectedCode, actualCode);
 		}
 
@@ -444,7 +444,7 @@ namespace BigRedProf.Data.Test
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
 			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
+			BitStream writer = new StreamBitWriter(writerStream);
 
 			piedPiper.PackList<string>(
 				writer,
@@ -463,9 +463,9 @@ namespace BigRedProf.Data.Test
 
 			writer.Dispose();
 			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
+			BitStream reader = new StreamBitReader(readerStream);
 			Assert.Equal(9, readerStream.Length);
-			Code actualCode = reader.Read(72);
+			Code actualCode = reader.ReadBits(72);
 			Assert.Equal(expectedCode, actualCode);
 		}
 
@@ -493,7 +493,7 @@ namespace BigRedProf.Data.Test
 		public void UnpackList_ShouldWorkForNullLists()
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
-			CodeReader reader = PackRatTestHelper.CreateCodeReader("0");
+			BitStream reader = PackRatTestHelper.CreateBitStream("0");
 
 			IList<string> actualList = piedPiper.UnpackList<string>(
 				reader,
@@ -513,7 +513,7 @@ namespace BigRedProf.Data.Test
 		public void UnpackList_ShouldWorkForNonNullableListsWithoutNullElements()
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
-			CodeReader reader = PackRatTestHelper.CreateCodeReader(
+			BitStream reader = PackRatTestHelper.CreateBitStream(
 				"1001 1011 01100110 11110110 11110110 1011 0000 01000110 10000110 01001110"
 			);
 
@@ -537,7 +537,7 @@ namespace BigRedProf.Data.Test
 		public void UnpackList_ShouldWorkForNonNullableListsWithoutNullElementsByteAligned()
 		{
 			IPiedPiper piedPiper = PackRatTestHelper.GetPiedPiper();
-			CodeReader reader = PackRatTestHelper.CreateCodeReader(
+			BitStream reader = PackRatTestHelper.CreateBitStream(
 				"11010000 1 0000000 0 0000000 1 0000000 1 0000000 0"
 			);
 
@@ -566,7 +566,7 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void UnpackList_ShouldWorkForNonNullableListsWithNullElements()
 		{
-			CodeReader reader = PackRatTestHelper.CreateCodeReader(
+			BitStream reader = PackRatTestHelper.CreateBitStream(
 				"1011 101 1011 00000 01100110 11110110 11110110 1011 0000 01000110 10000110 01001110"
 			);
 
@@ -591,7 +591,7 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void UnpackList_ShouldWorkForNonNullableListsWithNullElementsByteAligned()
 		{
-			CodeReader reader = PackRatTestHelper.CreateCodeReader(
+			BitStream reader = PackRatTestHelper.CreateBitStream(
 				"1011 101 0 1011 0000 01100110 11110110 11110110 1011 0000 01000110 10000110 01001110"
 			);
 
@@ -617,7 +617,7 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void UnpackList_ShouldWorkForNullableListsWithNullElements()
 		{
-			CodeReader reader = PackRatTestHelper.CreateCodeReader(
+			BitStream reader = PackRatTestHelper.CreateBitStream(
 				"1 1011 101 1011 0000 01100110 11110110 11110110 1011 0000 01000110 10000110 01001110"
 			);
 
@@ -643,7 +643,7 @@ namespace BigRedProf.Data.Test
 		[Trait("Region", "protected methods")]
 		public void UnpackList_ShouldWorkForNullableListsWithNullElementsByteAligned()
 		{
-			CodeReader reader = PackRatTestHelper.CreateCodeReader(
+			BitStream reader = PackRatTestHelper.CreateBitStream(
 				"1 1011 101 1011 0000 01100110 11110110 11110110 1011 0000 01000110 10000110 01001110"
 			);
 

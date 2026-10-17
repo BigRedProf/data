@@ -7,32 +7,32 @@ namespace BigRedProf.Data.Core.PackRats
 	public class TextPackRatHelper
 	{
 		#region functions
-		public static void PackTextBytes(CodeWriter writer, byte[] bytes)
+		public static void PackTextBytes(BitStream stream, byte[] bytes)
 		{
 			if (bytes.LongLength != 0)
 			{
 				Code code = new Code(bytes);
-				writer.AlignToNextByteBoundary();
-				writer.WriteCode(code);
+				stream.AlignToNextByteBoundary();
+				stream.WriteBits(code);
 			}
 		}
 
-		public static byte[] UnpackTextBytes(CodeReader reader, int length)
+		public static byte[] UnpackTextBytes(BitStream stream, int length)
 		{
-			reader.AlignToNextByteBoundary();
-			Code code = reader.Read(length * 8);
+			stream.AlignToNextByteBoundary();
+			Code code = stream.ReadBits(length * 8);
 			return code.ByteArray;
 		}
 
-		public static void PackTextWithoutLength(CodeWriter writer, string text, Encoding encoding)
+		public static void PackTextWithoutLength(BitStream stream, string text, Encoding encoding)
 		{
 			byte[] bytes = encoding.GetBytes(text);
-			PackTextBytes(writer, bytes);
+			PackTextBytes(stream, bytes);
 		}
 
-		public static string UnpackTextWithoutLength(CodeReader reader, int lengthInBytes, Encoding encoding)
+		public static string UnpackTextWithoutLength(BitStream stream, int lengthInBytes, Encoding encoding)
 		{
-			byte[] bytes = UnpackTextBytes(reader, lengthInBytes);
+			byte[] bytes = UnpackTextBytes(stream, lengthInBytes);
 			return encoding.GetString(bytes);
 		}
 		#endregion

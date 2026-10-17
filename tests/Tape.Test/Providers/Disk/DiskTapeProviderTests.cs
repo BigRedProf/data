@@ -117,7 +117,7 @@ namespace BigRedProf.Data.Tape.Test.Providers.Disk
 			using (RestorationWizard restoration = RestorationWizard.OpenExistingTapeSeries(library, seriesId, 0))
 			{
 				foreach (Code expected in codes)
-					Assert.Equal(expected, codePackRat.UnpackModel(restoration.CodeReader));
+					Assert.Equal(expected, codePackRat.UnpackModel(restoration.Reader));
 			}
 		}
 		#endregion

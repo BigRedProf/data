@@ -173,7 +173,7 @@ namespace BigRedProf.Data.Core.Test.Internal.PackRats
 					CoreSchema.FlexDatum
 				);
 
-			using (CodeReader codeReader = new CodeReader(new MemoryStream(stream.ToByteArray())))
+			using (BitStream codeReader = new StreamBitReader(new MemoryStream(stream.ToByteArray())))
 			{
 				FlexDatum first = reader.UnpackModel<FlexDatum>(codeReader, CoreSchema.FlexDatum);
 				FlexDatum second = reader.UnpackModel<FlexDatum>(codeReader, CoreSchema.FlexDatum);

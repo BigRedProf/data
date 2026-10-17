@@ -14,16 +14,16 @@ namespace BigRedProf.Data.Core
 		/// <summary>
 		/// Packs a model into a <see cref="Code"/>.
 		/// </summary>
-		/// <param name="writer">The code writer.</param>
+		/// <param name="stream">The bit stream.</param>
 		/// <param name="model">The model to pack.</param>
-		void PackModel(CodeWriter writer, object model);
+		void PackModel(BitStream stream, object model);
 
 		/// <summary>
 		/// Unpacks a model from a <see cref="Code"/>.
 		/// </summary>
-		/// <param name="reader">The code reader.</param>
+		/// <param name="stream">The bit stream.</param>
 		/// <returns>The unpacked model.</returns>
-		object UnpackModel(CodeReader reader);
+		object UnpackModel(BitStream stream);
 		#endregion
 	}
 }

@@ -17,24 +17,24 @@ namespace BigRedProf.Data.Tape.Test.Integration
 			string seriesDescription = "These reads and writes are byte-aligned.";
 
 			BackupWizard backupWizard = BackupWizard.CreateNew(library, seriesId, seriesName, seriesDescription);
-			backupWizard.Writer.WriteCode("00000000");
-			backupWizard.Writer.WriteCode("11111111");
-			backupWizard.Writer.WriteCode("00000000");
-			backupWizard.Writer.WriteCode("11111111");
-			backupWizard.Writer.WriteCode("00000000");
-			backupWizard.Writer.WriteCode("11111111");
-			backupWizard.Writer.WriteCode("00000000");
-			backupWizard.Writer.WriteCode("11111111");
+			backupWizard.Writer.WriteBits("00000000");
+			backupWizard.Writer.WriteBits("11111111");
+			backupWizard.Writer.WriteBits("00000000");
+			backupWizard.Writer.WriteBits("11111111");
+			backupWizard.Writer.WriteBits("00000000");
+			backupWizard.Writer.WriteBits("11111111");
+			backupWizard.Writer.WriteBits("00000000");
+			backupWizard.Writer.WriteBits("11111111");
 
 			RestorationWizard restorationWizard = RestorationWizard.OpenExistingTapeSeries(library, seriesId, 0);
-			Assert.Equal("00000000", restorationWizard.CodeReader.Read(8));
-			Assert.Equal("11111111", restorationWizard.CodeReader.Read(8));
-			Assert.Equal("00000000", restorationWizard.CodeReader.Read(8));
-			Assert.Equal("11111111", restorationWizard.CodeReader.Read(8));
-			Assert.Equal("00000000", restorationWizard.CodeReader.Read(8));
-			Assert.Equal("11111111", restorationWizard.CodeReader.Read(8));
-			Assert.Equal("00000000", restorationWizard.CodeReader.Read(8));
-			Assert.Equal("11111111", restorationWizard.CodeReader.Read(8));
+			Assert.Equal("00000000", restorationWizard.Reader.ReadBits(8));
+			Assert.Equal("11111111", restorationWizard.Reader.ReadBits(8));
+			Assert.Equal("00000000", restorationWizard.Reader.ReadBits(8));
+			Assert.Equal("11111111", restorationWizard.Reader.ReadBits(8));
+			Assert.Equal("00000000", restorationWizard.Reader.ReadBits(8));
+			Assert.Equal("11111111", restorationWizard.Reader.ReadBits(8));
+			Assert.Equal("00000000", restorationWizard.Reader.ReadBits(8));
+			Assert.Equal("11111111", restorationWizard.Reader.ReadBits(8));
 		}
 
 		[Trait("Region", "Backup And Restore")]
@@ -48,24 +48,24 @@ namespace BigRedProf.Data.Tape.Test.Integration
 			string seriesDescription = "These reads and writes are NOT byte-aligned.";
 
 			BackupWizard backupWizard = BackupWizard.CreateNew(library, seriesId, seriesName, seriesDescription);
-			backupWizard.Writer.WriteCode("00000");
-			backupWizard.Writer.WriteCode("11111");
-			backupWizard.Writer.WriteCode("00000");
-			backupWizard.Writer.WriteCode("11111");
-			backupWizard.Writer.WriteCode("00000");
-			backupWizard.Writer.WriteCode("11111");
-			backupWizard.Writer.WriteCode("00000");
-			backupWizard.Writer.WriteCode("11111");
+			backupWizard.Writer.WriteBits("00000");
+			backupWizard.Writer.WriteBits("11111");
+			backupWizard.Writer.WriteBits("00000");
+			backupWizard.Writer.WriteBits("11111");
+			backupWizard.Writer.WriteBits("00000");
+			backupWizard.Writer.WriteBits("11111");
+			backupWizard.Writer.WriteBits("00000");
+			backupWizard.Writer.WriteBits("11111");
 
 			RestorationWizard restorationWizard = RestorationWizard.OpenExistingTapeSeries(library, seriesId, 0);
-			Assert.Equal("00000", restorationWizard.CodeReader.Read(5));
-			Assert.Equal("11111", restorationWizard.CodeReader.Read(5));
-			Assert.Equal("00000", restorationWizard.CodeReader.Read(5));
-			Assert.Equal("11111", restorationWizard.CodeReader.Read(5));
-			Assert.Equal("00000", restorationWizard.CodeReader.Read(5));
-			Assert.Equal("11111", restorationWizard.CodeReader.Read(5));
-			Assert.Equal("00000", restorationWizard.CodeReader.Read(5));
-			Assert.Equal("11111", restorationWizard.CodeReader.Read(5));
+			Assert.Equal("00000", restorationWizard.Reader.ReadBits(5));
+			Assert.Equal("11111", restorationWizard.Reader.ReadBits(5));
+			Assert.Equal("00000", restorationWizard.Reader.ReadBits(5));
+			Assert.Equal("11111", restorationWizard.Reader.ReadBits(5));
+			Assert.Equal("00000", restorationWizard.Reader.ReadBits(5));
+			Assert.Equal("11111", restorationWizard.Reader.ReadBits(5));
+			Assert.Equal("00000", restorationWizard.Reader.ReadBits(5));
+			Assert.Equal("11111", restorationWizard.Reader.ReadBits(5));
 		}
 
 		[Trait("Region", "Backup And Restore")]
@@ -82,16 +82,16 @@ namespace BigRedProf.Data.Tape.Test.Integration
 			PackRat<Code> codePackRat = piedPiper.GetPackRat<Code>(CoreSchema.Code);
 
 			BackupWizard backupWizard = BackupWizard.CreateNew(library, seriesId, seriesName, seriesDescription);
-			backupWizard.Writer.WriteCode(piedPiper.PackModel<Code>("0", CoreSchema.Code));
-			backupWizard.Writer.WriteCode(piedPiper.PackModel<Code>("00", CoreSchema.Code));
-			backupWizard.Writer.WriteCode(piedPiper.PackModel<Code>("10101", CoreSchema.Code));
+			backupWizard.Writer.WriteBits(piedPiper.PackModel<Code>("0", CoreSchema.Code));
+			backupWizard.Writer.WriteBits(piedPiper.PackModel<Code>("00", CoreSchema.Code));
+			backupWizard.Writer.WriteBits(piedPiper.PackModel<Code>("10101", CoreSchema.Code));
 
 			RestorationWizard restorationWizard = RestorationWizard.OpenExistingTapeSeries(library, seriesId, 0);
-			Code code1 = codePackRat.UnpackModel(restorationWizard.CodeReader);
+			Code code1 = codePackRat.UnpackModel(restorationWizard.Reader);
 			Assert.Equal("0", code1.ToString());
-			Code code2 = codePackRat.UnpackModel(restorationWizard.CodeReader);
+			Code code2 = codePackRat.UnpackModel(restorationWizard.Reader);
 			Assert.Equal("00", code2.ToString());
-			Code code3 = codePackRat.UnpackModel(restorationWizard.CodeReader);
+			Code code3 = codePackRat.UnpackModel(restorationWizard.Reader);
 			Assert.Equal("10101", code3.ToString());
 		}
 		#endregion

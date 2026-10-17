@@ -7,7 +7,7 @@ using Xunit;
 
 namespace BigRedProf.Data.Test
 {
-	public class CodeWriterTests
+	public class StreamBitWriterTests
 	{
 		#region constructor tests
 		[Fact]
@@ -16,7 +16,7 @@ namespace BigRedProf.Data.Test
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					new CodeWriter(null);
+					new StreamBitWriter(null);
 				}
 			);
 		}
@@ -24,17 +24,17 @@ namespace BigRedProf.Data.Test
 
 		#region IDisposable tests
 		[Fact]
-		public void WriteCodeShouldThrowWhenDisposed()
+		public void WriteBitsShouldThrowWhenDisposed()
 		{
 			Stream stream = new MemoryStream();
-			CodeWriter codeWriter = new CodeWriter(stream);
+			BitStream codeWriter = new StreamBitWriter(stream);
 			
 			codeWriter.Dispose();
 
 			Assert.Throws<ObjectDisposedException>(
 				() =>
 				{
-					codeWriter.WriteCode(new Code(1));
+					codeWriter.WriteBits(new Code(1));
 				}
 			);
 		}
@@ -45,9 +45,9 @@ namespace BigRedProf.Data.Test
 		public void WritingAShortCodeShouldWork()
 		{
 			MemoryStream stream = new MemoryStream();
-			CodeWriter codeWriter = new CodeWriter(stream);
+			BitStream codeWriter = new StreamBitWriter(stream);
 
-			codeWriter.WriteCode(new Code(1, 0));
+			codeWriter.WriteBits(new Code(1, 0));
 			codeWriter.Dispose();
 
 			byte[] bytes = stream.ToArray();
@@ -59,9 +59,9 @@ namespace BigRedProf.Data.Test
 		public void WritingAMediumCodeShouldWork()
 		{
 			MemoryStream stream = new MemoryStream();
-			CodeWriter codeWriter = new CodeWriter(stream);
+			BitStream codeWriter = new StreamBitWriter(stream);
 
-			codeWriter.WriteCode(new Code(1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1));
+			codeWriter.WriteBits(new Code(1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1));
 			codeWriter.Dispose();
 
 			byte[] bytes = stream.ToArray();
@@ -75,14 +75,14 @@ namespace BigRedProf.Data.Test
 		public void WritingMultipleCodesShouldWork()
 		{
 			MemoryStream stream = new MemoryStream();
-			CodeWriter codeWriter = new CodeWriter(stream);
+			BitStream codeWriter = new StreamBitWriter(stream);
 
-			codeWriter.WriteCode(new Code(1, 0, 1));
-			codeWriter.WriteCode(new Code(1, 1, 0, 1, 0, 0, 1, 1, 1));
-			codeWriter.WriteCode("0");
-			codeWriter.WriteCode(new Code(0, 1));
-			codeWriter.WriteCode(new Code(0, 0, 1));
-			codeWriter.WriteCode(new Code(1, 1, 1));
+			codeWriter.WriteBits(new Code(1, 0, 1));
+			codeWriter.WriteBits(new Code(1, 1, 0, 1, 0, 0, 1, 1, 1));
+			codeWriter.WriteBits("0");
+			codeWriter.WriteBits(new Code(0, 1));
+			codeWriter.WriteBits(new Code(0, 0, 1));
+			codeWriter.WriteBits(new Code(1, 1, 1));
 			codeWriter.Dispose();
 
 			byte[] bytes = stream.ToArray();
@@ -96,12 +96,12 @@ namespace BigRedProf.Data.Test
 		public void WritingByteAlignedBigCodesShouldWork()
 		{
 			MemoryStream stream = new MemoryStream();
-			CodeWriter codeWriter = new CodeWriter(stream);
+			BitStream codeWriter = new StreamBitWriter(stream);
 
-			codeWriter.WriteCode(new Code(1, 0, 1));
+			codeWriter.WriteBits(new Code(1, 0, 1));
 			codeWriter.AlignToNextByteBoundary();
-			codeWriter.WriteCode(new Code(Enumerable.Repeat(0b11110001, 8192).Select(x => (byte)x).ToArray()));
-			codeWriter.WriteCode(new Code(1, 1, 1));
+			codeWriter.WriteBits(new Code(Enumerable.Repeat(0b11110001, 8192).Select(x => (byte)x).ToArray()));
+			codeWriter.WriteBits(new Code(1, 1, 1));
 			codeWriter.Dispose();
 
 			byte[] bytes = stream.ToArray();
@@ -114,221 +114,6 @@ namespace BigRedProf.Data.Test
 			Assert.Equal(0b11110001, bytes[8191]);
 			Assert.Equal(0b11110001, bytes[8192]);
 			Assert.Equal(0b00000111, bytes[8193]);
-		}
-
-		[Fact]
-		[Trait("Region", "methods")]
-		public void ToDebugCode_ShouldWorkThrowWhenStartIsNegative()
-		{
-			CodeWriter codeWriter = new CodeWriter(new MemoryStream());
-			Assert.Throws<ArgumentOutOfRangeException>(
-				() =>
-				{
-					codeWriter.ToDebugCode(-1);
-				}
-			);
-		}
-
-		[Fact]
-		[Trait("Region", "methods")]
-		public void ToDebugCode_ShouldWorkThrowWhenLengthIsNegative()
-		{
-			CodeWriter codeWriter = new CodeWriter(new MemoryStream());
-			Assert.Throws<ArgumentOutOfRangeException>(
-				() =>
-				{
-					codeWriter.ToDebugCode(0, -1);
-				}
-			);
-		}
-
-		[Fact]
-		[Trait("Region", "methods")]
-		public void ToDebugCode_ShouldWorkThrowWhenLengthIsTooLong()
-		{
-			CodeWriter codeWriter = new CodeWriter(new MemoryStream());
-			codeWriter.WriteCode("1111 0000 1111 000");
-			Assert.Throws<ArgumentOutOfRangeException>(
-				() =>
-				{
-					codeWriter.ToDebugCode(0, 16);
-				}
-			);
-		}
-
-		[Fact]
-		[Trait("Region", "methods")]
-		public void ToDebugCode_ShouldWorkForOneByteWrites()
-		{
-			CodeWriter codeWriter;
-
-			codeWriter	= new CodeWriter(new MemoryStream());
-			codeWriter.WriteCode("0");
-			Assert.Equal<Code>("0", codeWriter.ToDebugCode());
-
-			codeWriter = new CodeWriter(new MemoryStream());
-			codeWriter.WriteCode("1");
-			Assert.Equal<Code>("1", codeWriter.ToDebugCode());
-
-			codeWriter = new CodeWriter(new MemoryStream());
-			codeWriter.WriteCode("1011 001");
-			Assert.Equal<Code>("1011 001", codeWriter.ToDebugCode());
-
-			codeWriter = new CodeWriter(new MemoryStream());
-			codeWriter.WriteCode("1011 1101");
-			Assert.Equal<Code>("11 1101", codeWriter.ToDebugCode(2));
-
-			codeWriter = new CodeWriter(new MemoryStream());
-			codeWriter.WriteCode("0110 0010");
-			Assert.Equal<Code>("0001", codeWriter.ToDebugCode(3, 4));
-		}
-
-		[Fact]
-		[Trait("Region", "methods")]
-		public void ToDebugCode_ShouldWorkForMultiByteWrites()
-		{
-			CodeWriter codeWriter;
-
-			codeWriter = new CodeWriter(new MemoryStream());
-			codeWriter.WriteCode("00000000 00000000");
-			Assert.Equal<Code>("00000000 00000000", codeWriter.ToDebugCode());
-
-			codeWriter = new CodeWriter(new MemoryStream());
-			codeWriter.WriteCode("11111111 11111111");
-			Assert.Equal<Code>("11111111 11111111", codeWriter.ToDebugCode());
-
-			codeWriter = new CodeWriter(new MemoryStream());
-			codeWriter.WriteCode("11111111 11111111 0101010");
-			Assert.Equal<Code>("11111111 11111111 0101010", codeWriter.ToDebugCode());
-
-			codeWriter = new CodeWriter(new MemoryStream());
-			codeWriter.WriteCode("11111111 11111111 0000111");
-			Assert.Equal<Code>("11111111 11111111 0000111", codeWriter.ToDebugCode());
-
-			codeWriter = new CodeWriter(new MemoryStream());
-			codeWriter.WriteCode("10110001 00110110 10111101 0");
-			Assert.Equal<Code>("10110001 00110110 10111101 0", codeWriter.ToDebugCode());
-
-			codeWriter = new CodeWriter(new MemoryStream());
-			codeWriter.WriteCode("10110001 00110110 10111101 0");
-			Assert.Equal<Code>("110001 00110110 10111101 0", codeWriter.ToDebugCode(2));
-
-			codeWriter = new CodeWriter(new MemoryStream());
-			codeWriter.WriteCode("10110001 00110110 10111101 0");
-			Assert.Equal<Code>("10001 00110110 1", codeWriter.ToDebugCode(3, 14));
-		}
-
-		[Fact]
-		[Trait("Region", "methods")]
-		public void ToDebugCode_ShouldGiveTheSameResultWhenTheStreamReturnsFewerBytesThanAskedFor()
-		{
-			// ToDebugCode is a debug helper, and it is compiled in every configuration, so this
-			// runs in Debug and Release. TrickleStream hands the bytes over a few at a time.
-			// The helper has to come back with the same code a normal stream produces.
-			byte[] bytes = new byte[] { 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0xFE, 0xDC };
-			Code code = new Code(bytes, bytes.Length * 8);
-
-			CodeWriter normalWriter = new CodeWriter(new MemoryStream());
-			normalWriter.WriteCode(code);
-			Code fromNormalStream = normalWriter.ToDebugCode();
-
-			CodeWriter trickleWriter = new CodeWriter(new TricklingMemoryStream(3));
-			trickleWriter.WriteCode(code);
-			Code fromTrickleStream = trickleWriter.ToDebugCode();
-
-			Assert.Equal(fromNormalStream, fromTrickleStream);
-		}
-
-		[Fact]
-		[Trait("Region", "methods")]
-		public void ToDebugCode_ShouldThrowWhenTheStreamEndsEarly()
-		{
-			// The helper already knows how long the stream is. Ending before that is a bug,
-			// not a short read to pad out.
-			EarlyEndStream stream = new EarlyEndStream(1);
-			CodeWriter codeWriter = new CodeWriter(stream);
-			codeWriter.WriteCode("11111111 11111111");
-			long positionBefore = stream.Position;
-
-			Assert.Throws<EndOfStreamException>(
-				() =>
-				{
-					codeWriter.ToDebugCode();
-				}
-			);
-
-			Assert.Equal(positionBefore, stream.Position);
-		}
-		#endregion
-
-		#region private classes
-		/// <summary>
-		/// A seekable stream CodeWriter can write, whose reads are served by
-		/// <see cref="TrickleStream"/> so one Read is never the whole buffer.
-		/// </summary>
-		private sealed class TricklingMemoryStream : MemoryStream
-		{
-			#region fields
-			private readonly int _maximumBytesPerRead;
-			#endregion
-
-			#region constructors
-			public TricklingMemoryStream(int maximumBytesPerRead)
-			{
-				_maximumBytesPerRead = maximumBytesPerRead;
-			}
-			#endregion
-
-			#region Stream methods
-			public override int Read(byte[] buffer, int offset, int count)
-			{
-				byte[] snapshot = ToArray();
-				int position = (int)Position;
-				if (position >= snapshot.Length)
-					return 0;
-
-				byte[] remaining = new byte[snapshot.Length - position];
-				Array.Copy(snapshot, position, remaining, 0, remaining.Length);
-
-				TrickleStream trickle = new TrickleStream(remaining, _maximumBytesPerRead);
-				int bytesRead = trickle.Read(buffer, offset, count);
-				Position = position + bytesRead;
-				return bytesRead;
-			}
-			#endregion
-		}
-
-		/// <summary>
-		/// Reports the bytes that were written, but stops producing them early so a reader
-		/// that trusts Length finds the stream already ended.
-		/// </summary>
-		private sealed class EarlyEndStream : MemoryStream
-		{
-			#region fields
-			private readonly int _readableByteCount;
-			#endregion
-
-			#region constructors
-			public EarlyEndStream(int readableByteCount)
-			{
-				_readableByteCount = readableByteCount;
-			}
-			#endregion
-
-			#region Stream methods
-			public override int Read(byte[] buffer, int offset, int count)
-			{
-				if (Position >= _readableByteCount)
-					return 0;
-
-				int remaining = _readableByteCount - (int)Position;
-				int allowed = count;
-				if (allowed > remaining)
-					allowed = remaining;
-
-				return base.Read(buffer, offset, allowed);
-			}
-			#endregion
 		}
 		#endregion
 	}

@@ -9,20 +9,20 @@ namespace BigRedProf.Data.Test._TestHelpers
 	{
 		#region fields
 		private MemoryStream _stream;
-		private CodeWriter _writer;
-		private CodeReader _reader;
+		private BitStream _writer;
+		private BitStream _reader;
 		#endregion
 
 		#region constructors
 		public CodeTester() 
 		{
 			_stream = new MemoryStream();
-			_writer = new CodeWriter(_stream);
+			_writer = new StreamBitWriter(_stream);
 		}
 		#endregion
 
 		#region properties
-		public CodeWriter Writer
+		public BitStream Writer
 		{
 			get
 			{
@@ -33,7 +33,7 @@ namespace BigRedProf.Data.Test._TestHelpers
 			}
 		}
 
-		public CodeReader Reader
+		public BitStream Reader
 		{
 			get
 			{
@@ -55,17 +55,17 @@ namespace BigRedProf.Data.Test._TestHelpers
 			_writer = null;
 			byte[] bytes = _stream.ToArray();
 			Stream readerStream = new MemoryStream(bytes);
-			_reader = new CodeReader(readerStream);
+			_reader = new StreamBitReader(readerStream);
 		}
 
 		public void Write(Code code)
 		{
-			Writer.WriteCode(code);
+			Writer.WriteBits(code);
 		}
 
 		public void ReadAndVerify(Code expectedCode)
 		{
-			Code actualCode = Reader.Read(expectedCode.Length);
+			Code actualCode = Reader.ReadBits(expectedCode.Length);
 			
 			// Compare the text representation of the codes as it makes troubleshooting much easier.
 			//Assert.Equal<Code>(expectedCode, actualCode);

@@ -12,11 +12,11 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 		{
 		}
 
-		public override void PackModel(CodeWriter writer, MixedListTestModel model)
+		public override void PackModel(BitStream stream, MixedListTestModel model)
 		{
 			// ListProperty
 			PiedPiper.PackList<string>(
-				writer,
+				stream,
 				model.ListProperty,
 				"9cdf52b4-4c47-4b6d-bc17-34f33312b7a7",
 				false,
@@ -26,7 +26,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 
 			// ListField
 			PiedPiper.PackList<int>(
-				writer,
+				stream,
 				model.ListField,
 				"ffdb57bb-be6b-4cc3-a0f6-48596c8a8b2b",
 				false,
@@ -36,7 +36,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 
 			// NullableListPropertyOfNullableElements
 			PiedPiper.PackList<string>(
-				writer,
+				stream,
 				model.NullableListPropertyOfNullableElements,
 				"9cdf52b4-4c47-4b6d-bc17-34f33312b7a7",
 				true,
@@ -46,7 +46,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 
 			// NullableListField
 			PiedPiper.PackList<int>(
-				writer,
+				stream,
 				model.NullableListField,
 				"ffdb57bb-be6b-4cc3-a0f6-48596c8a8b2b",
 				true,
@@ -55,13 +55,13 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 			);
 		}
 
-		public override MixedListTestModel UnpackModel(CodeReader reader)
+		public override MixedListTestModel UnpackModel(BitStream stream)
 		{
 			MixedListTestModel model = new MixedListTestModel();
 
 			// ListProperty
 			model.ListProperty = PiedPiper.UnpackList<string>(
-				reader,
+				stream,
 				"9cdf52b4-4c47-4b6d-bc17-34f33312b7a7",
 				false,
 				false,
@@ -70,7 +70,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 
 			// ListField
 			model.ListField = PiedPiper.UnpackList<int>(
-				reader,
+				stream,
 				"ffdb57bb-be6b-4cc3-a0f6-48596c8a8b2b",
 				false,
 				false,
@@ -79,7 +79,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 
 			// NullableListPropertyOfNullableElements
 			model.NullableListPropertyOfNullableElements = PiedPiper.UnpackList<string>(
-				reader,
+				stream,
 				"9cdf52b4-4c47-4b6d-bc17-34f33312b7a7",
 				true,
 				true,
@@ -88,7 +88,7 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 
 			// NullableListField
 			model.NullableListField = PiedPiper.UnpackList<int>(
-				reader,
+				stream,
 				"ffdb57bb-be6b-4cc3-a0f6-48596c8a8b2b",
 				true,
 				false,

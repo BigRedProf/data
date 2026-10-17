@@ -23,44 +23,44 @@ namespace BigRedProf.Data.Core.Internal.PackRats
 		#endregion
 
 		#region methods
-		public void PackModelWithoutLength(CodeWriter writer, string model)
+		public void PackModelWithoutLength(BitStream stream, string model)
 		{
 			byte[] bytes = Encoding.GetBytes(model);
-			TextPackRatHelper.PackTextBytes(writer, bytes);
+			TextPackRatHelper.PackTextBytes(stream, bytes);
 		}
 
-		public string UnpackModelWithoutLength(CodeReader reader, int lengthOfEncodedBytes)
+		public string UnpackModelWithoutLength(BitStream stream, int lengthOfEncodedBytes)
 		{
-			byte[] bytes = TextPackRatHelper.UnpackTextBytes(reader, lengthOfEncodedBytes);
+			byte[] bytes = TextPackRatHelper.UnpackTextBytes(stream, lengthOfEncodedBytes);
 			return Encoding.GetString(bytes);
 		}
 		#endregion
 
 		#region PackRat methods
-		public override void PackModel(CodeWriter writer, string model)
+		public override void PackModel(BitStream stream, string model)
 		{
-			if(writer == null)
-				throw new ArgumentNullException(nameof(writer));
+			if(stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
 			byte[] bytes = Encoding.GetBytes(model);
-			PiedPiper.PackModel(writer, bytes.Length, CoreSchema.EfficientWholeNumber31);
-			TextPackRatHelper.PackTextBytes(writer, bytes);
+			PiedPiper.PackModel(stream, bytes.Length, CoreSchema.EfficientWholeNumber31);
+			TextPackRatHelper.PackTextBytes(stream, bytes);
 		}
 
-		public override string UnpackModel(CodeReader reader)
+		public override string UnpackModel(BitStream stream)
 		{
-			if(reader == null)
-				throw new ArgumentNullException(nameof(reader));
+			if(stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
 			string model;
-			int byteCount = PiedPiper.GetPackRat<int>(CoreSchema.EfficientWholeNumber31).UnpackModel(reader);
+			int byteCount = PiedPiper.GetPackRat<int>(CoreSchema.EfficientWholeNumber31).UnpackModel(stream);
 			if (byteCount == 0)
 			{
 				model = string.Empty;
 			}
 			else
 			{
-				byte[] textBytes = TextPackRatHelper.UnpackTextBytes(reader, byteCount);
+				byte[] textBytes = TextPackRatHelper.UnpackTextBytes(stream, byteCount);
 				model = Encoding.GetString(textBytes);
 			}
 

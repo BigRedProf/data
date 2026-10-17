@@ -12,27 +12,27 @@ namespace BigRedProf.Data.Core.Internal.PackRats
 		#endregion
 
 		#region PackRat methods
-		public override void PackModel(CodeWriter writer, int model)
+		public override void PackModel(BitStream stream, int model)
 		{
-			if (writer == null)
-				throw new ArgumentNullException(nameof(writer));
+			if (stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
 			uint value = (uint)model;
 
 			while (value >= 0x80)
 			{
 				byte nextByte = (byte)((value & 0x7F) | 0x80); // set MSB for continuation
-				PiedPiper.PackModel<byte>(writer, ReverseByte(nextByte), CoreSchema.Byte);
+				PiedPiper.PackModel<byte>(stream, ReverseByte(nextByte), CoreSchema.Byte);
 				value >>= 7;
 			}
 
-			PiedPiper.PackModel<byte>(writer, ReverseByte((byte)value), CoreSchema.Byte); // final byte, MSB = 0
+			PiedPiper.PackModel<byte>(stream, ReverseByte((byte)value), CoreSchema.Byte); // final byte, MSB = 0
 		}
 
-		public override int UnpackModel(CodeReader reader)
+		public override int UnpackModel(BitStream stream)
 		{
-			if (reader == null)
-				throw new ArgumentNullException(nameof(reader));
+			if (stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
 			int result = 0;
 			int shift = 0;
@@ -42,7 +42,7 @@ namespace BigRedProf.Data.Core.Internal.PackRats
 				if (shift > 28) // guard against overflow (5 full groups of 7 bits = 35 bits)
 					throw new InvalidOperationException("LEB128 varint is too long for Int32.");
 
-				byte b = ReverseByte(PiedPiper.UnpackModel<byte>(reader, CoreSchema.Byte));
+				byte b = ReverseByte(PiedPiper.UnpackModel<byte>(stream, CoreSchema.Byte));
 				result |= (b & 0x7F) << shift;
 
 				if ((b & 0x80) == 0)

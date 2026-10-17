@@ -45,7 +45,7 @@ namespace BigRedProf.Data.Test
 
 			// 6 continuation bytes → overflow for 32-bit int
 			Code code = "11111111 11111111 11111111 11111111 11111111 11111111";
-			var reader = PackRatTestHelper.CreateCodeReader(code);
+			var reader = PackRatTestHelper.CreateBitStream(code);
 
 			Assert.Throws<InvalidOperationException>(() =>
 			{
