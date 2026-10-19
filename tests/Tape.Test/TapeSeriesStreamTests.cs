@@ -308,6 +308,93 @@ namespace BigRedProf.Data.Tape.Test
 		}
 		#endregion
 
+		#region read alignment failures
+		[Fact]
+		public void Align_WhenTheNextTapeLabelFails_FaultsTheReader()
+		{
+			// Ten bits on the first tape, opened at bit 6. One more bit leaves the wrapper at
+			// position 1, so alignment still has to step onto the next tape and read its label.
+			LabelFailingTapeProvider provider = new LabelFailingTapeProvider();
+			Librarian librarian = new Librarian(provider);
+			Guid seriesId = NewSeriesId();
+
+			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "align fault");
+
+			using (TapeSeriesBitStream writer = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Append))
+			{
+				writer.WriteBits("1011001101");
+			}
+
+			Guid secondId = Guid.NewGuid();
+			Tape second = Tape.CreateNew(provider, secondId);
+			TapeLabel secondLabel = second.ReadLabel()
+				.WithSeriesInfo(seriesId, "Test Series", 2)
+				.WithName("Test Series")
+				.WithSeriesDescription("align fault");
+			second.WriteLabel(secondLabel);
+
+			using (TapeSeriesBitStream secondWriter = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Append))
+			{
+				secondWriter.WriteBits("11110000");
+			}
+
+			using (TapeSeriesBitStream reader = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Read, 6))
+			{
+				reader.ReadBits(1);
+				Assert.Equal(1, reader.Position);
+
+				provider.FailTapeId = secondId;
+
+				IOException failure = Assert.Throws<IOException>(
+					() =>
+					{
+						reader.AlignToNextByteBoundary();
+					}
+				);
+				Assert.Equal(1, provider.LabelReadFailures);
+				Assert.Equal(1, reader.Position);
+
+				InvalidOperationException faulted = Assert.Throws<InvalidOperationException>(
+					() =>
+					{
+						reader.AlignToNextByteBoundary();
+					}
+				);
+				Assert.Same(failure, faulted.InnerException);
+
+				Assert.Throws<ArgumentOutOfRangeException>(
+					() =>
+					{
+						reader.ReadBits(-1);
+					}
+				);
+				Assert.Throws<NotSupportedException>(
+					() =>
+					{
+						reader.WriteBits("1");
+					}
+				);
+				Assert.Throws<InvalidOperationException>(
+					() =>
+					{
+						reader.ReadBits(1);
+					}
+				);
+				Assert.Throws<InvalidOperationException>(() => reader.Flush());
+				Assert.Equal(1, reader.Position);
+
+				reader.Dispose();
+				ObjectDisposedException disposed = Assert.Throws<ObjectDisposedException>(
+					() =>
+					{
+						reader.AlignToNextByteBoundary();
+					}
+				);
+				Assert.Equal(nameof(TapeSeriesBitStream), disposed.ObjectName);
+			}
+		}
+		#endregion
+
 		#region negative capability tests
 		[Fact]
 		public void Read_ShouldThrow_WhenOpenedInAppendMode()
@@ -365,6 +452,23 @@ namespace BigRedProf.Data.Tape.Test
 		#endregion
 
 		#region private helpers
+		private sealed class LabelFailingTapeProvider : MemoryTapeProvider
+		{
+			public Guid FailTapeId { get; set; }
+			public int LabelReadFailures { get; private set; }
+
+			public override byte[] ReadLabelInternal(Guid tapeId)
+			{
+				if (FailTapeId != Guid.Empty && tapeId == FailTapeId)
+				{
+					++LabelReadFailures;
+					throw new IOException("injected label failure");
+				}
+
+				return base.ReadLabelInternal(tapeId);
+			}
+		}
+
 		private static Tape GetLastTape(Librarian librarian, Guid seriesId)
 		{
 			Tape last = null!;

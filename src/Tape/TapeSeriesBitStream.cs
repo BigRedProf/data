@@ -239,9 +239,21 @@ namespace BigRedProf.Data.Tape
 		{
 			PrepareOperation();
 			if (_mode == OpenMode.Read)
-				AlignRead();
+			{
+				// Crossing onto the next tape reads that tape's label. A failure there faults
+				// the reader, the same way a failed ReadBits does, so a later call cannot resume
+				// from a cursor that already moved.
+				RunIo(
+					delegate()
+					{
+						AlignRead();
+					}
+				);
+			}
 			else
+			{
 				AlignWrite();
+			}
 		}
 
 		/// <inheritdoc/>
