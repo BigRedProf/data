@@ -4,30 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace BigRedProf.Data.Test
 {
 	public class BitStreamContractTests
 	{
-		#region constants
-		/// <summary>
-		/// Fixed seed for the randomized sequences. Logged when that test runs.
-		/// </summary>
-		private const int RandomSeed = unchecked((int)0x0B1757EA);
-		#endregion
-
-		#region fields
-		private readonly ITestOutputHelper _output;
-		#endregion
-
-		#region constructors
-		public BitStreamContractTests(ITestOutputHelper output)
-		{
-			_output = output;
-		}
-		#endregion
-
 		#region hand-worked bytes
 		[Fact]
 		public void IssueExample_Is05Then0F()
@@ -114,7 +95,7 @@ namespace BigRedProf.Data.Test
 		}
 		#endregion
 
-		#region exhaustive and random
+		#region exhaustive and fixed vectors
 		[Fact]
 		public void ExhaustiveSmallCodes_MatchTheReferenceModel()
 		{
@@ -150,82 +131,44 @@ namespace BigRedProf.Data.Test
 		}
 
 		[Fact]
-		public void RandomSequences_MatchTheReferenceModel()
+		public void FixedOperationVectors_MatchTheReferenceModel()
 		{
-			_output.WriteLine("BitStream random seed 0x0B1757EA");
-
-			Random random = new Random(RandomSeed);
-			for (int trial = 0; trial < 20; ++trial)
+			// Checked-in sequences from seed 0x0B1757EA: writes (including length 0), aligns, and flushes.
+			List<List<Operation>> sequences = LoadOperationVectors();
+			int writes = 0;
+			int emptyWrites = 0;
+			int aligns = 0;
+			int flushes = 0;
+			Assert.Equal(20, sequences.Count);
+			foreach (List<Operation> operations in sequences)
 			{
-				int operationCount = 40 + random.Next(40);
-				ReferenceBitModel model = new ReferenceBitModel();
-				List<Operation> operations = new List<Operation>();
-				MemoryStream stream = new MemoryStream();
-				using (StreamBitWriter writer = new StreamBitWriter(stream, leaveOpen: true))
+				Assert.InRange(operations.Count, 40, 79);
+				foreach (Operation operation in operations)
 				{
-					for (int i = 0; i < operationCount; ++i)
+					if (operation.Kind == OperationKind.Write)
 					{
-						int kind = random.Next(5);
-						if (kind <= 2)
-						{
-							Code code = Pattern(random.Next(0, 41), random);
-							writer.WriteBits(code);
-							model.WriteBits(code);
-							operations.Add(new Operation(OperationKind.Write, code));
-						}
-						else if (kind == 3)
-						{
-							writer.AlignToNextByteBoundary();
-							model.Align();
-							operations.Add(new Operation(OperationKind.Align, new Code(0)));
-						}
-						else
-						{
-							writer.Flush();
-							writer.Flush();
-							model.Flush();
-							operations.Add(new Operation(OperationKind.Flush, new Code(0)));
-						}
-
-						Assert.Equal(model.Length, writer.Position);
+						++writes;
+						if (operation.Code.Length == 0)
+							++emptyWrites;
 					}
-				}
-
-				byte[] expectedBytes = model.ToByteArray();
-				byte[] actualBytes = stream.ToArray();
-				Assert.Equal(expectedBytes, actualBytes);
-
-				using (StreamBitReader reader = new StreamBitReader(new MemoryStream(expectedBytes)))
-				{
-					int cursor = 0;
-					foreach (Operation operation in operations)
+					else if (operation.Kind == OperationKind.Align)
 					{
-						if (operation.Kind == OperationKind.Write)
-						{
-							Code expected = model.Read(cursor, operation.Code.Length);
-							Code actual = reader.ReadBits(operation.Code.Length);
-							Assert.Equal(expected, actual);
-							cursor += operation.Code.Length;
-							Assert.Equal(cursor, reader.Position);
-						}
-						else if (operation.Kind == OperationKind.Align)
-						{
-							reader.AlignToNextByteBoundary();
-							int remainder = cursor % 8;
-							if (remainder != 0)
-								cursor += 8 - remainder;
-
-							Assert.Equal(cursor, reader.Position);
-						}
-						else
-						{
-							reader.Flush();
-							reader.Flush();
-							Assert.Equal(cursor, reader.Position);
-						}
+						++aligns;
+					}
+					else
+					{
+						++flushes;
 					}
 				}
 			}
+
+			Assert.Equal(733, writes);
+			Assert.Equal(10, emptyWrites);
+			Assert.Equal(253, aligns);
+			Assert.Equal(214, flushes);
+
+			foreach (List<Operation> operations in sequences)
+				AssertOperationsMatchModel(operations);
 		}
 		#endregion
 
@@ -582,16 +525,137 @@ namespace BigRedProf.Data.Test
 			return builder.Build();
 		}
 
-		private static Code Pattern(int length, Random random)
+		private static void AssertOperationsMatchModel(List<Operation> operations)
 		{
-			if (length == 0)
-				return new Code(0);
+			ReferenceBitModel model = new ReferenceBitModel();
+			MemoryStream stream = new MemoryStream();
+			using (StreamBitWriter writer = new StreamBitWriter(stream, leaveOpen: true))
+			{
+				foreach (Operation operation in operations)
+				{
+					if (operation.Kind == OperationKind.Write)
+					{
+						writer.WriteBits(operation.Code);
+						model.WriteBits(operation.Code);
+					}
+					else if (operation.Kind == OperationKind.Align)
+					{
+						writer.AlignToNextByteBoundary();
+						model.Align();
+					}
+					else
+					{
+						writer.Flush();
+						writer.Flush();
+						model.Flush();
+					}
 
-			CodeBuilder builder = new CodeBuilder(length);
-			for (int i = 0; i < length; ++i)
-				builder[i] = random.Next(2);
+					Assert.Equal(model.Length, writer.Position);
+				}
+			}
 
-			return builder.Build();
+			byte[] expectedBytes = model.ToByteArray();
+			byte[] actualBytes = stream.ToArray();
+			Assert.Equal(expectedBytes, actualBytes);
+
+			using (StreamBitReader reader = new StreamBitReader(new MemoryStream(expectedBytes)))
+			{
+				int cursor = 0;
+				foreach (Operation operation in operations)
+				{
+					if (operation.Kind == OperationKind.Write)
+					{
+						Code expected = model.Read(cursor, operation.Code.Length);
+						Code actual = reader.ReadBits(operation.Code.Length);
+						Assert.Equal(expected, actual);
+						cursor += operation.Code.Length;
+						Assert.Equal(cursor, reader.Position);
+					}
+					else if (operation.Kind == OperationKind.Align)
+					{
+						reader.AlignToNextByteBoundary();
+						int remainder = cursor % 8;
+						if (remainder != 0)
+							cursor += 8 - remainder;
+
+						Assert.Equal(cursor, reader.Position);
+					}
+					else
+					{
+						reader.Flush();
+						reader.Flush();
+						Assert.Equal(cursor, reader.Position);
+					}
+				}
+			}
+		}
+
+		private static List<List<Operation>> LoadOperationVectors()
+		{
+			string path = Path.Combine(AppContext.BaseDirectory, "BitStreamOperationVectors.txt");
+			string text = File.ReadAllText(path);
+			List<List<Operation>> sequences = new List<List<Operation>>();
+			List<Operation> current = null;
+			string[] lines = text.Split('\n');
+			for (int i = 0; i < lines.Length; ++i)
+			{
+				string line = lines[i].TrimEnd('\r').Trim();
+				if (line.Length == 0 || line.StartsWith("#", StringComparison.Ordinal))
+					continue;
+
+				if (line.StartsWith("SEQUENCE ", StringComparison.Ordinal))
+				{
+					if (current != null)
+						throw new InvalidOperationException("Sequence " + (i + 1) + " started before the previous one ended.");
+
+					current = new List<Operation>();
+					continue;
+				}
+
+				if (line == "END")
+				{
+					if (current == null)
+						throw new InvalidOperationException("END without a sequence at line " + (i + 1) + ".");
+
+					sequences.Add(current);
+					current = null;
+					continue;
+				}
+
+				if (current == null)
+					throw new InvalidOperationException("Operation outside a sequence at line " + (i + 1) + ": " + line);
+
+				if (line == "A")
+				{
+					current.Add(new Operation(OperationKind.Align, new Code(0)));
+					continue;
+				}
+
+				if (line == "F")
+				{
+					current.Add(new Operation(OperationKind.Flush, new Code(0)));
+					continue;
+				}
+
+				if (line == "W -")
+				{
+					current.Add(new Operation(OperationKind.Write, new Code(0)));
+					continue;
+				}
+
+				if (line.StartsWith("W ", StringComparison.Ordinal))
+				{
+					current.Add(new Operation(OperationKind.Write, new Code(line.Substring(2))));
+					continue;
+				}
+
+				throw new InvalidOperationException("Unknown operation at line " + (i + 1) + ": " + line);
+			}
+
+			if (current != null)
+				throw new InvalidOperationException("The last sequence is missing END.");
+
+			return sequences;
 		}
 
 		private static void AssertWriteMatchesModel(int prefixZeros, Code code)
