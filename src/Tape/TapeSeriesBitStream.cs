@@ -559,12 +559,16 @@ namespace BigRedProf.Data.Tape
 
 		private bool AdvanceReadTape()
 		{
-			if (_currentIndex + 1 >= _orderedTapes.Count)
-				return false;
+			// An empty tape is not the end of the series. Later tapes may still hold content.
+			while (_currentIndex + 1 < _orderedTapes.Count)
+			{
+				_currentIndex++;
+				_current = MakeReadCursor(_orderedTapes[_currentIndex]);
+				if (_current.ContentBitLength > 0)
+					return true;
+			}
 
-			_currentIndex++;
-			_current = MakeReadCursor(_orderedTapes[_currentIndex]);
-			return _current.ContentBitLength > 0;
+			return false;
 		}
 
 		private void EnsureWritableTape()

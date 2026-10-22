@@ -308,6 +308,56 @@ namespace BigRedProf.Data.Tape.Test
 		}
 		#endregion
 
+		#region empty tapes
+		[Fact]
+		public void Read_ShouldSkipAnEmptyMiddleTape()
+		{
+			MemoryTapeProvider provider = new MemoryTapeProvider();
+			Librarian librarian = new Librarian(provider);
+			Guid seriesId = NewSeriesId();
+
+			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "empty middle");
+
+			using (TapeSeriesBitStream writer = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Append))
+			{
+				writer.WriteBits("11110000");
+			}
+
+			Tape empty = Tape.CreateNew(provider, Guid.NewGuid());
+			empty.WriteLabel(
+				empty.ReadLabel()
+					.WithSeriesInfo(seriesId, "Test Series", 2)
+					.WithName("Test Series")
+					.WithSeriesDescription("empty middle")
+			);
+
+			Tape last = Tape.CreateNew(provider, Guid.NewGuid());
+			last.WriteLabel(
+				last.ReadLabel()
+					.WithSeriesInfo(seriesId, "Test Series", 3)
+					.WithName("Test Series")
+					.WithSeriesDescription("empty middle")
+			);
+
+			using (TapeSeriesBitStream tail = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Append))
+			{
+				tail.WriteBits("101");
+			}
+
+			using (TapeSeriesBitStream reader = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Read))
+			{
+				Assert.Equal<Code>("11110000", reader.ReadBits(8));
+				Assert.Equal<Code>("101", reader.ReadBits(3));
+				Assert.Throws<EndOfStreamException>(
+					() =>
+					{
+						reader.ReadBits(1);
+					}
+				);
+			}
+		}
+		#endregion
+
 		#region read alignment failures
 		[Fact]
 		public void Align_WhenTheNextTapeLabelFails_FaultsTheReader()
