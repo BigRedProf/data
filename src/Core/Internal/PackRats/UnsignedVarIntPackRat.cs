@@ -12,34 +12,34 @@ namespace BigRedProf.Data.Core.Internal
 		#endregion
 
 		#region PackRat methods
-		public override void PackModel(CodeWriter writer, int model)
+		public override void PackModel(BitStream stream, int model)
 		{
-			if (writer == null)
-				throw new ArgumentNullException(nameof(writer));
+			if (stream == null)
+				throw new ArgumentNullException(nameof(stream));
 			if (model < 0)
 				throw new ArgumentOutOfRangeException(nameof(model), "Varint must be non-negative.");
 
 			while (model >= 0x80)
 			{
 				byte b = (byte)((model & 0x7F) | 0x80);
-				PiedPiper.PackModel<byte>(writer, b, CoreSchema.Byte);
+				PiedPiper.PackModel<byte>(stream, b, CoreSchema.Byte);
 				model >>= 7;
 			}
 
-			PiedPiper.PackModel<byte>(writer, (byte)model, CoreSchema.Byte);
+			PiedPiper.PackModel<byte>(stream, (byte)model, CoreSchema.Byte);
 		}
 
-		public override int UnpackModel(CodeReader reader)
+		public override int UnpackModel(BitStream stream)
 		{
-			if (reader == null)
-				throw new ArgumentNullException(nameof(reader));
+			if (stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
 			int value = 0;
 			int shift = 0;
 
 			while (true)
 			{
-				byte b = PiedPiper.UnpackModel<byte>(reader, CoreSchema.Byte);
+				byte b = PiedPiper.UnpackModel<byte>(stream, CoreSchema.Byte);
 
 				value |= (b & 0x7F) << shift;
 

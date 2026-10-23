@@ -141,7 +141,7 @@ namespace BigRedProf.Data.Core
 		}
 
 		/// <summary>
-		/// Exposes the underlying byte array, internally, to make <see cref="CodeWriter"/> more efficient.
+		/// Exposes the underlying byte array, internally, to make <see cref="BitStream"/> writes more efficient.
 		/// </summary>
 		internal byte[] ByteArray
 		{

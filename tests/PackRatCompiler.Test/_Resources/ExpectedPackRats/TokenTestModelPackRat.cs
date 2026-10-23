@@ -12,28 +12,28 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 		{
 		}
 
-		public override void PackModel(CodeWriter writer, TokenTestModel model)
+		public override void PackModel(BitStream stream, TokenTestModel model)
 		{
 			// StringAsValue
 			PiedPiper.GetPackRat<string>("cf1820e1-86b7-4e1c-909e-c9b874996e58")
-				.PackModel(writer, model.StringAsValue);
+				.PackModel(stream, model.StringAsValue);
 
 			// StringAsToken
 			PiedPiper.GetPackRat<string>("e9ab0764-2e47-42dc-860d-0ba1573b728f")
-				.PackModel(writer, model.StringAsToken);
+				.PackModel(stream, model.StringAsToken);
 		}
 
-		public override TokenTestModel UnpackModel(CodeReader reader)
+		public override TokenTestModel UnpackModel(BitStream stream)
 		{
 			TokenTestModel model = new TokenTestModel();
 
 			// StringAsValue
 			model.StringAsValue = PiedPiper.GetPackRat<string>("cf1820e1-86b7-4e1c-909e-c9b874996e58")
-				.UnpackModel(reader);
+				.UnpackModel(stream);
 
 			// StringAsToken
 			model.StringAsToken = PiedPiper.GetPackRat<string>("e9ab0764-2e47-42dc-860d-0ba1573b728f")
-				.UnpackModel(reader);
+				.UnpackModel(stream);
 
 			return model;
 		}

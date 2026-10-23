@@ -31,10 +31,10 @@ namespace BigRedProf.Data.Core.Internal.PackRats
 		#endregion
 
 		#region PackRat methods
-		public override void PackModel(CodeWriter writer, FlexDatum model)
+		public override void PackModel(BitStream stream, FlexDatum model)
 		{
-			if (writer == null)
-				throw new ArgumentNullException(nameof(writer));
+			if (stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
 			if (model == null)
 				throw new ArgumentNullException(nameof(model));
@@ -42,49 +42,49 @@ namespace BigRedProf.Data.Core.Internal.PackRats
 			IReadOnlyList<TraitValue> traitValues = model.TraitValues;
 			int traitCount = traitValues.Count;
 
-			PiedPiper.PackModel<int>(writer, traitCount, CoreSchema.EfficientWholeNumber31);
+			PiedPiper.PackModel<int>(stream, traitCount, CoreSchema.EfficientWholeNumber31);
 
 			if (traitCount > 0)
 			{
-				writer.AlignToNextByteBoundary();
+				stream.AlignToNextByteBoundary();
 				for (int i = 0; i < traitCount; ++i)
 				{
-					PiedPiper.PackModel<Guid>(writer, traitValues[i].TraitId, CoreSchema.Guid);
+					PiedPiper.PackModel<Guid>(stream, traitValues[i].TraitId, CoreSchema.Guid);
 					PiedPiper.PackModel<int>(
-						writer,
+						stream,
 						traitValues[i].Code.Length,
 						CoreSchema.EfficientWholeNumber31
 					);
 				}
 
-				writer.AlignToNextByteBoundary();
+				stream.AlignToNextByteBoundary();
 				for (int i = 0; i < traitCount; ++i)
-					writer.WriteCode(traitValues[i].Code);
+					stream.WriteBits(traitValues[i].Code);
 			}
 		}
 
-		public override FlexDatum UnpackModel(CodeReader reader)
+		public override FlexDatum UnpackModel(BitStream stream)
 		{
-			if (reader == null)
-				throw new ArgumentNullException(nameof(reader));
+			if (stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
-			int traitCount = PiedPiper.UnpackModel<int>(reader, CoreSchema.EfficientWholeNumber31);
+			int traitCount = PiedPiper.UnpackModel<int>(stream, CoreSchema.EfficientWholeNumber31);
 			if (traitCount == 0)
 				return new FlexDatum(Array.Empty<TraitValue>());
 
-			reader.AlignToNextByteBoundary();
+			stream.AlignToNextByteBoundary();
 			Guid[] traitIds = new Guid[traitCount];
 			int[] codeLengths = new int[traitCount];
 			for (int i = 0; i < traitCount; ++i)
 			{
-				traitIds[i] = PiedPiper.UnpackModel<Guid>(reader, CoreSchema.Guid);
-				codeLengths[i] = PiedPiper.UnpackModel<int>(reader, CoreSchema.EfficientWholeNumber31);
+				traitIds[i] = PiedPiper.UnpackModel<Guid>(stream, CoreSchema.Guid);
+				codeLengths[i] = PiedPiper.UnpackModel<int>(stream, CoreSchema.EfficientWholeNumber31);
 			}
 
-			reader.AlignToNextByteBoundary();
+			stream.AlignToNextByteBoundary();
 			TraitValue[] traitValues = new TraitValue[traitCount];
 			for (int i = 0; i < traitCount; ++i)
-				traitValues[i] = new TraitValue(traitIds[i], reader.Read(codeLengths[i]));
+				traitValues[i] = new TraitValue(traitIds[i], stream.ReadBits(codeLengths[i]));
 
 			return new FlexDatum(traitValues);
 		}

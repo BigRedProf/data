@@ -155,7 +155,7 @@ namespace BigRedProf.Data.Core.Test
 				piedPiper.PackModel<Datum>(nothingToSay, CoreSchema.Datum)
 				+ piedPiper.PackModel<Datum>(somethingToSay, CoreSchema.Datum);
 		
-			using (CodeReader reader = new CodeReader(new System.IO.MemoryStream(stream.ToByteArray())))
+			using (BitStream reader = new StreamBitReader(new System.IO.MemoryStream(stream.ToByteArray())))
 			{
 				Assert.Equal(nothingToSay, piedPiper.UnpackModel<Datum>(reader, CoreSchema.Datum));
 				Assert.Equal("Lincoln", piedPiper.UnpackModel<Datum>(reader, CoreSchema.Datum).Unpack<string>(piedPiper));

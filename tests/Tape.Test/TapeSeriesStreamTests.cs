@@ -1,26 +1,30 @@
 ﻿using BigRedProf.Data.Core;
+using BigRedProf.Data.Tape;
 using BigRedProf.Data.Tape.Providers.Memory;
-using System.Collections.Generic;
-using System.Reflection.PortableExecutable;
 
 namespace BigRedProf.Data.Tape.Test
 {
-	public class TapeSeriesStreamTests
+	public class TapeSeriesBitStreamTests
 	{
 		#region helpers
 		private static Librarian CreateLibrarian()
 		{
-			// Adjust this to however you normally create a Librarian backed by an in-memory TapeProvider.
-			// For example, if you have an InMemoryTapeProvider:
-			//   return new Librarian(new InMemoryTapeProvider());
-			//
-			// If your code uses a TapeLibrary wrapper, you can expose .Librarian from there.
 			return new Librarian(new MemoryTapeProvider());
 		}
 
 		private static Guid NewSeriesId()
 		{
 			return Guid.NewGuid();
+		}
+
+		private static byte[] ReadTapeBytes(Tape tape)
+		{
+			int bitLength = tape.Position;
+			int byteLength = (bitLength + 7) / 8;
+			if (byteLength == 0)
+				return Array.Empty<byte>();
+
+			return tape.TapeProvider.ReadTapeInternal(tape.Id, 0, byteLength);
 		}
 		#endregion
 
@@ -31,7 +35,7 @@ namespace BigRedProf.Data.Tape.Test
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					new TapeSeriesStream(null!, Guid.NewGuid(), TapeSeriesStream.OpenMode.Read);
+					new TapeSeriesBitStream(null!, Guid.NewGuid(), TapeSeriesBitStream.OpenMode.Read);
 				}
 			);
 		}
@@ -44,7 +48,7 @@ namespace BigRedProf.Data.Tape.Test
 			Assert.Throws<ArgumentException>(
 				() =>
 				{
-					new TapeSeriesStream(librarian, Guid.Empty, TapeSeriesStream.OpenMode.Read);
+					new TapeSeriesBitStream(librarian, Guid.Empty, TapeSeriesBitStream.OpenMode.Read);
 				}
 			);
 		}
@@ -55,11 +59,10 @@ namespace BigRedProf.Data.Tape.Test
 			Librarian librarian = CreateLibrarian();
 			Guid seriesId = NewSeriesId();
 
-			// No tapes created yet for this seriesId
 			Assert.Throws<InvalidOperationException>(
 				() =>
 				{
-					new TapeSeriesStream(librarian, seriesId, TapeSeriesStream.OpenMode.Read);
+					new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Read);
 				}
 			);
 		}
@@ -67,43 +70,28 @@ namespace BigRedProf.Data.Tape.Test
 
 		#region append + readback basics
 		[Fact]
-		public void Append_ThenReadBack_WithCodeReaderWriter_ShouldRoundTrip()
+		public void Append_ThenReadBack_ShouldRoundTrip()
 		{
 			Librarian librarian = CreateLibrarian();
 			Guid seriesId = NewSeriesId();
 
-			// Start a new series/tape with proper labels/metadata
-			BackupWizard wizard = BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Round-trip test");
+			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Round-trip test");
 
-			// Append a mixed sequence:
-			//   1) "1"                  (1 bit)
-			//   2) "010"                (+3 bits)  => total so far 4 bits (fills low nibble of first byte)
-			//   3) 8-bit code 01110010  (+8 bits)  => fills the rest of byte0 and all of byte1 per LSB-first
-			//   4) 0xF1                 (+8 bits)  => bits LSB-first: 10001111
-			//   5) "001"                (+3 bits)
-			using (TapeSeriesStream writeStream = new TapeSeriesStream(librarian, seriesId, TapeSeriesStream.OpenMode.Append))
-			using (CodeWriter writer = new CodeWriter(writeStream))
+			using (TapeSeriesBitStream writer = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Append))
 			{
-				writer.WriteCode("1");                                        // 1
-				writer.WriteCode("010");                                      // +3 => 4
-				writer.WriteCode(new Code(0, 1, 1, 1, 0, 0, 1, 0));           // +8 => 12
-				writer.WriteCode(new Code(new byte[] { 0xF1 }));              // +8 => 20
-				writer.WriteCode("001");                                      // +3 => 23
+				writer.WriteBits("1");
+				writer.WriteBits("010");
+				writer.WriteBits(new Code(0, 1, 1, 1, 0, 0, 1, 0));
+				writer.WriteBits(new Code(new byte[] { 0xF1 }));
+				writer.WriteBits("001");
 			}
 
-			using (TapeSeriesStream readStream = new TapeSeriesStream(librarian, seriesId, TapeSeriesStream.OpenMode.Read))
-			using (CodeReader reader = new CodeReader(readStream))
+			using (TapeSeriesBitStream reader = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Read))
 			{
-				// Read back in the same chunk sizes, crossing byte boundaries.
-				// LSB-first within each byte:
-				//   - After first 4 bits: "1010"
-				//   - Next 8 bits (positions 4..11) are the 8-bit code: "01110010"
-				//   - Next 8 bits (positions 12..19) are 0xF1 LSB-first: "10001111"
-				//   - Final 3 bits: "001"
-				Code a = reader.Read(4);
-				Code b = reader.Read(8);
-				Code c = reader.Read(8);
-				Code d = reader.Read(3);
+				Code a = reader.ReadBits(4);
+				Code b = reader.ReadBits(8);
+				Code c = reader.ReadBits(8);
+				Code d = reader.ReadBits(3);
 
 				Assert.Equal<Code>("1010", a);
 				Assert.Equal<Code>("01110010", b);
@@ -120,28 +108,23 @@ namespace BigRedProf.Data.Tape.Test
 			Librarian librarian = CreateLibrarian();
 			Guid seriesId = NewSeriesId();
 
-			BackupWizard wizard = BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Position test");
+			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Position test");
 
-			// Append 3 bits
-			using (TapeSeriesStream writeStream = new TapeSeriesStream(librarian, seriesId, TapeSeriesStream.OpenMode.Append))
-			using (CodeWriter writer = new CodeWriter(writeStream))
+			using (TapeSeriesBitStream writer = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Append))
 			{
-				writer.WriteCode("101");
+				writer.WriteBits("101");
 			}
 
-			// Verify last tape's Position is 3
 			Tape last = GetLastTape(librarian, seriesId);
 			Assert.Equal(3, last.Position);
 
-			// Append 5 more bits (to complete a byte)
-			using (TapeSeriesStream writeStream = new TapeSeriesStream(librarian, seriesId, TapeSeriesStream.OpenMode.Append))
-			using (CodeWriter writer = new CodeWriter(writeStream))
+			using (TapeSeriesBitStream writer = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Append))
 			{
-				writer.WriteCode("00101");
+				writer.WriteBits("00101");
 			}
 
 			last = GetLastTape(librarian, seriesId);
-			Assert.Equal(8, last.Position); // 3 + 5 = 8 bits
+			Assert.Equal(8, last.Position);
 		}
 		#endregion
 
@@ -152,29 +135,27 @@ namespace BigRedProf.Data.Tape.Test
 			Librarian librarian = CreateLibrarian();
 			Guid seriesId = NewSeriesId();
 
-			BackupWizard wizard = BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Partial byte test");
+			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Partial byte test");
 
-			// Write 11 bits total. The read-stream when asked for bytes will need to pack the final 3 bits.
-			using (TapeSeriesStream writeStream = new TapeSeriesStream(librarian, seriesId, TapeSeriesStream.OpenMode.Append))
-			using (CodeWriter writer = new CodeWriter(writeStream))
+			using (TapeSeriesBitStream writer = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Append))
 			{
-				// 8 bits (one byte), then +3 bits
-				writer.WriteCode("10110011");
-				writer.WriteCode("001");
+				writer.WriteBits("10110011");
+				writer.WriteBits("001");
 			}
 
-			// Consume via Stream.Read(byte[]...) to ensure the stream packs the last partial byte
-			using (TapeSeriesStream readStream = new TapeSeriesStream(librarian, seriesId, TapeSeriesStream.OpenMode.Read))
-			{
-				byte[] buffer = new byte[3];
-				int n = readStream.Read(buffer, 0, buffer.Length);
+			Tape last = GetLastTape(librarian, seriesId);
+			Assert.Equal(11, last.Position);
 
-				// We expect 2 bytes returned (LSB-first within each byte):
-				//   First byte: bits "10110011" map to b0..b7 => 11001101 (0xCD = 205)
-				//   Second byte: final 3 bits "001" => 0b00000001 (1)				
-				Assert.Equal(2, n);
-				Assert.Equal(0b11001101, buffer[0]);
-				Assert.Equal(0b00000100, buffer[1]);
+			// "10110011" is 0xCD. The final "001" is bit 2 of the next byte, 0x04.
+			byte[] content = ReadTapeBytes(last);
+			Assert.Equal(2, content.Length);
+			Assert.Equal(0b11001101, content[0]);
+			Assert.Equal(0b00000100, content[1]);
+
+			using (TapeSeriesBitStream reader = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Read))
+			{
+				Assert.Equal<Code>("10110011", reader.ReadBits(8));
+				Assert.Equal<Code>("001", reader.ReadBits(3));
 			}
 		}
 		#endregion
@@ -186,7 +167,7 @@ namespace BigRedProf.Data.Tape.Test
 			Librarian librarian = CreateLibrarian();
 			Guid seriesId = NewSeriesId();
 
-			BackupWizard wizard = BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Rollover bug repro");
+			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Rollover bug repro");
 
 			Tape initialTape = GetLastTape(librarian, seriesId);
 			TapeLabel initialLabel = initialTape.ReadLabel();
@@ -196,11 +177,10 @@ namespace BigRedProf.Data.Tape.Test
 			bytes[0] = 0b01010101;
 			bytes[1] = 0b11110000;
 
-			using (TapeSeriesStream writeStream = new TapeSeriesStream(librarian, seriesId, TapeSeriesStream.OpenMode.Append))
-			using (CodeWriter writer = new CodeWriter(writeStream))
+			using (TapeSeriesBitStream writer = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Append))
 			{
-				writer.WriteCode(new Code(new byte[] { bytes[0] }));
-				writer.WriteCode(new Code(new byte[] { bytes[1] }));
+				writer.WriteBits(new Code(new byte[] { bytes[0] }));
+				writer.WriteBits(new Code(new byte[] { bytes[1] }));
 			}
 
 			IList<Tape> tapes = librarian.FetchTapesInSeries(seriesId);
@@ -222,33 +202,46 @@ namespace BigRedProf.Data.Tape.Test
 			Librarian librarian = CreateLibrarian();
 			Guid seriesId = NewSeriesId();
 
-			BackupWizard wizard = BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Align test");
+			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Align test");
 
-			using (TapeSeriesStream writeStream = new TapeSeriesStream(librarian, seriesId, TapeSeriesStream.OpenMode.Append))
-			using (CodeWriter writer = new CodeWriter(writeStream))
+			using (TapeSeriesBitStream writer = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Append))
 			{
-				writer.WriteCode("101");                   // 3 bits -> partial byte
-				writer.AlignToNextByteBoundary();          // finish the current byte (should write 00000101)
-				writer.WriteCode(new Code(new byte[] { 0xF1, 0xF1 })); // 16 bits
-				writer.WriteCode("111");                   // +3 bits (tail)
+				writer.WriteBits("101");
+				writer.AlignToNextByteBoundary();
+				writer.WriteBits(new Code(new byte[] { 0xF1, 0xF1 }));
+				writer.WriteBits("111");
 			}
 
-			using (TapeSeriesStream readStream = new TapeSeriesStream(librarian, seriesId, TapeSeriesStream.OpenMode.Read))
-			{
-				byte[] all = new byte[4];
-				int n = readStream.Read(all, 0, all.Length);
+			Tape last = GetLastTape(librarian, seriesId);
+			Assert.Equal(27, last.Position);
 
-				// Expect:
-				//   Byte 0: 00000101
-				//   Byte 1: 0xF1
-				//   Byte 2: 0xF1
-				//   Byte 3: packed from "111" -> 0b00000111
-				Assert.Equal(4, n);
-				Assert.Equal(0b00000101, all[0]);
-				Assert.Equal(0xF1, all[1]);
-				Assert.Equal(0xF1, all[2]);
-				Assert.Equal(0b00000111, all[3]);
+			byte[] all = ReadTapeBytes(last);
+			Assert.Equal(4, all.Length);
+			Assert.Equal(0b00000101, all[0]);
+			Assert.Equal(0xF1, all[1]);
+			Assert.Equal(0xF1, all[2]);
+			Assert.Equal(0b00000111, all[3]);
+		}
+
+		[Fact]
+		public void AlignThenDispose_ShouldCommitMeaningfulBitsOnly()
+		{
+			Librarian librarian = CreateLibrarian();
+			Guid seriesId = NewSeriesId();
+
+			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Align dispose");
+
+			using (TapeSeriesBitStream writer = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Append))
+			{
+				writer.WriteBits("101");
+				writer.AlignToNextByteBoundary();
 			}
+
+			Tape last = GetLastTape(librarian, seriesId);
+			Assert.Equal(3, last.Position);
+			byte[] content = ReadTapeBytes(last);
+			Assert.Single(content);
+			Assert.Equal(0b00000101, content[0]);
 		}
 		#endregion
 
@@ -259,34 +252,25 @@ namespace BigRedProf.Data.Tape.Test
 			Librarian librarian = CreateLibrarian();
 			Guid seriesId = NewSeriesId();
 
-			BackupWizard wizard = BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Large block test");
+			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Large block test");
 
 			byte[] big = new byte[4096];
 			for (int i = 0; i < big.Length; ++i)
 				big[i] = (byte)(i % 251);
 
-			using (TapeSeriesStream writeStream = new TapeSeriesStream(librarian, seriesId, TapeSeriesStream.OpenMode.Append))
-			using (CodeWriter writer = new CodeWriter(writeStream))
+			using (TapeSeriesBitStream writer = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Append))
 			{
 				writer.AlignToNextByteBoundary();
-				writer.WriteCode(new Code(big));
+				writer.WriteBits(new Code(big));
 			}
 
-			using (TapeSeriesStream readStream = new TapeSeriesStream(librarian, seriesId, TapeSeriesStream.OpenMode.Read))
+			using (TapeSeriesBitStream reader = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Read))
 			{
-				byte[] buffer = new byte[big.Length];
-				int read = 0;
-				while (read < buffer.Length)
-				{
-					int n = readStream.Read(buffer, read, buffer.Length - read);
-					if (n == 0)
-						break;
-					read += n;
-				}
-
-				Assert.Equal(big.Length, read);
 				for (int i = 0; i < big.Length; ++i)
-					Assert.Equal(big[i], buffer[i]);
+				{
+					Code code = reader.ReadBits(8);
+					Assert.Equal(big[i], code.ToByteArray()[0]);
+				}
 			}
 
 			Tape last = GetLastTape(librarian, seriesId);
@@ -294,40 +278,169 @@ namespace BigRedProf.Data.Tape.Test
 		}
 		#endregion
 
-		#region x
+		#region content length
 		[Fact]
 		public void Read_ShouldRespectContentLength_WhenTapePositionIsRewound()
 		{
 			Librarian librarian = CreateLibrarian();
 			Guid seriesId = NewSeriesId();
 
-			BackupWizard wizard = BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Content length test");
+			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Content length test");
 
 			byte[] data = new byte[2];
 			data[0] = 0xAA;
 			data[1] = 0x55;
 
-			using (TapeSeriesStream writeStream = new TapeSeriesStream(librarian, seriesId, TapeSeriesStream.OpenMode.Append))
-			using (CodeWriter writer = new CodeWriter(writeStream))
+			using (TapeSeriesBitStream writer = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Append))
 			{
 				writer.AlignToNextByteBoundary();
-				writer.WriteCode(new Code(data));
+				writer.WriteBits(new Code(data));
 			}
 
 			Tape tape = GetLastTape(librarian, seriesId);
 			TapeLabel label = tape.ReadLabel();
 			tape.WriteLabel(label.WithTapePosition(0));
 
-			using (TapeSeriesStream readStream = new TapeSeriesStream(librarian, seriesId, TapeSeriesStream.OpenMode.Read))
+			using (TapeSeriesBitStream reader = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Read))
 			{
-				byte[] buffer = new byte[data.Length];
-				int read = readStream.Read(buffer, 0, buffer.Length);
+				Assert.Equal<Code>(new Code(data), reader.ReadBits(16));
+			}
+		}
+		#endregion
 
-				Assert.Equal(data.Length, read);
-				for (int i = 0; i < data.Length; ++i)
-				{
-					Assert.Equal(data[i], buffer[i]);
-				}
+		#region empty tapes
+		[Fact]
+		public void Read_ShouldSkipAnEmptyMiddleTape()
+		{
+			MemoryTapeProvider provider = new MemoryTapeProvider();
+			Librarian librarian = new Librarian(provider);
+			Guid seriesId = new Guid("11111111-1111-1111-1111-111111111111");
+
+			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "empty middle");
+
+			using (TapeSeriesBitStream writer = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Append))
+			{
+				writer.WriteBits("11110000");
+			}
+
+			Tape empty = Tape.CreateNew(provider, new Guid("22222222-2222-2222-2222-222222222222"));
+			empty.WriteLabel(
+				empty.ReadLabel()
+					.WithSeriesInfo(seriesId, "Test Series", 2)
+					.WithName("Test Series")
+					.WithSeriesDescription("empty middle")
+			);
+
+			Tape last = Tape.CreateNew(provider, new Guid("33333333-3333-3333-3333-333333333333"));
+			last.WriteLabel(
+				last.ReadLabel()
+					.WithSeriesInfo(seriesId, "Test Series", 3)
+					.WithName("Test Series")
+					.WithSeriesDescription("empty middle")
+			);
+
+			using (TapeSeriesBitStream tail = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Append))
+			{
+				tail.WriteBits("101");
+			}
+
+			using (TapeSeriesBitStream reader = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Read))
+			{
+				Assert.Equal<Code>("11110000", reader.ReadBits(8));
+				Assert.Equal<Code>("101", reader.ReadBits(3));
+				Assert.Throws<EndOfStreamException>(
+					() =>
+					{
+						reader.ReadBits(1);
+					}
+				);
+			}
+		}
+		#endregion
+
+		#region read alignment failures
+		[Fact]
+		public void Align_WhenTheNextTapeLabelFails_FaultsTheReader()
+		{
+			// Ten bits on the first tape, opened at bit 6. One more bit leaves the wrapper at
+			// position 1, so alignment still has to step onto the next tape and read its label.
+			LabelFailingTapeProvider provider = new LabelFailingTapeProvider();
+			Librarian librarian = new Librarian(provider);
+			Guid seriesId = new Guid("aaaaaaaa-0000-0000-0000-000000000001");
+
+			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "align fault");
+
+			using (TapeSeriesBitStream writer = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Append))
+			{
+				writer.WriteBits("1011001101");
+			}
+
+			Guid secondId = new Guid("aaaaaaaa-0000-0000-0000-000000000002");
+			Tape second = Tape.CreateNew(provider, secondId);
+			TapeLabel secondLabel = second.ReadLabel()
+				.WithSeriesInfo(seriesId, "Test Series", 2)
+				.WithName("Test Series")
+				.WithSeriesDescription("align fault");
+			second.WriteLabel(secondLabel);
+
+			using (TapeSeriesBitStream secondWriter = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Append))
+			{
+				secondWriter.WriteBits("11110000");
+			}
+
+			using (TapeSeriesBitStream reader = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Read, 6))
+			{
+				reader.ReadBits(1);
+				Assert.Equal(1, reader.Position);
+
+				provider.FailTapeId = secondId;
+
+				IOException failure = Assert.Throws<IOException>(
+					() =>
+					{
+						reader.AlignToNextByteBoundary();
+					}
+				);
+				Assert.Equal(1, provider.LabelReadFailures);
+				Assert.Equal(1, reader.Position);
+
+				InvalidOperationException faulted = Assert.Throws<InvalidOperationException>(
+					() =>
+					{
+						reader.AlignToNextByteBoundary();
+					}
+				);
+				Assert.Same(failure, faulted.InnerException);
+
+				Assert.Throws<ArgumentOutOfRangeException>(
+					() =>
+					{
+						reader.ReadBits(-1);
+					}
+				);
+				Assert.Throws<NotSupportedException>(
+					() =>
+					{
+						reader.WriteBits("1");
+					}
+				);
+				Assert.Throws<InvalidOperationException>(
+					() =>
+					{
+						reader.ReadBits(1);
+					}
+				);
+				Assert.Throws<InvalidOperationException>(() => reader.Flush());
+				Assert.Equal(1, reader.Position);
+
+				reader.Dispose();
+				ObjectDisposedException disposed = Assert.Throws<ObjectDisposedException>(
+					() =>
+					{
+						reader.AlignToNextByteBoundary();
+					}
+				);
+				Assert.Equal(nameof(TapeSeriesBitStream), disposed.ObjectName);
 			}
 		}
 		#endregion
@@ -340,13 +453,12 @@ namespace BigRedProf.Data.Tape.Test
 			Guid seriesId = NewSeriesId();
 			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "neg read");
 
-			using (TapeSeriesStream stream = new TapeSeriesStream(librarian, seriesId, TapeSeriesStream.OpenMode.Append))
+			using (TapeSeriesBitStream stream = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Append))
 			{
 				Assert.Throws<NotSupportedException>(
 					() =>
 					{
-						byte[] buffer = new byte[1];
-						stream.Read(buffer, 0, 1);
+						stream.ReadBits(1);
 					}
 				);
 			}
@@ -359,13 +471,12 @@ namespace BigRedProf.Data.Tape.Test
 			Guid seriesId = NewSeriesId();
 			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "neg write");
 
-			using (TapeSeriesStream stream = new TapeSeriesStream(librarian, seriesId, TapeSeriesStream.OpenMode.Read))
+			using (TapeSeriesBitStream stream = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Read))
 			{
 				Assert.Throws<NotSupportedException>(
 					() =>
 					{
-						byte[] buffer = new byte[1] { 0x01 };
-						stream.Write(buffer, 0, 1);
+						stream.WriteBits(new Code(new byte[] { 0x01 }));
 					}
 				);
 			}
@@ -380,11 +491,9 @@ namespace BigRedProf.Data.Tape.Test
 			Guid seriesId = NewSeriesId();
 			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "dispose persist");
 
-			using (TapeSeriesStream writeStream = new TapeSeriesStream(librarian, seriesId, TapeSeriesStream.OpenMode.Append))
-			using (CodeWriter writer = new CodeWriter(writeStream))
+			using (TapeSeriesBitStream writer = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Append))
 			{
-				writer.WriteCode("10110001");
-				// Dispose() of writer/stream should ensure position is persisted
+				writer.WriteBits("10110001");
 			}
 
 			Tape last = GetLastTape(librarian, seriesId);
@@ -393,6 +502,23 @@ namespace BigRedProf.Data.Tape.Test
 		#endregion
 
 		#region private helpers
+		private sealed class LabelFailingTapeProvider : MemoryTapeProvider
+		{
+			public Guid FailTapeId { get; set; }
+			public int LabelReadFailures { get; private set; }
+
+			public override byte[] ReadLabelInternal(Guid tapeId)
+			{
+				if (FailTapeId != Guid.Empty && tapeId == FailTapeId)
+				{
+					++LabelReadFailures;
+					throw new IOException("injected label failure");
+				}
+
+				return base.ReadLabelInternal(tapeId);
+			}
+		}
+
 		private static Tape GetLastTape(Librarian librarian, Guid seriesId)
 		{
 			Tape last = null!;

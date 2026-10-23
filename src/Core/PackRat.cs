@@ -32,20 +32,20 @@ namespace BigRedProf.Data.Core
 		/// <summary>
 		/// Packs a model into a <see cref="Code"/>.
 		/// </summary>
-		/// <param name="writer">The code writer.</param>
+		/// <param name="stream">The bit stream.</param>
 		/// <param name="model">The model to pack.</param>
-		public abstract void PackModel(CodeWriter writer, T model);
+		public abstract void PackModel(BitStream stream, T model);
 
 		/// <summary>
 		/// Unpacks a model from a <see cref="Code"/>.
 		/// </summary>
-		/// <param name="reader">The code reader.</param>
+		/// <param name="stream">The bit stream.</param>
 		/// <returns>The unpacked model.</returns>
-		public abstract T UnpackModel(CodeReader reader);
+		public abstract T UnpackModel(BitStream stream);
 		#endregion
 
 		#region INonGenericPackRat methods
-		void IWeaklyTypedPackRat.PackModel(CodeWriter writer, object model)
+		void IWeaklyTypedPackRat.PackModel(BitStream stream, object model)
 		{
 			T typedModel;
 			if (model is T)
@@ -64,14 +64,14 @@ namespace BigRedProf.Data.Core
 				throw new ArgumentException("Invalid model type", nameof(model));
 			}
 
-			PackModel(writer, typedModel);
+			PackModel(stream, typedModel);
 		}
 
-		object IWeaklyTypedPackRat.UnpackModel(CodeReader reader)
+		object IWeaklyTypedPackRat.UnpackModel(BitStream stream)
 		{
 			// A pack rat unpacks a model. Models that may be absent travel through
 			// UnpackNullableModel, so there is nothing to hand back but a model here.
-			return UnpackModel(reader)!;
+			return UnpackModel(stream)!;
 		}
 		#endregion
 

@@ -130,7 +130,7 @@ namespace BigRedProf.Data.Test
 					// this is the equivalent of 1052707 (MinValueFor32BitPacking - 1) packed 
 					// into 32 bits
 					Code code = "01100010 00000100 00000100 00000000";
-					CodeReader reader = PackRatTestHelper.CreateCodeReader(code);
+					BitStream reader = PackRatTestHelper.CreateBitStream(code);
 					packRat.UnpackModel(reader);
 				}
 			);
@@ -140,7 +140,7 @@ namespace BigRedProf.Data.Test
 				{
 					// this is the equivalent of zero packed into 32 bits
 					Code code = "00000000 00000000 00000000 00000000";
-					CodeReader reader = PackRatTestHelper.CreateCodeReader(code);
+					BitStream reader = PackRatTestHelper.CreateBitStream(code);
 					packRat.UnpackModel(reader);
 				}
 			);

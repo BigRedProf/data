@@ -12,28 +12,28 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 		{
 		}
 
-		public override void PackModel(CodeWriter writer, ModelWithEnum model)
+		public override void PackModel(BitStream stream, ModelWithEnum model)
 		{
 			// Color1
 			PiedPiper.GetPackRat<int>("ffdb57bb-be6b-4cc3-a0f6-48596c8a8b2b")
-				.PackModel(writer, (int) model.Color1);
+				.PackModel(stream, (int) model.Color1);
 
 			// Color2
 			PiedPiper.GetPackRat<int>("303eedd7-2f7f-4d6a-9e94-de3523322b33")
-				.PackModel(writer, (int) model.Color2);
+				.PackModel(stream, (int) model.Color2);
 		}
 
-		public override ModelWithEnum UnpackModel(CodeReader reader)
+		public override ModelWithEnum UnpackModel(BitStream stream)
 		{
 			ModelWithEnum model = new ModelWithEnum();
 
 			// Color1
 			model.Color1 = (BigRedProf.Data.PackRatCompiler.Test._Resources.Models.ColorHexagon) PiedPiper.GetPackRat<int>("ffdb57bb-be6b-4cc3-a0f6-48596c8a8b2b")
-				.UnpackModel(reader);
+				.UnpackModel(stream);
 
 			// Color2
 			model.Color2 = (BigRedProf.Data.PackRatCompiler.Test._Resources.Models.ColorHexagon) PiedPiper.GetPackRat<int>("303eedd7-2f7f-4d6a-9e94-de3523322b33")
-				.UnpackModel(reader);
+				.UnpackModel(stream);
 
 			return model;
 		}
