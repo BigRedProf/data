@@ -314,7 +314,7 @@ namespace BigRedProf.Data.Tape.Test
 		{
 			MemoryTapeProvider provider = new MemoryTapeProvider();
 			Librarian librarian = new Librarian(provider);
-			Guid seriesId = NewSeriesId();
+			Guid seriesId = new Guid("11111111-1111-1111-1111-111111111111");
 
 			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "empty middle");
 
@@ -323,7 +323,7 @@ namespace BigRedProf.Data.Tape.Test
 				writer.WriteBits("11110000");
 			}
 
-			Tape empty = Tape.CreateNew(provider, Guid.NewGuid());
+			Tape empty = Tape.CreateNew(provider, new Guid("22222222-2222-2222-2222-222222222222"));
 			empty.WriteLabel(
 				empty.ReadLabel()
 					.WithSeriesInfo(seriesId, "Test Series", 2)
@@ -331,7 +331,7 @@ namespace BigRedProf.Data.Tape.Test
 					.WithSeriesDescription("empty middle")
 			);
 
-			Tape last = Tape.CreateNew(provider, Guid.NewGuid());
+			Tape last = Tape.CreateNew(provider, new Guid("33333333-3333-3333-3333-333333333333"));
 			last.WriteLabel(
 				last.ReadLabel()
 					.WithSeriesInfo(seriesId, "Test Series", 3)
@@ -366,7 +366,7 @@ namespace BigRedProf.Data.Tape.Test
 			// position 1, so alignment still has to step onto the next tape and read its label.
 			LabelFailingTapeProvider provider = new LabelFailingTapeProvider();
 			Librarian librarian = new Librarian(provider);
-			Guid seriesId = NewSeriesId();
+			Guid seriesId = new Guid("aaaaaaaa-0000-0000-0000-000000000001");
 
 			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "align fault");
 
@@ -375,7 +375,7 @@ namespace BigRedProf.Data.Tape.Test
 				writer.WriteBits("1011001101");
 			}
 
-			Guid secondId = Guid.NewGuid();
+			Guid secondId = new Guid("aaaaaaaa-0000-0000-0000-000000000002");
 			Tape second = Tape.CreateNew(provider, secondId);
 			TapeLabel secondLabel = second.ReadLabel()
 				.WithSeriesInfo(seriesId, "Test Series", 2)
