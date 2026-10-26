@@ -12,11 +12,6 @@ namespace BigRedProf.Data.Tape.Test
 			return new Librarian(new MemoryTapeProvider());
 		}
 
-		private static Guid NewSeriesId()
-		{
-			return Guid.NewGuid();
-		}
-
 		private static byte[] ReadTapeBytes(Tape tape)
 		{
 			int bitLength = tape.Position;
@@ -35,7 +30,7 @@ namespace BigRedProf.Data.Tape.Test
 			Assert.Throws<ArgumentNullException>(
 				() =>
 				{
-					new TapeSeriesBitStream(null!, Guid.NewGuid(), TapeSeriesBitStream.OpenMode.Read);
+					new TapeSeriesBitStream(null!, new Guid("10000000-0000-0000-0000-000000000001"), TapeSeriesBitStream.OpenMode.Read);
 				}
 			);
 		}
@@ -57,7 +52,7 @@ namespace BigRedProf.Data.Tape.Test
 		public void Constructor_ShouldThrow_WhenNoTapesInSeries()
 		{
 			Librarian librarian = CreateLibrarian();
-			Guid seriesId = NewSeriesId();
+			Guid seriesId = new Guid("10000000-0000-0000-0000-000000000002");
 
 			Assert.Throws<InvalidOperationException>(
 				() =>
@@ -73,7 +68,7 @@ namespace BigRedProf.Data.Tape.Test
 		public void Append_ThenReadBack_ShouldRoundTrip()
 		{
 			Librarian librarian = CreateLibrarian();
-			Guid seriesId = NewSeriesId();
+			Guid seriesId = new Guid("10000000-0000-0000-0000-000000000003");
 
 			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Round-trip test");
 
@@ -106,7 +101,7 @@ namespace BigRedProf.Data.Tape.Test
 		public void Append_ShouldAdvanceTapePosition_InBits()
 		{
 			Librarian librarian = CreateLibrarian();
-			Guid seriesId = NewSeriesId();
+			Guid seriesId = new Guid("10000000-0000-0000-0000-000000000004");
 
 			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Position test");
 
@@ -133,7 +128,7 @@ namespace BigRedProf.Data.Tape.Test
 		public void Read_ShouldPackPartialFinalByte_WhenTapeEndsMidByte()
 		{
 			Librarian librarian = CreateLibrarian();
-			Guid seriesId = NewSeriesId();
+			Guid seriesId = new Guid("10000000-0000-0000-0000-000000000005");
 
 			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Partial byte test");
 
@@ -165,7 +160,7 @@ namespace BigRedProf.Data.Tape.Test
 		public void Append_ShouldPreserveAllBits_WhenRollingOverToNewTape()
 		{
 			Librarian librarian = CreateLibrarian();
-			Guid seriesId = NewSeriesId();
+			Guid seriesId = new Guid("10000000-0000-0000-0000-000000000006");
 
 			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Rollover bug repro");
 
@@ -200,7 +195,7 @@ namespace BigRedProf.Data.Tape.Test
 		public void Append_WithAlignToNextByteBoundary_ShouldByteAlignBetweenWrites()
 		{
 			Librarian librarian = CreateLibrarian();
-			Guid seriesId = NewSeriesId();
+			Guid seriesId = new Guid("10000000-0000-0000-0000-000000000007");
 
 			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Align test");
 
@@ -227,7 +222,7 @@ namespace BigRedProf.Data.Tape.Test
 		public void AlignThenDispose_ShouldCommitMeaningfulBitsOnly()
 		{
 			Librarian librarian = CreateLibrarian();
-			Guid seriesId = NewSeriesId();
+			Guid seriesId = new Guid("10000000-0000-0000-0000-000000000008");
 
 			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Align dispose");
 
@@ -250,7 +245,7 @@ namespace BigRedProf.Data.Tape.Test
 		public void Append_AndReadBack_LargeByteAlignedBlock_ShouldMatch()
 		{
 			Librarian librarian = CreateLibrarian();
-			Guid seriesId = NewSeriesId();
+			Guid seriesId = new Guid("10000000-0000-0000-0000-000000000009");
 
 			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Large block test");
 
@@ -283,7 +278,7 @@ namespace BigRedProf.Data.Tape.Test
 		public void Read_ShouldRespectContentLength_WhenTapePositionIsRewound()
 		{
 			Librarian librarian = CreateLibrarian();
-			Guid seriesId = NewSeriesId();
+			Guid seriesId = new Guid("10000000-0000-0000-0000-00000000000a");
 
 			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "Content length test");
 
@@ -450,7 +445,7 @@ namespace BigRedProf.Data.Tape.Test
 		public void Read_ShouldThrow_WhenOpenedInAppendMode()
 		{
 			Librarian librarian = CreateLibrarian();
-			Guid seriesId = NewSeriesId();
+			Guid seriesId = new Guid("10000000-0000-0000-0000-00000000000b");
 			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "neg read");
 
 			using (TapeSeriesBitStream stream = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Append))
@@ -468,7 +463,7 @@ namespace BigRedProf.Data.Tape.Test
 		public void Write_ShouldThrow_WhenOpenedInReadMode()
 		{
 			Librarian librarian = CreateLibrarian();
-			Guid seriesId = NewSeriesId();
+			Guid seriesId = new Guid("10000000-0000-0000-0000-00000000000c");
 			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "neg write");
 
 			using (TapeSeriesBitStream stream = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Read))
@@ -488,7 +483,7 @@ namespace BigRedProf.Data.Tape.Test
 		public void Dispose_ShouldPersistFinalPosition_InAppendMode()
 		{
 			Librarian librarian = CreateLibrarian();
-			Guid seriesId = NewSeriesId();
+			Guid seriesId = new Guid("10000000-0000-0000-0000-00000000000d");
 			BackupWizard.CreateNew(librarian, seriesId, "Test Series", "dispose persist");
 
 			using (TapeSeriesBitStream writer = new TapeSeriesBitStream(librarian, seriesId, TapeSeriesBitStream.OpenMode.Append))
