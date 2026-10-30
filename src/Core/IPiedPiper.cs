@@ -112,46 +112,46 @@ namespace BigRedProf.Data.Core
 		/// Packs a model using the specified pack rat.
 		/// </summary>
 		/// <typeparam name="M"></typeparam>
-		/// <param name="writer">The code writer.</param>
+		/// <param name="stream">The bit stream.</param>
 		/// <param name="model">The model.</param>
 		/// <param name="schemaId">The schema identifier.</param>
-		void PackModel<M>(CodeWriter writer, M model, AttributeFriendlyGuid schemaId);
+		void PackModel<M>(BitStream stream, M model, AttributeFriendlyGuid schemaId);
 
 		/// <summary>
 		/// Unpacks a model using the specified pack rat.
 		/// </summary>
 		/// <typeparam name="M"></typeparam>
-		/// <param name="reader">The code reader.</param>
+		/// <param name="stream">The bit stream.</param>
 		/// <param name="schemaId">The schema identifier.</param>
 		/// <returns>The model.</returns>
-		M UnpackModel<M>(CodeReader reader, AttributeFriendlyGuid schemaId);
+		M UnpackModel<M>(BitStream stream, AttributeFriendlyGuid schemaId);
 
 		/// <summary>
 		/// Packs a model using the specified pack rat.
 		/// </summary>
-		/// <param name="writer">The code writer.</param>
+		/// <param name="stream">The bit stream.</param>
 		/// <param name="model">The model.</param>
 		/// <param name="schemaId">The schema identifier.</param>
-		void PackModel(CodeWriter writer, object model, AttributeFriendlyGuid schemaId);
+		void PackModel(BitStream stream, object model, AttributeFriendlyGuid schemaId);
 
 		/// <summary>
 		/// Unpacks a model using the specified pack rat.
 		/// </summary>
-		/// <param name="reader">The code reader.</param>
+		/// <param name="stream">The bit stream.</param>
 		/// <param name="schemaId">The schema identifier.</param>
 		/// <returns>The model.</returns>
-		object UnpackModel(CodeReader reader, AttributeFriendlyGuid schemaId);
+		object UnpackModel(BitStream stream, AttributeFriendlyGuid schemaId);
 
 		/// <summary>
 		/// Packs a nullable model using the specified pack rat.
 		/// </summary>
 		/// <typeparam name="M"></typeparam>
-		/// <param name="writer">The code writer.</param>
+		/// <param name="stream">The bit stream.</param>
 		/// <param name="model">The model.</param>
 		/// <param name="schemaId">The schema identifier.</param>
 		/// <param name="byteAligned">Controls the packing size of the null marker.</param>
 		void PackNullableModel<M>(
-			CodeWriter writer,
+			BitStream stream,
 			M model,
 			AttributeFriendlyGuid schemaId,
 			ByteAligned byteAligned
@@ -161,24 +161,24 @@ namespace BigRedProf.Data.Core
 		/// Unpacks a nullable model using the specified pack rat.
 		/// </summary>
 		/// <typeparam name="M"></typeparam>
-		/// <param name="reader">The code reader.</param>
+		/// <param name="stream">The bit stream.</param>
 		/// <param name="schemaId">The schema identifier.</param>
 		/// <param name="byteAligned">Controls the packing size of the null marker.</param>
 		/// <returns>The model.</returns>
-		[return: MaybeNull] M UnpackNullableModel<M>(CodeReader reader, AttributeFriendlyGuid schemaId, ByteAligned byteAligned);
+		[return: MaybeNull] M UnpackNullableModel<M>(BitStream stream, AttributeFriendlyGuid schemaId, ByteAligned byteAligned);
 
 		/// <summary>
 		/// Packs a list using the specified list element pack rat.
 		/// </summary>
 		/// <typeparam name="M"></typeparam>
-		/// <param name="writer">The code writer.</param>
+		/// <param name="stream">The bit stream.</param>
 		/// <param name="list">The list.</param>
 		/// <param name="elementSchemaId">The element schema identifier.</param>
 		/// <param name="allowNullLists">Whether or not null lists are allowed.</param>
 		/// <param name="allowNullElements">Whether or not null elements are allowed in the list.</param>
 		/// <param name="byteAligned">Controls the packing size of the null markers.</param>
 		void PackList<M>(
-				CodeWriter writer,
+				BitStream stream,
 				IList<M> list,
 				AttributeFriendlyGuid elementSchemaId,
 				bool allowNullLists,
@@ -190,14 +190,14 @@ namespace BigRedProf.Data.Core
 		/// Unpacks a list using the specified list element pack rat.
 		/// </summary>
 		/// <typeparam name="M"></typeparam>
-		/// <param name="reader">The code reader.</param>
+		/// <param name="stream">The bit stream.</param>
 		/// <param name="elementSchemaId">The element schema identifier.</param>
 		/// <param name="allowNullLists">Whether or not null lists are allowed.</param>
 		/// <param name="allowNullElements">Whether or not null elements are allowed in the list.</param>
 		/// <param name="byteAligned">Controls the packing size of the null markers.</param>
 		/// <returns>The list.</returns>
 		IList<M>? UnpackList<M>(
-			CodeReader reader,
+			BitStream stream,
 			AttributeFriendlyGuid elementSchemaId,
 			bool allowNullLists,
 			bool allowNullElements,
@@ -210,7 +210,7 @@ namespace BigRedProf.Data.Core
 		/// </summary>
 		/// <remarks>
 		/// This is the same operation as
-		/// <see cref="PackModel{M}(CodeWriter, M, AttributeFriendlyGuid)"/>, differing only in
+		/// <see cref="PackModel{M}(BitStream, M, AttributeFriendlyGuid)"/>, differing only in
 		/// where the bits are written.
 		/// </remarks>
 		/// <typeparam name="M">The model type.</typeparam>

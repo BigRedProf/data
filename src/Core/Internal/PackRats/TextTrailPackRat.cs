@@ -14,23 +14,23 @@ namespace BigRedProf.Data.Core.Internal.PackRats
 		#endregion
 
 		#region PackRat methods
-		public override void PackModel(CodeWriter writer, TextTrail model)
+		public override void PackModel(BitStream stream, TextTrail model)
 		{
-			if(writer == null)
-				throw new ArgumentNullException(nameof(writer));
+			if(stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
-			PiedPiper.PackList<string>(writer, model.Segments.ToList(), CoreSchema.TextUtf8, false, false, ByteAligned.Yes);
+			PiedPiper.PackList<string>(stream, model.Segments.ToList(), CoreSchema.TextUtf8, false, false, ByteAligned.Yes);
 		}
 
-		public override TextTrail UnpackModel(CodeReader reader)
+		public override TextTrail UnpackModel(BitStream stream)
 		{
-			if(reader == null)
-				throw new ArgumentNullException(nameof(reader));
+			if(stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
 			// allowNullLists is false, so the list is never null -- a correlation between an
 			// argument and a return that the static type cannot express.
 			IList<string> segments =
-				PiedPiper.UnpackList<string>(reader, CoreSchema.TextUtf8, false, false, ByteAligned.Yes)!;
+				PiedPiper.UnpackList<string>(stream, CoreSchema.TextUtf8, false, false, ByteAligned.Yes)!;
 			TextTrail model = new TextTrail(segments.ToArray());
 
 			return model;

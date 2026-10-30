@@ -12,21 +12,21 @@ namespace BigRedProf.Data.Core.Internal.PackRats
 		#endregion
 
 		#region PackRat methods
-		public override void PackModel(CodeWriter writer, byte model)
+		public override void PackModel(BitStream stream, byte model)
 		{
-			if(writer == null)
-				throw new ArgumentNullException(nameof(writer));
+			if(stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
 			Code code = new Code(new byte[] { model });
-			writer.WriteCode(code);
+			stream.WriteBits(code);
 		}
 
-		public override byte UnpackModel(CodeReader reader)
+		public override byte UnpackModel(BitStream stream)
 		{
-			if(reader == null)
-				throw new ArgumentNullException(nameof(reader));
+			if(stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
-			Code code = reader.Read(8);
+			Code code = stream.ReadBits(8);
 			byte model = code.ByteArray[0];
 			return model;
 		}

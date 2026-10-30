@@ -93,7 +93,7 @@ namespace BigRedProf.Data.Tape.Test
 			BackupWizard wizard = BackupWizard.CreateNew(library, seriesId, seriesName, "Record description");
 
 			Code content = new Code("11110000 00001111 10101010");
-			wizard.Writer.WriteCode(content);
+			wizard.Writer.WriteBits(content);
 
 			Tape tape = librarian.FetchTapesInSeries(seriesId).Single();
 			Assert.Equal(content.Length, tape.Position);
@@ -117,7 +117,7 @@ namespace BigRedProf.Data.Tape.Test
 			BackupWizard wizard = BackupWizard.CreateNew(library, seriesId, seriesName, "Checkpoint digest description");
 
 			Code content = new Code("11110000 00001111");
-			wizard.Writer.WriteCode(content);
+			wizard.Writer.WriteBits(content);
 
 			Code checkpoint = new Code("0101");
 			wizard.SetLatestCheckpoint(checkpoint);
@@ -156,7 +156,7 @@ namespace BigRedProf.Data.Tape.Test
 
 			BackupWizard reopenedWizard = BackupWizard.OpenExisting(library, seriesId);
 			Code content = new Code("10101010 11110000");
-			reopenedWizard.Writer.WriteCode(content);
+			reopenedWizard.Writer.WriteBits(content);
 
 			IList<Tape> tapes = librarian.FetchTapesInSeries(seriesId)
 			.OrderBy(tape => tape.ReadLabel().SeriesNumber)
@@ -203,7 +203,7 @@ namespace BigRedProf.Data.Tape.Test
 
 			BackupWizard wizard = BackupWizard.CreateNew(library, seriesId, seriesName, "Resume description");
 			Code initialContent = new Code("10101010 01010101");
-			wizard.Writer.WriteCode(initialContent);
+			wizard.Writer.WriteBits(initialContent);
 			Code checkpoint = new Code("0011");
 			wizard.SetLatestCheckpoint(checkpoint);
 
@@ -212,7 +212,7 @@ namespace BigRedProf.Data.Tape.Test
 			Assert.Equal(checkpoint, reopenedCheckpoint);
 
 			Code additionalContent = new Code("11110000");
-			reopened.Writer.WriteCode(additionalContent);
+			reopened.Writer.WriteBits(additionalContent);
 			Code newCheckpoint = new Code("1100");
 			reopened.SetLatestCheckpoint(newCheckpoint);
 
@@ -246,7 +246,7 @@ namespace BigRedProf.Data.Tape.Test
 		//	Code oneHundredM0s = new Code(new string('0', 100_000_000));
 		//	Code oneHundredM1s = new Code(new string('1', 100_000_000));
 
-		//	wizard.Writer.WriteCode(oneHundredM0s);
+		//	wizard.Writer.WriteBits(oneHundredM0s);
 		//	wizard.SetLatestCheckpoint(new Code("0001"));
 
 		//	IList<Tape> tapes = librarian.FetchTapesInSeries(seriesId).ToList();
@@ -262,10 +262,10 @@ namespace BigRedProf.Data.Tape.Test
 		//	Assert.Equal(new Code("0001"), latestCheckpoint);
 
 		//	// write another 400M bits to reach half of tape capacity
-		//	wizard.Writer.WriteCode(oneHundredM1s);
-		//	wizard.Writer.WriteCode(oneHundredM0s);
-		//	wizard.Writer.WriteCode(oneHundredM1s);
-		//	wizard.Writer.WriteCode(oneHundredM0s);
+		//	wizard.Writer.WriteBits(oneHundredM1s);
+		//	wizard.Writer.WriteBits(oneHundredM0s);
+		//	wizard.Writer.WriteBits(oneHundredM1s);
+		//	wizard.Writer.WriteBits(oneHundredM0s);
 
 		//	// assert state after writing 500M bits
 		//	tapes = librarian.FetchTapesInSeries(seriesId).ToList();
@@ -299,11 +299,11 @@ namespace BigRedProf.Data.Tape.Test
 		//	Assert.Equal(new Code("0010"), latestCheckpoint);
 
 		//	// write another 500M bits to reach full tape capacity
-		//	wizard.Writer.WriteCode(oneHundredM1s);
-		//	wizard.Writer.WriteCode(oneHundredM0s);
-		//	wizard.Writer.WriteCode(oneHundredM1s);
-		//	wizard.Writer.WriteCode(oneHundredM0s);
-		//	wizard.Writer.WriteCode(oneHundredM1s);
+		//	wizard.Writer.WriteBits(oneHundredM1s);
+		//	wizard.Writer.WriteBits(oneHundredM0s);
+		//	wizard.Writer.WriteBits(oneHundredM1s);
+		//	wizard.Writer.WriteBits(oneHundredM0s);
+		//	wizard.Writer.WriteBits(oneHundredM1s);
 		//	wizard.SetLatestCheckpoint(new Code("0011"));
 
 		//	// assert state after writing 1B bits
@@ -321,7 +321,7 @@ namespace BigRedProf.Data.Tape.Test
 		//	Assert.Equal(new Code("0011"), latestCheckpoint);
 
 		//	// write another 1 bit to overflow to a new tape
-		//	wizard.Writer.WriteCode(new Code("1"));
+		//	wizard.Writer.WriteBits(new Code("1"));
 		//	wizard.SetLatestCheckpoint(new Code("0100"));
 
 		//	// assert state after writing 1B + 1 bits
@@ -346,7 +346,7 @@ namespace BigRedProf.Data.Tape.Test
 
 		//	// write another 1B bits to overflow to a 3rd tape
 		//	for (int i = 0; i < 10; ++i)
-		//		wizard.Writer.WriteCode(oneHundredM1s);
+		//		wizard.Writer.WriteBits(oneHundredM1s);
 		//	wizard.SetLatestCheckpoint(new Code("0101"));
 
 		//	// assert state after writing 2B + 1 bits

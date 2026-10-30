@@ -38,9 +38,9 @@ namespace BigRedProf.Data.Tape.Test
 			Code bits128 = string.Concat(Enumerable.Repeat("10110011", 16)); // 128 bits
 
 			BackupWizard bw = BackupWizard.CreateNew(library, seriesId, "s", "d");
-			using (CodeWriter writer = bw.Writer)
+			using (BitStream writer = bw.Writer)
 			{
-				writer.WriteCode(bits128);
+				writer.WriteBits(bits128);
 			}
 			bw.SetLatestCheckpoint("0");
 
@@ -65,17 +65,17 @@ namespace BigRedProf.Data.Tape.Test
 			Code payload = "101011000110100111110000"; // 24 bits
 
 			BackupWizard bw = BackupWizard.CreateNew(library, seriesId, "series", "desc");
-			using (CodeWriter w = bw.Writer)
+			using (BitStream w = bw.Writer)
 			{
-				w.WriteCode(payload);
+				w.WriteBits(payload);
 			}
 			bw.SetLatestCheckpoint("0");
 
 			// Seek to bit 1 (0-based), read 16 bits
 			using (RestorationWizard rw = RestorationWizard.OpenExistingTapeSeries(library, seriesId, 1))
 			{
-				CodeReader reader = rw.CodeReader;
-				Code sixteen = reader.Read(16);
+				BitStream reader = rw.Reader;
+				Code sixteen = reader.ReadBits(16);
 				Code expected = "0101100011010011";
 
 				Assert.Equal(expected, sixteen);
@@ -85,8 +85,8 @@ namespace BigRedProf.Data.Tape.Test
 			// Seek to bit 13, read 8 bits
 			using (RestorationWizard rw2 = RestorationWizard.OpenExistingTapeSeries(library, seriesId, 13))
 			{
-				CodeReader reader2 = rw2.CodeReader;
-				Code eight = reader2.Read(8);
+				BitStream reader2 = rw2.Reader;
+				Code eight = reader2.ReadBits(8);
 				Code expected = "00111110";
 
 				Assert.Equal(expected, eight);

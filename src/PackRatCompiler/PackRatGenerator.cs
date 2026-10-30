@@ -81,7 +81,7 @@ namespace BigRedProf.Data.PackRatCompiler
 			writer.WriteClosingCurlyBrace();
 			writer.WriteLine();
 
-			writer.WriteLine($"public override void PackModel(CodeWriter writer, {modelType} model)");
+			writer.WriteLine($"public override void PackModel(BitStream stream, {modelType} model)");
 			writer.WriteOpeningCurlyBrace();
 
 			for (int i = 0; i < fields.Count; ++i)
@@ -97,7 +97,7 @@ namespace BigRedProf.Data.PackRatCompiler
 			writer.WriteClosingCurlyBrace(); // PackModel method
 			writer.WriteLine();
 
-			writer.WriteLine($"public override {modelType} UnpackModel(CodeReader reader)");
+			writer.WriteLine($"public override {modelType} UnpackModel(BitStream stream)");
 			writer.WriteOpeningCurlyBrace();
 			writer.WriteLine($"{modelType} model = new {modelType}();");
 			writer.WriteLine();
@@ -135,7 +135,7 @@ namespace BigRedProf.Data.PackRatCompiler
 			{
 				writer.WriteLine(
 					$"PiedPiper.PackNullableModel<{packType}>(" +
-					$"writer, model.{field.Name}, \"{field.SchemaId}\", " +
+					$"stream, model.{field.Name}, \"{field.SchemaId}\", " +
 					((field.ByteAligned == ByteAligned.Yes) ? "ByteAligned.Yes" : "ByteAligned.No") +
 					$");"
 				);
@@ -143,12 +143,12 @@ namespace BigRedProf.Data.PackRatCompiler
 			else
 			{
 				if (field.ByteAligned == ByteAligned.Yes)
-					writer.WriteLine("writer.AlignToByteBoundary();");
+					writer.WriteLine("stream.AlignToNextByteBoundary();");
 				writer.WriteLine($"PiedPiper.GetPackRat<{packType}>(\"{field.SchemaId}\")");
 				if(field.IsEnum)
-					writer.WriteLine($"\t.PackModel(writer, (int) model.{field.Name});");
+					writer.WriteLine($"\t.PackModel(stream, (int) model.{field.Name});");
 				else
-					writer.WriteLine($"\t.PackModel(writer, model.{field.Name});");
+					writer.WriteLine($"\t.PackModel(stream, model.{field.Name});");
 			}
 		}
 
@@ -160,7 +160,7 @@ namespace BigRedProf.Data.PackRatCompiler
 		{
 			writer.WriteLine($"PiedPiper.PackList<{field.Type}>(");
 			writer.IncreaseIndentation();
-			writer.WriteLine("writer,");
+			writer.WriteLine("stream,");
 			writer.WriteLine($"model.{field.Name},");
 			writer.WriteLine($"\"{field.ElementSchemaId}\",");
 			writer.WriteLine($"{field.IsNullable.ToString().ToLower()},");
@@ -189,14 +189,14 @@ namespace BigRedProf.Data.PackRatCompiler
 			}
 
 			if (field.ByteAligned == ByteAligned.Yes)
-				writer.WriteLine("reader.AlignToByteBoundary();");
+				writer.WriteLine("stream.AlignToNextByteBoundary();");
 
 			string packType = field.IsEnum ? "int" : field.Type!;
 
 			if (field.IsNullable)
 			{
 				writer.WriteLine($"model.{field.Name} = PiedPiper.UnpackNullableModel<{packType}>("
-					+ "reader, " +
+					+ "stream, " +
 					$"\"{field.SchemaId}\", " +
 					(field.ByteAligned == ByteAligned.Yes ? "ByteAligned.Yes" : "ByteAligned.No") +
 					");"
@@ -208,7 +208,7 @@ namespace BigRedProf.Data.PackRatCompiler
 					writer.WriteLine($"model.{field.Name} = ({field.Type}) PiedPiper.GetPackRat<{packType}>(\"{field.SchemaId}\")");
 				else
 					writer.WriteLine($"model.{field.Name} = PiedPiper.GetPackRat<{packType}>(\"{field.SchemaId}\")");
-				writer.WriteLine($"\t.UnpackModel(reader);");
+				writer.WriteLine($"\t.UnpackModel(stream);");
 			}
 		}
 
@@ -220,7 +220,7 @@ namespace BigRedProf.Data.PackRatCompiler
 		{
 			writer.WriteLine($"model.{field.Name} = PiedPiper.UnpackList<{field.Type}>(");
 			writer.IncreaseIndentation();
-			writer.WriteLine($"reader,");
+			writer.WriteLine($"stream,");
 			writer.WriteLine($"\"{field.ElementSchemaId}\",");
 			writer.WriteLine($"{field.IsNullable.ToString().ToLower()},");
 			writer.WriteLine($"{field.IsElementNullable.ToString().ToLower()},");

@@ -1,4 +1,5 @@
 ﻿using BigRedProf.Data.Core;
+using BigRedProf.Data.Core.Internal;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,16 +31,14 @@ namespace BigRedProf.Data.Test._TestHelpers
 
 			codeTester.Write(expectedAlignmentMess1);
 
-			// Pack the model with a new CodeWriter so the byte alignment doesn't get messed up
-			//packRat.PackModel(codeTester.Writer, model);
-			Code actualCode = null;
-			using (MemoryStream stream = new MemoryStream())
+			// Pack into an exact-length code so the surrounding alignment is undisturbed.
+			Code actualCode;
+			using (CodeBitStream stream = new CodeBitStream())
 			{
-				CodeWriter writer = new CodeWriter(stream);
-				packRat.PackModel(writer, model);
-				actualCode = writer.ToDebugCode();
+				packRat.PackModel(stream, model);
+				actualCode = stream.ToCode();
 			}
-			codeTester.Writer.WriteCode(actualCode);
+			codeTester.Writer.WriteBits(actualCode);
 			
 			codeTester.Write(expectedAlignmentMess2);
 
@@ -100,14 +99,13 @@ namespace BigRedProf.Data.Test._TestHelpers
 			codeTester.Write(expectedAlignmentMess1);
 
 			Code packedCode;
-			using (MemoryStream stream = new MemoryStream())
+			using (CodeBitStream stream = new CodeBitStream())
 			{
-				CodeWriter writer = new CodeWriter(stream);
-				packRat.PackModel(writer, originalModel);
-				packedCode = writer.ToDebugCode();
+				packRat.PackModel(stream, originalModel);
+				packedCode = stream.ToCode();
 			}
 
-			codeTester.Writer.WriteCode(packedCode);
+			codeTester.Writer.WriteBits(packedCode);
 			codeTester.Write(expectedAlignmentMess2);
 
 			codeTester.StopWritingAndStartReading();
@@ -118,14 +116,14 @@ namespace BigRedProf.Data.Test._TestHelpers
 			codeTester.ReadAndVerify(expectedAlignmentMess2);
 		}
 
-		public static CodeReader CreateCodeReader(Code code)
+		public static BitStream CreateBitStream(Code code)
 		{
 			MemoryStream writerStream = new MemoryStream();
-			CodeWriter writer = new CodeWriter(writerStream);
-			writer.WriteCode(code);
+			BitStream writer = new StreamBitWriter(writerStream);
+			writer.WriteBits(code);
 			writer.Dispose();
 			Stream readerStream = new MemoryStream(writerStream.ToArray());
-			CodeReader reader = new CodeReader(readerStream);
+			BitStream reader = new StreamBitReader(readerStream);
 			return reader;
 		}
 

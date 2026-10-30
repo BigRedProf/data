@@ -12,28 +12,28 @@ namespace BigRedProf.Data.PackRatCompiler.Test._Resources.Models
 		{
 		}
 
-		public override void PackModel(CodeWriter writer, Point model)
+		public override void PackModel(BitStream stream, Point model)
 		{
 			// X
 			PiedPiper.GetPackRat<int>("ffdb57bb-be6b-4cc3-a0f6-48596c8a8b2b")
-				.PackModel(writer, model.X);
+				.PackModel(stream, model.X);
 
 			// Y
 			PiedPiper.GetPackRat<int>("43")
-				.PackModel(writer, model.Y);
+				.PackModel(stream, model.Y);
 		}
 
-		public override Point UnpackModel(CodeReader reader)
+		public override Point UnpackModel(BitStream stream)
 		{
 			Point model = new Point();
 
 			// X
 			model.X = PiedPiper.GetPackRat<int>("ffdb57bb-be6b-4cc3-a0f6-48596c8a8b2b")
-				.UnpackModel(reader);
+				.UnpackModel(stream);
 
 			// Y
 			model.Y = PiedPiper.GetPackRat<int>("43")
-				.UnpackModel(reader);
+				.UnpackModel(stream);
 
 			return model;
 		}

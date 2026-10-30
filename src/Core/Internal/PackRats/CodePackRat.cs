@@ -14,10 +14,10 @@ namespace BigRedProf.Data.Core.Internal.PackRats
 		#endregion
 
 		#region PackRat methods
-		public override void PackModel(CodeWriter writer, Code model)
+		public override void PackModel(BitStream stream, Code model)
 		{
-			if(writer == null)
-				throw new ArgumentNullException(nameof(writer));
+			if(stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
 			// NOTE: We don't have to worry much about byte alignment here because the
 			// EfficientWholeNumber31PackRat yields 8-, 16-, or 32-bit numbers for any values above
@@ -25,17 +25,17 @@ namespace BigRedProf.Data.Core.Internal.PackRats
 			// be byte aligned, while codes of length 4 or more will naturally be byte aligned which
 			// is essentially for really long codes.
 
-			PiedPiper.GetPackRat<int>(CoreSchema.EfficientWholeNumber31).PackModel(writer, model.Length);
-			writer.WriteCode(model);
+			PiedPiper.GetPackRat<int>(CoreSchema.EfficientWholeNumber31).PackModel(stream, model.Length);
+			stream.WriteBits(model);
 		}
 
-		public override Code UnpackModel(CodeReader reader)
+		public override Code UnpackModel(BitStream stream)
 		{
-			if(reader == null)
-				throw new ArgumentNullException(nameof(reader));
+			if(stream == null)
+				throw new ArgumentNullException(nameof(stream));
 
-			int length = PiedPiper.GetPackRat<int>(CoreSchema.EfficientWholeNumber31).UnpackModel(reader);
-			Code model = reader.Read(length);
+			int length = PiedPiper.GetPackRat<int>(CoreSchema.EfficientWholeNumber31).UnpackModel(stream);
+			Code model = stream.ReadBits(length);
 			
 			return model;
 		}

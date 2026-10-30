@@ -38,7 +38,7 @@ namespace BigRedProf.Data.Test
 			PiedPiper piedPiper = new PiedPiper();
 			PackRat<int> packRat = new UnsignedVarIntPackRat(piedPiper);
 
-			Assert.Throws<ArgumentOutOfRangeException>(() => packRat.PackModel(new CodeWriter(new MemoryStream()), -1));
+			Assert.Throws<ArgumentOutOfRangeException>(() => packRat.PackModel(new StreamBitWriter(new MemoryStream()), -1));
 		}
 
 		[Fact]
